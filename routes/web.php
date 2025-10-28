@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use App\Models\Task;
 use App\Models\TaskAssignment;
 use App\Models\TaskProof;
@@ -16,12 +18,48 @@ Route::get('/', function (Request $request) {
     return view('auth.login');
 });
 
+Route::post('/register', function (Request $request) {
+    $data = $request->validate([
+        'username' => 'required|string|max:255|unique:users,username',
+        'email' => 'required|email|max:255|unique:users,email',
+        'role' => 'required|in:owner,manager,employee',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
+
+    $user = User::create([
+        'name' => $data['username'], 
+        'username' => $data['username'],
+        'email' => $data['email'],
+        'role' => $data['role'],
+        'password' => $data['password'], 
+    ]);
+
+    $request->session()->put('username', $user->username);
+    $request->session()->put('role', $user->role);
+
+    // Redirect to role-specific home after signup
+    if ($user->role === 'owner') {
+        return redirect()->route('owner.home');
+    } elseif ($user->role === 'manager') {
+        return redirect()->route('manager.home');
+    } else { // employee
+        return redirect(url('/employee/tasks/opening'));
+    }
+})->name('register');
+
 Route::get('/login', function (Request $request) {
     if ($request->session()->has('role')) {
         return redirect('/dashboard');
     }
     return view('auth.login');
 })->name('login');
+
+Route::get('/register', function (Request $request) {
+    if ($request->session()->has('role')) {
+        return redirect('/dashboard');
+    }
+    return view('auth.register');
+})->name('register.show');
 
 Route::post('/login', function (Request $request) {
     $request->validate([
@@ -37,7 +75,6 @@ Route::post('/login', function (Request $request) {
         'manager' => 'manager',
         'employee' => 'employee',
     ];
-
     $role = $map[$username] ?? null;
 
     $valid = (
