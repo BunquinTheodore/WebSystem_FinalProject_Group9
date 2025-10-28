@@ -1,7 +1,7 @@
 <!-- README.md -->
 
 <div align="center">
-  <img src="[https://github.com/BunquinTheodore/WebSys-Coffee-Shop/assets/logo.png](https://github.com/BunquinTheodore/WebSystem_FinalProject_Group9/blob/main/public/images/bluemoon-logo.png)" width="100" alt="Bluemoon Logo">
+    <img width="360" height="77" alt="Image" src="https://github.com/user-attachments/assets/71c5eb77-ee79-4484-af39-fdcf10b5b028" />
   <h1>☕ Bluemoon Coffee Shop Management System</h1>
   <p><strong>A modern, role-based web app for managing and monitoring daily coffee shop operations.</strong></p>
 
