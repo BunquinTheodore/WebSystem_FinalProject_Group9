@@ -26,25 +26,24 @@ Route::post('/register', function (Request $request) {
         'password' => 'required|string|min:6|confirmed',
     ]);
 
+    // User model casts will hash the password automatically
     $user = User::create([
-        'name' => $data['username'], 
+        'name' => (string) ($request->input('name') ?: $data['username']),
         'username' => $data['username'],
         'email' => $data['email'],
         'role' => $data['role'],
-        'password' => $data['password'], 
+        'password' => $data['password'],
     ]);
 
     $request->session()->put('username', $user->username);
     $request->session()->put('role', $user->role);
 
     // Redirect to role-specific home after signup
-    if ($user->role === 'owner') {
-        return redirect()->route('owner.home');
-    } elseif ($user->role === 'manager') {
-        return redirect()->route('manager.home');
-    } else { // employee
-        return redirect(url('/employee/tasks/opening'));
-    }
+    return match ($user->role) {
+        'owner' => redirect()->route('owner.home'),
+        'manager' => redirect()->route('manager.home'),
+        default => redirect(url('/employee/tasks/opening')),
+    };
 })->name('register');
 
 Route::get('/login', function (Request $request) {
@@ -67,30 +66,30 @@ Route::post('/login', function (Request $request) {
         'password' => 'required|string',
     ]);
 
-    $username = (string) $request->string('username');
+    $login = (string) $request->string('username');
     $password = (string) $request->string('password');
 
-    $map = [
-        'owner' => 'owner',
-        'manager' => 'manager',
-        'employee' => 'employee',
-    ];
-    $role = $map[$username] ?? null;
-
-    $valid = (
-        ($role === 'owner' && $username === 'owner' && $password === '1234') ||
-        ($role === 'manager' && $username === 'manager' && $password === '1234') ||
-        ($role === 'employee' && $username === 'employee' && $password === '1234')
-    );
-
-    if (!$valid) {
-        return back()->withErrors(['auth' => 'Invalid credentials'])->withInput();
+    // Try authenticating against the database (username or email)
+    $user = User::where('username', $login)->orWhere('email', $login)->first();
+    if ($user && Hash::check($password, $user->password)) {
+        $request->session()->put('username', $user->username);
+        $request->session()->put('role', $user->role);
+        return redirect('/dashboard');
     }
 
-    $request->session()->put('username', $username);
-    $request->session()->put('role', $role);
+    // Fallback to demo accounts (optional)
+    $demo = [
+        'owner' => ['role' => 'owner', 'pass' => '1234'],
+        'manager' => ['role' => 'manager', 'pass' => '1234'],
+        'employee' => ['role' => 'employee', 'pass' => '1234'],
+    ];
+    if (isset($demo[$login]) && $password === $demo[$login]['pass']) {
+        $request->session()->put('username', $login);
+        $request->session()->put('role', $demo[$login]['role']);
+        return redirect('/dashboard');
+    }
 
-    return redirect('/dashboard');
+    return back()->withErrors(['auth' => 'Invalid credentials'])->withInput();
 });
 
 Route::post('/logout', function (Request $request) {
