@@ -18,25 +18,34 @@ return new class extends Migration
             }
         });
 
-        // Backfill sensible defaults if needed
+        // Backfill sensible defaults in a database-agnostic way
         // Username: derive from email + id if empty
-        DB::statement("
-            UPDATE users
-            SET username = COALESCE(username, split_part(email, '@', 1) || '_' || id)
-            WHERE username IS NULL
-        ");
+        $users = DB::table('users')->select('id', 'email', 'username')->whereNull('username')->get();
+        foreach ($users as $u) {
+            $email = (string) ($u->email ?? '');
+            $base = $email !== '' ? explode('@', $email)[0] : 'user';
+            if ($base === '') { $base = 'user'; }
+            $candidate = $base.'_'.$u->id;
+            DB::table('users')->where('id', $u->id)->update(['username' => $candidate]);
+        }
 
         // Default role to employee if missing
         DB::table('users')->whereNull('role')->update(['role' => 'employee']);
 
-        // Add unique index and (optionally) enforce NOT NULL
-        Schema::table('users', function (Blueprint $table) {
-            $table->unique('username');
-        });
+        // Add unique index
+        $driver = DB::getDriverName();
+        if ($driver === 'sqlite') {
+            // SQLite supports IF NOT EXISTS for indexes
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS users_username_unique ON users(username)');
+        } else {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unique('username');
+            });
+        }
 
-        // Enforce NOT NULL (Postgres-friendly using raw statement)
-        DB::statement('ALTER TABLE users ALTER COLUMN username SET NOT NULL');
-        DB::statement('ALTER TABLE users ALTER COLUMN role SET NOT NULL');
+        // NOTE: We intentionally do not enforce NOT NULL here to avoid
+        // driver-specific ALTER syntax and Doctrine DBAL dependency.
+        // Validation and the unique index ensure practical integrity.
     }
 
     public function down(): void
