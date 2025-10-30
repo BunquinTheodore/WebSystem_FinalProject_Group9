@@ -136,7 +136,7 @@
           </tbody>
         </table>
       </form>
-      <div style="margin-top:10px;display:grid;gap:10px">
+      <div id="mgr-expense-list" style="margin-top:10px;display:grid;gap:10px">
         @forelse($expenses as $e)
           <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
             <table style="width:100%;border-collapse:collapse">
@@ -260,7 +260,42 @@
     </div>
     <script>
       (function(){
+        const CSRF_TOKEN = '{{ csrf_token() }}';
+        const EXP_DEL_BASE = "{{ url('/manager/expense') }}";
         function fmt(n){ try { return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n || 0)); } catch(e){ return Number(n||0).toFixed(2); } }
+        function dt(s){ try { const d = new Date(s); return d.toLocaleString(); } catch(e){ return s; } }
+        function makeExpenseCard(exp){
+          const wrapper = document.createElement('div');
+          wrapper.className = 'card';
+          wrapper.style.borderRadius = '8px';
+          wrapper.style.border = '1px solid #e3e3e0';
+          wrapper.style.overflow = 'hidden';
+          wrapper.innerHTML = `
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px">₱${fmt(exp.amount)}</td>
+                  <td style="padding:8px">${exp.note || ''}</td>
+                  <td style="padding:8px;color:#706f6c">${dt(exp.created_at)}</td>
+                  <td style="padding:8px">
+                    <form class="mgr-del-form" method="POST" action="${EXP_DEL_BASE}/${exp.id}/delete" style="margin:0">
+                      <input type="hidden" name="_token" value="${CSRF_TOKEN}" />
+                      <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this expense?">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>`;
+          return wrapper;
+        }
         async function refreshTotals(){
           try {
             const res = await fetch("{{ route('manager.totals') }}", { headers: { "X-Requested-With":"XMLHttpRequest" } });
@@ -303,6 +338,25 @@
               highlightTotals({ fund:true, avail:true });
             } else if(form.id === 'mgr-expense-form'){
               highlightTotals({ exp:true, avail:true });
+              // Try to append the newly created expense card without reload
+              try {
+                const ct = (res.headers.get('content-type') || '').toLowerCase();
+                if(ct.includes('application/json')){
+                  const payload = await res.json();
+                  if(payload && payload.expense){
+                    const host = document.getElementById('mgr-expense-list');
+                    if(host){
+                      const card = makeExpenseCard(payload.expense);
+                      // simple appear animation
+                      card.style.opacity = '0';
+                      card.style.transform = 'scale(0.98)';
+                      card.style.transition = 'opacity 180ms ease, transform 180ms ease';
+                      host.prepend(card);
+                      requestAnimationFrame(()=>{ card.style.opacity='1'; card.style.transform='scale(1)'; });
+                    }
+                  }
+                }
+              } catch(_){ /* ignore append errors */ }
             } else {
               highlightTotals({ avail:true });
             }

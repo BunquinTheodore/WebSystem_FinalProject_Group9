@@ -226,13 +226,27 @@ Route::post('/manager/expense', function (Request $request) {
         'amount' => 'required|numeric|min:0',
         'note' => 'required|string',
     ]);
-    DB::table('expenses')->insert([
-        'manager_username' => (string) $request->session()->get('username'),
+    $now = now();
+    $manager = (string) $request->session()->get('username');
+    $id = DB::table('expenses')->insertGetId([
+        'manager_username' => $manager,
         'amount' => $data['amount'],
         'note' => $data['note'],
-        'created_at' => now(),
-        'updated_at' => now(),
+        'created_at' => $now,
+        'updated_at' => $now,
     ]);
+    if ($request->ajax()) {
+        return response()->json([
+            'ok' => true,
+            'expense' => [
+                'id' => $id,
+                'manager_username' => $manager,
+                'amount' => (float) $data['amount'],
+                'note' => $data['note'],
+                'created_at' => (string) $now,
+            ],
+        ]);
+    }
     return redirect()->route('manager.home')->with('status', 'Expense added');
 })->name('manager.expense');
 
