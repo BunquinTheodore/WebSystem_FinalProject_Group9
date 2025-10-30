@@ -193,16 +193,32 @@ Route::post('/manager/report', function (Request $request) {
         'wallet' => 'required|numeric',
         'bank' => 'required|numeric',
     ]);
-    DB::table('manager_reports')->insert([
-        'manager_username' => (string) $request->session()->get('username'),
+    $now = now();
+    $manager = (string) $request->session()->get('username');
+    $id = DB::table('manager_reports')->insertGetId([
+        'manager_username' => $manager,
         'shift' => $data['shift'],
         'cash' => $data['cash'],
         'wallet' => $data['wallet'],
         'bank' => $data['bank'],
-        'submitted_at' => now(),
-        'created_at' => now(),
-        'updated_at' => now(),
+        'submitted_at' => $now,
+        'created_at' => $now,
+        'updated_at' => $now,
     ]);
+    if ($request->ajax()) {
+        return response()->json([
+            'ok' => true,
+            'report' => [
+                'id' => $id,
+                'manager_username' => $manager,
+                'shift' => (string) $data['shift'],
+                'cash' => (float) $data['cash'],
+                'wallet' => (float) $data['wallet'],
+                'bank' => (float) $data['bank'],
+                'created_at' => (string) $now,
+            ],
+        ]);
+    }
     return redirect()->route('manager.home')->with('status', 'Report submitted');
 })->name('manager.report');
 

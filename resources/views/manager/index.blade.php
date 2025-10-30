@@ -14,7 +14,7 @@
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title">Daily Report</h3>
-      <form method="POST" action="{{ route('manager.report') }}">
+      <form id="mgr-report-form" method="POST" action="{{ route('manager.report') }}">
         @csrf
         <table style="width:100%;border-collapse:collapse">
           <tbody>
@@ -47,7 +47,7 @@
           </tbody>
         </table>
       </form>
-      <div style="margin-top:10px;display:grid;gap:10px">
+      <div id="mgr-report-list" style="margin-top:10px;display:grid;gap:10px">
         @forelse($reports as $r)
           <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
             <table style="width:100%;border-collapse:collapse">
@@ -262,9 +262,47 @@
       (function(){
         const CSRF_TOKEN = '{{ csrf_token() }}';
         const EXP_DEL_BASE = "{{ url('/manager/expense') }}";
+        const REP_DEL_BASE = "{{ url('/manager/report') }}";
         function fmt(n){ try { return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n || 0)); } catch(e){ return Number(n||0).toFixed(2); } }
         function dt(s){ try { const d = new Date(s); return d.toLocaleString(); } catch(e){ return s; } }
         function makeExpenseCard(exp){
+        function makeReportCard(rep){
+          const wrapper = document.createElement('div');
+          wrapper.className = 'card';
+          wrapper.style.borderRadius = '8px';
+          wrapper.style.border = '1px solid #e3e3e0';
+          wrapper.style.overflow = 'hidden';
+          const shift = String(rep.shift || '').toUpperCase();
+          wrapper.innerHTML = `
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Shift</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Cash (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Wallet (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Bank (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px">${shift}</td>
+                  <td style="padding:8px">₱${fmt(rep.cash)}</td>
+                  <td style="padding:8px">₱${fmt(rep.wallet)}</td>
+                  <td style="padding:8px">₱${fmt(rep.bank)}</td>
+                  <td style="padding:8px;color:#706f6c">${dt(rep.created_at)}</td>
+                  <td style="padding:8px">
+                    <form class="mgr-del-form" method="POST" action="${REP_DEL_BASE}/${rep.id}/delete" style="margin:0">
+                      <input type="hidden" name="_token" value="${CSRF_TOKEN}" />
+                      <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>`;
+          return wrapper;
+        }
           const wrapper = document.createElement('div');
           wrapper.className = 'card';
           wrapper.style.borderRadius = '8px';
@@ -331,6 +369,7 @@
             const fd = new FormData(form);
             const res = await fetch(form.action, { method:"POST", body: fd, headers: { "X-Requested-With":"XMLHttpRequest" } });
             if(!res.ok){ throw new Error('Save failed'); }
+            let payload = null; try { const ct = (res.headers.get('content-type')||'').toLowerCase(); if(ct.includes('application/json')) payload = await res.json(); } catch(_){}
             form.reset();
             await refreshTotals();
             // Highlight changed totals based on form
@@ -340,20 +379,30 @@
               highlightTotals({ exp:true, avail:true });
               // Try to append the newly created expense card without reload
               try {
-                const ct = (res.headers.get('content-type') || '').toLowerCase();
-                if(ct.includes('application/json')){
-                  const payload = await res.json();
-                  if(payload && payload.expense){
-                    const host = document.getElementById('mgr-expense-list');
-                    if(host){
-                      const card = makeExpenseCard(payload.expense);
-                      // simple appear animation
-                      card.style.opacity = '0';
-                      card.style.transform = 'scale(0.98)';
-                      card.style.transition = 'opacity 180ms ease, transform 180ms ease';
-                      host.prepend(card);
-                      requestAnimationFrame(()=>{ card.style.opacity='1'; card.style.transform='scale(1)'; });
-                    }
+                if(payload && payload.expense){
+                  const host = document.getElementById('mgr-expense-list');
+                  if(host){
+                    const card = makeExpenseCard(payload.expense);
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.98)';
+                    card.style.transition = 'opacity 180ms ease, transform 180ms ease';
+                    host.prepend(card);
+                    requestAnimationFrame(()=>{ card.style.opacity='1'; card.style.transform='scale(1)'; });
+                  }
+                }
+              } catch(_){ /* ignore append errors */ }
+            } else if(form.id === 'mgr-report-form'){
+              // Append new report card
+              try {
+                if(payload && payload.report){
+                  const host = document.getElementById('mgr-report-list');
+                  if(host){
+                    const card = makeReportCard(payload.report);
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.98)';
+                    card.style.transition = 'opacity 180ms ease, transform 180ms ease';
+                    host.prepend(card);
+                    requestAnimationFrame(()=>{ card.style.opacity='1'; card.style.transform='scale(1)'; });
                   }
                 }
               } catch(_){ /* ignore append errors */ }
