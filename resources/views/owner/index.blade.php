@@ -133,8 +133,31 @@
           const statusCell = tr ? tr.querySelector('.req-status') : null;
           const actionsCell = tr ? tr.querySelector('td:last-child') : null;
           const result = (form.getAttribute('data-result') || '').toLowerCase();
-          if(statusCell){ statusCell.textContent = result ? (result.charAt(0).toUpperCase()+result.slice(1)) : 'Updated'; }
-          if(actionsCell){ actionsCell.innerHTML = '<span style="color:#706f6c">No actions</span>'; }
+          // Smoothly update status text
+          if(statusCell){
+            statusCell.style.transition = 'opacity 160ms ease';
+            statusCell.style.opacity = '0';
+            setTimeout(function(){
+              statusCell.textContent = result ? (result.charAt(0).toUpperCase()+result.slice(1)) : 'Updated';
+              statusCell.style.opacity = '1';
+            }, 160);
+          }
+          // Fade out buttons, then replace with "No actions"
+          if(actionsCell){
+            actionsCell.style.transition = 'opacity 160ms ease';
+            actionsCell.style.opacity = '0';
+            setTimeout(function(){
+              actionsCell.innerHTML = '<span style="color:#706f6c">No actions</span>';
+              actionsCell.style.opacity = '1';
+            }, 160);
+          }
+          // Row highlight feedback
+          if(tr){
+            tr.style.transition = 'background-color 320ms ease, box-shadow 320ms ease';
+            tr.style.background = (result === 'approved') ? '#eaf7ee' : '#fdecea';
+            tr.style.boxShadow = 'inset 0 0 0 1px ' + ((result === 'approved') ? '#a7e1b2' : '#f5b5b5');
+            setTimeout(function(){ tr.style.background=''; tr.style.boxShadow=''; }, 900);
+          }
           if(window.toast){ window.toast('Request '+(result||'updated')+'.','success'); }
         } catch(err){
           // Fallback: normal submission
