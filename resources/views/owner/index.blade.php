@@ -76,8 +76,27 @@
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
-      <form method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr auto">
-        <input name="manager" list="apepo-managers" value="{{ request('manager') }}" placeholder="Manager username (type to search)" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
+      <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1.5fr 1fr 1fr auto">
+        <div>
+          <input id="mgr-input" list="apepo-managers" placeholder="Type manager name, then Add" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px;width:100%" />
+          <div id="mgr-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+            @php
+              $mgrParam = request()->query('manager');
+              $mgrVals = is_array($mgrParam) ? $mgrParam : (strlen((string)$mgrParam) ? [(string)$mgrParam] : []);
+            @endphp
+            @foreach($mgrVals as $val)
+              <span class="mgr-chip" data-value="{{ $val }}" style="display:inline-flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #dbe2ff;color:#1b1b18;padding:4px 8px;border-radius:999px">
+                <span>{{ $val }}</span>
+                <button type="button" class="chip-x" aria-label="Remove" style="background:transparent;border:none;color:#555;cursor:pointer">×</button>
+              </span>
+            @endforeach
+          </div>
+          <div id="mgr-hidden" aria-hidden="true" style="display:none">
+            @foreach($mgrVals as $val)
+              <input type="hidden" name="manager[]" value="{{ $val }}" />
+            @endforeach
+          </div>
+        </div>
         <input name="from" type="date" value="{{ request('from') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
         <input name="to" type="date" value="{{ request('to') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
         <div style="display:flex;gap:8px;align-items:center">
@@ -139,6 +158,9 @@
         @empty
           <div style="color:#706f6c">No APEPO reports yet.</div>
         @endforelse
+      </div>
+      <div style="margin-top:8px">
+        {!! $apepo->appends(request()->query())->links() !!}
       </div>
     </div>
 
@@ -235,3 +257,62 @@
     })();
   </script>
 @endsection
+@push('scripts')
+<script>
+(function(){
+  const form = document.getElementById('apepo-filter-form');
+  const input = document.getElementById('mgr-input');
+  const chips = document.getElementById('mgr-chips');
+  const hidden = document.getElementById('mgr-hidden');
+  function addManager(val){
+    val = String(val||'').trim();
+    if(!val) return;
+    // Prevent duplicates (case-insensitive)
+    const exists = Array.from(hidden.querySelectorAll('input[name="manager[]"]')).some(i => (i.value||'').toLowerCase() === val.toLowerCase());
+    if(exists) { input.value=''; return; }
+    const chip = document.createElement('span');
+    chip.className = 'mgr-chip';
+    chip.setAttribute('data-value', val);
+    chip.style.display = 'inline-flex';
+    chip.style.alignItems = 'center';
+    chip.style.gap = '6px';
+    chip.style.background = '#eef2ff';
+    chip.style.border = '1px solid #dbe2ff';
+    chip.style.color = '#1b1b18';
+    chip.style.padding = '4px 8px';
+    chip.style.borderRadius = '999px';
+    const label = document.createElement('span');
+    label.textContent = val;
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'chip-x';
+    x.setAttribute('aria-label','Remove');
+    x.style.background = 'transparent';
+    x.style.border = 'none';
+    x.style.color = '#555';
+    x.style.cursor = 'pointer';
+    x.textContent = '×';
+    x.addEventListener('click', function(){
+      const h = hidden.querySelector('input[name="manager[]"][value="'+CSS.escape(val)+'"]');
+      if(h && h.parentElement) h.parentElement.removeChild(h);
+      if(chip && chip.parentElement) chip.parentElement.removeChild(chip);
+    });
+    chip.appendChild(label);
+    chip.appendChild(x);
+    chips.appendChild(chip);
+    const h = document.createElement('input');
+    h.type = 'hidden';
+    h.name = 'manager[]';
+    h.value = val;
+    hidden.appendChild(h);
+    input.value = '';
+  }
+  if(form && input && chips && hidden){
+    // Add with Enter key in input
+    input.addEventListener('keydown', function(ev){
+      if(ev.key === 'Enter') { ev.preventDefault(); addManager(input.value); }
+    });
+  }
+})();
+</script>
+@endpush

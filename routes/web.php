@@ -118,11 +118,26 @@ Route::get('/owner', function (Request $request) {
     $requests = DB::table('requests')->orderByDesc('id')->limit(50)->get();
     // Filters for APEPO list only
     $apepoQuery = DB::table('apepo_reports');
-    $managerFilter = trim((string) $request->query('manager'));
     $from = $request->query('from');
     $to = $request->query('to');
-    if ($managerFilter !== '') {
-        $apepoQuery->where('manager_username', 'like', '%'.$managerFilter.'%');
+    // Manager can be string or array (manager[])
+    $managerParam = $request->query('manager');
+    $managerTerms = [];
+    if (is_array($managerParam)) {
+        foreach ($managerParam as $mp) {
+            $mp = trim((string) $mp);
+            if ($mp !== '') { $managerTerms[] = strtolower($mp); }
+        }
+    } else {
+        $single = trim((string) $managerParam);
+        if ($single !== '') { $managerTerms[] = strtolower($single); }
+    }
+    if (!empty($managerTerms)) {
+        $apepoQuery->where(function($q) use ($managerTerms) {
+            foreach ($managerTerms as $idx => $term) {
+                $q->orWhereRaw('LOWER(manager_username) LIKE ?', ['%'.$term.'%']);
+            }
+        });
     }
     if (!empty($from) || !empty($to)) {
         try {
@@ -133,7 +148,7 @@ Route::get('/owner', function (Request $request) {
             // ignore parse errors, fall back to no date filter
         }
     }
-    $apepo = $apepoQuery->orderByDesc('id')->limit(20)->get();
+    $apepo = $apepoQuery->orderByDesc('id')->paginate(20);
     $apepoManagers = DB::table('apepo_reports')->distinct()->orderBy('manager_username')->pluck('manager_username');
 
     return view('owner.index', [
