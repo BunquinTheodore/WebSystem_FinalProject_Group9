@@ -198,6 +198,38 @@
         </tbody>
       </table>
     </div>
+
+    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <h3 class="section-title" style="margin:0 0 8px">Inventory</h3>
+      <div style="display:grid;gap:10px">
+        @forelse(($inventory ?? []) as $it)
+          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Item</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Category</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Qty</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Min</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Unit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px">{{ $it->name }}</td>
+                  <td style="padding:8px">{{ $it->category }}</td>
+                  <td style="padding:8px"><span @if($it->quantity <= $it->min_threshold) style="color:#b91c1c;font-weight:600" @endif>{{ $it->quantity }}</span></td>
+                  <td style="padding:8px">{{ $it->min_threshold }}</td>
+                  <td style="padding:8px">{{ $it->unit }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        @empty
+          <div style="color:#706f6c">No inventory items yet.</div>
+        @endforelse
+      </div>
+    </div>
   </div>
   <script>
     (function(){

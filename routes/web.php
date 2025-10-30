@@ -151,6 +151,9 @@ Route::get('/owner', function (Request $request) {
     $apepo = $apepoQuery->orderByDesc('id')->paginate(20);
     $apepoManagers = DB::table('apepo_reports')->distinct()->orderBy('manager_username')->pluck('manager_username');
 
+    // Inventory overview for owner
+    $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
+
     return view('owner.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
@@ -160,6 +163,7 @@ Route::get('/owner', function (Request $request) {
         'requests' => $requests,
         'apepo' => $apepo,
         'apepoManagers' => $apepoManagers,
+        'inventory' => $inventory,
     ]);
 })->name('owner.home');
 
@@ -196,6 +200,7 @@ Route::get('/manager', function (Request $request) {
     $requests = DB::table('requests')->orderByDesc('id')->limit(10)->get();
     $tasks = Task::where('active', true)->orderBy('id')->get();
     $apepo = DB::table('apepo_reports')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
+    $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
 
     return view('manager.index', [
         'reports' => $reports,
@@ -206,8 +211,64 @@ Route::get('/manager', function (Request $request) {
         'requests' => $requests,
         'tasks' => $tasks,
         'apepo' => $apepo,
+        'inventory' => $inventory,
     ]);
 })->name('manager.home');
+// Inventory: create item
+Route::post('/manager/inventory/item', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'category' => 'nullable|string|max:255',
+        'unit' => 'nullable|string|max:50',
+        'quantity' => 'nullable|integer|min:0',
+        'min_threshold' => 'nullable|integer|min:0',
+        'notes' => 'nullable|string',
+    ]);
+    $now = now();
+    $id = DB::table('inventory_items')->insertGetId([
+        'name' => $data['name'],
+        'category' => $data['category'] ?? null,
+        'unit' => $data['unit'] ?? null,
+        'quantity' => (int) ($data['quantity'] ?? 0),
+        'min_threshold' => (int) ($data['min_threshold'] ?? 0),
+        'notes' => $data['notes'] ?? null,
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'item' => DB::table('inventory_items')->where('id', $id)->first()]);
+    }
+    return redirect()->route('manager.home')->with('status','Item added');
+})->name('manager.inventory.item');
+
+// Inventory: adjust quantity (non-negative enforcement)
+Route::post('/manager/inventory/{id}/adjust', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'delta' => 'required|integer',
+        'reason' => 'nullable|string|max:255',
+    ]);
+    $item = DB::table('inventory_items')->where('id', $id)->first();
+    if (!$item) return back()->withErrors(['inventory' => 'Item not found']);
+    $newQty = (int) max(0, ((int)$item->quantity) + $data['delta']);
+    DB::table('inventory_items')->where('id', $id)->update([
+        'quantity' => $newQty,
+        'updated_at' => now(),
+    ]);
+    DB::table('inventory_adjustments')->insert([
+        'item_id' => $id,
+        'manager_username' => (string) $request->session()->get('username'),
+        'delta' => (int) $data['delta'],
+        'reason' => $data['reason'] ?? null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'quantity' => $newQty]);
+    }
+    return redirect()->route('manager.home')->with('status','Inventory updated');
+})->name('manager.inventory.adjust');
 // Manager APEPO create
 Route::post('/manager/apepo', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
