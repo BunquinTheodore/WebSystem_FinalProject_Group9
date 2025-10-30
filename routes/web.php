@@ -183,8 +183,20 @@ Route::get('/owner', function (Request $request) {
     $apepo = $apepoQuery->orderByDesc('id')->paginate(20);
     $apepoManagers = DB::table('apepo_reports')->distinct()->orderBy('manager_username')->pluck('manager_username');
 
-    // Inventory overview for owner
-    $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
+    // Inventory overview for owner with status computation
+    $rawInventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
+    $inventory = collect($rawInventory)->map(function($it){
+        $qty = (int) ($it->quantity ?? 0);
+        $min = max(0, (int) ($it->min_threshold ?? 0));
+        $status = 'Good';
+        if ($min > 0 && $qty <= $min) { $status = 'Critical'; }
+        elseif ($min > 0 && $qty <= (int) ceil($min * 1.5)) { $status = 'Low Stock'; }
+        return (object) array_merge((array) $it, [
+            'status' => $status,
+        ]);
+    });
+    $invCriticalCount = $inventory->where('status','Critical')->count();
+    $invLowCount = $inventory->where('status','Low Stock')->count();
 
     // Store KPIs and data
     $today = \Carbon\Carbon::today();
@@ -306,6 +318,8 @@ Route::get('/owner', function (Request $request) {
         'apepo' => $apepo,
         'apepoManagers' => $apepoManagers,
         'inventory' => $inventory,
+        'invCriticalCount' => $invCriticalCount,
+        'invLowCount' => $invLowCount,
         'openingTotal' => $openingTotal,
         'closingTotal' => $closingTotal,
         'openingCompleted' => $openingCompleted,
@@ -547,6 +561,17 @@ Route::post('/manager/apepo/{id}/delete', function (Request $request, int $id) {
     }
     return redirect()->route('manager.home')->with('status', 'APEPO removed');
 })->name('manager.apepo.delete');
+
+// Owner: Inventory bulk delete (owner only)
+Route::post('/owner/inventory/bulk-delete', function (Request $request) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    $data = $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'integer',
+    ]);
+    DB::table('inventory_items')->whereIn('id', $data['ids'])->delete();
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Items deleted');
+})->name('owner.inventory.bulkDelete');
 
 // Manager totals JSON endpoint for live updates
 Route::get('/manager/totals', function (Request $request) {
