@@ -75,6 +75,60 @@
     </div>
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
+      <div style="display:grid;gap:10px">
+        @forelse($apepo as $p)
+          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Section</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Details</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px">Audit</td>
+                  <td style="padding:8px">{{ $p->audit }}</td>
+                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px">People</td>
+                  <td style="padding:8px">{{ $p->people }}</td>
+                  <td style="padding:8px;color:#706f6c"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px">Equipment</td>
+                  <td style="padding:8px">{{ $p->equipment }}</td>
+                  <td style="padding:8px;color:#706f6c"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px">Product</td>
+                  <td style="padding:8px">{{ $p->product }}</td>
+                  <td style="padding:8px;color:#706f6c"></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px">Others</td>
+                  <td style="padding:8px">{{ $p->others }}</td>
+                  <td style="padding:8px;color:#706f6c"></td>
+                </tr>
+                @if(!empty($p->notes))
+                <tr>
+                  <td style="padding:8px">Notes</td>
+                  <td style="padding:8px" colspan="2">{{ $p->notes }}</td>
+                </tr>
+                @endif
+              </tbody>
+            </table>
+          </div>
+        @empty
+          <div style="color:#706f6c">No APEPO reports yet.</div>
+        @endforelse
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Requests</h3>
       <table style="width:100%;border-collapse:collapse">
         <thead>

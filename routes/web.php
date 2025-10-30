@@ -116,6 +116,7 @@ Route::get('/owner', function (Request $request) {
     $expensesTotal = (float) (DB::table('expenses')->sum('amount') ?? 0);
     $availableBalance = $fundBalance - $expensesTotal;
     $requests = DB::table('requests')->orderByDesc('id')->limit(50)->get();
+    $apepo = DB::table('apepo_reports')->orderByDesc('id')->limit(20)->get();
 
     return view('owner.index', [
         'reports' => $reports,
@@ -124,6 +125,7 @@ Route::get('/owner', function (Request $request) {
         'availableBalance' => $availableBalance,
         'expenses' => $expenses,
         'requests' => $requests,
+        'apepo' => $apepo,
     ]);
 })->name('owner.home');
 
@@ -159,6 +161,7 @@ Route::get('/manager', function (Request $request) {
     $availableBalance = $fundBalance - $expensesTotal;
     $requests = DB::table('requests')->orderByDesc('id')->limit(10)->get();
     $tasks = Task::where('active', true)->orderBy('id')->get();
+    $apepo = DB::table('apepo_reports')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
 
     return view('manager.index', [
         'reports' => $reports,
@@ -168,8 +171,62 @@ Route::get('/manager', function (Request $request) {
         'expenses' => $expenses,
         'requests' => $requests,
         'tasks' => $tasks,
+        'apepo' => $apepo,
     ]);
 })->name('manager.home');
+// Manager APEPO create
+Route::post('/manager/apepo', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'audit' => 'nullable|string',
+        'people' => 'nullable|string',
+        'equipment' => 'nullable|string',
+        'product' => 'nullable|string',
+        'others' => 'nullable|string',
+        'notes' => 'nullable|string',
+    ]);
+    $now = now();
+    $manager = (string) $request->session()->get('username');
+    $id = DB::table('apepo_reports')->insertGetId([
+        'manager_username' => $manager,
+        'audit' => $data['audit'] ?? '',
+        'people' => $data['people'] ?? '',
+        'equipment' => $data['equipment'] ?? '',
+        'product' => $data['product'] ?? '',
+        'others' => $data['others'] ?? '',
+        'notes' => $data['notes'] ?? '',
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
+    if ($request->ajax()) {
+        return response()->json([
+            'ok' => true,
+            'apepo' => [
+                'id' => $id,
+                'manager_username' => $manager,
+                'audit' => (string) ($data['audit'] ?? ''),
+                'people' => (string) ($data['people'] ?? ''),
+                'equipment' => (string) ($data['equipment'] ?? ''),
+                'product' => (string) ($data['product'] ?? ''),
+                'others' => (string) ($data['others'] ?? ''),
+                'notes' => (string) ($data['notes'] ?? ''),
+                'created_at' => (string) $now,
+            ],
+        ]);
+    }
+    return redirect()->route('manager.home')->with('status', 'APEPO submitted');
+})->name('manager.apepo');
+
+// Manager APEPO delete
+Route::post('/manager/apepo/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    $deleted = DB::table('apepo_reports')->where('id', $id)->where('manager_username', $manager)->delete();
+    if ($request->ajax()) {
+        return response()->json(['ok' => (bool) $deleted]);
+    }
+    return redirect()->route('manager.home')->with('status', 'APEPO removed');
+})->name('manager.apepo.delete');
 
 // Manager totals JSON endpoint for live updates
 Route::get('/manager/totals', function (Request $request) {
