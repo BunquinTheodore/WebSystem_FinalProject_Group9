@@ -274,6 +274,23 @@
             if(a) a.innerHTML = 'Available balance: <strong>₱'+fmt(data.availableBalance)+'</strong>';
           } catch(err) { /* silent */ }
         }
+        function pulse(el, color){
+          if(!el) return;
+          try{
+            el.style.transition = 'background-color 320ms ease, box-shadow 320ms ease';
+            el.style.background = color;
+            el.style.boxShadow = 'inset 0 0 0 1px rgba(0,0,0,0.05)';
+            setTimeout(function(){ if(el){ el.style.background=''; el.style.boxShadow=''; } }, 800);
+          }catch(_){/* noop */}
+        }
+        function highlightTotals(opts){
+          const f = document.getElementById('mgr-total-fund');
+          const e = document.getElementById('mgr-total-exp');
+          const a = document.getElementById('mgr-total-avail');
+          if(opts && opts.fund) pulse(f, '#eaf7ee');
+          if(opts && opts.exp) pulse(e, '#fdecea');
+          if(opts && opts.avail) pulse(a, '#eef5ff');
+        }
         async function submitAjax(form){
           try {
             const fd = new FormData(form);
@@ -281,6 +298,14 @@
             if(!res.ok){ throw new Error('Save failed'); }
             form.reset();
             await refreshTotals();
+            // Highlight changed totals based on form
+            if(form.id === 'mgr-fund-form'){
+              highlightTotals({ fund:true, avail:true });
+            } else if(form.id === 'mgr-expense-form'){
+              highlightTotals({ exp:true, avail:true });
+            } else {
+              highlightTotals({ avail:true });
+            }
             if(window.toast){ window.toast('Saved. Totals updated.','success'); }
           } catch(err){
             // Fallback to normal submit if AJAX fails
@@ -330,7 +355,17 @@
             if(!animateRemove(el)){
               if(el && el.parentElement){ el.parentElement.removeChild(el); }
             }
-            try { await refreshTotals(); } catch(e){}
+            try {
+              await refreshTotals();
+              // Heuristic: if deleting an expense, highlight expenses + available
+              const url = (form && form.action) || '';
+              if(url.indexOf('/manager/expense/') !== -1){
+                highlightTotals({ exp:true, avail:true });
+              } else if(url.indexOf('/manager/report/') !== -1){
+                // No totals change for reports; subtle available pulse for feedback
+                highlightTotals({ avail:true });
+              }
+            } catch(e){}
               if(window.toast){ window.toast('Removed. Totals updated.','success'); }
           }catch(err){ form.submit(); }
         }
