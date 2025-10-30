@@ -1,14 +1,10 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Dashboard</title>
-  <style>html,body{background:#f6f6f6;color:#1b1b18;font-family:ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased}</style>
-</head>
-<body>
-  <div style="max-width:720px;margin:40px auto;background:#fff;padding:20px;border:1px solid #e3e3e0;border-radius:8px">
-    <h1 style="margin:0 0 12px;font-size:20px">Dashboard</h1>
-    <form method="POST" action="{{ route('logout') }}" style="margin-bottom:16px">@csrf<button>Logout</button></form>
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
+@section('content')
+  <div class="card" style="max-width:720px;margin:0 auto;padding:20px">
+    <h1 class="section-title" style="margin:0 0 12px">Dashboard</h1>
 
     @php($role = session('role'))
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -25,5 +21,4 @@
       @endif
     </div>
   </div>
-</body>
-</html>
+@endsection

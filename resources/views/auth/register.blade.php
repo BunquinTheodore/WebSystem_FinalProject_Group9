@@ -1,12 +1,9 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Register</title>
-  <style>html,body{background:#f6f6f6;color:#1b1b18;font-family:ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased}</style>
-</head>
-<body>
-  <div style="max-width:400px;margin:40px auto;background:#fff;padding:20px;border:1px solid #e3e3e0;border-radius:8px">
+@extends('layouts.app')
+
+@section('title', 'Register')
+
+@section('content')
+  <div class="card" style="max-width:400px;margin:0 auto;padding:20px">
     <h1 style="margin:0 0 12px;font-size:20px">Create an account</h1>
     @if($errors->any())
       <div style="color:#b91c1c;margin-bottom:8px">{{ $errors->first() }}</div>
@@ -28,5 +25,4 @@
     </form>
     <p style="margin-top:12px;font-size:14px">Already have an account? <a href="{{ url('/login') }}">Sign in</a></p>
   </div>
-</body>
-</html>
+@endsection

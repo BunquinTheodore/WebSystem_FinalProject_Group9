@@ -113,11 +113,15 @@ Route::get('/owner', function (Request $request) {
     $reports = DB::table('manager_reports')->orderByDesc('id')->limit(20)->get();
     $fundBalance = (float) (DB::table('manager_funds')->sum('amount') ?? 0);
     $expenses = DB::table('expenses')->orderByDesc('id')->limit(20)->get();
+    $expensesTotal = (float) (DB::table('expenses')->sum('amount') ?? 0);
+    $availableBalance = $fundBalance - $expensesTotal;
     $requests = DB::table('requests')->orderByDesc('id')->limit(50)->get();
 
     return view('owner.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
+        'expensesTotal' => $expensesTotal,
+        'availableBalance' => $availableBalance,
         'expenses' => $expenses,
         'requests' => $requests,
     ]);
@@ -146,20 +150,40 @@ Route::get('/manager', function (Request $request) {
         return redirect()->route('dashboard');
     }
 
+    $manager = (string) $request->session()->get('username');
     $reports = DB::table('manager_reports')->orderByDesc('id')->limit(10)->get();
-    $fundBalance = (float) (DB::table('manager_funds')->sum('amount') ?? 0);
-    $expenses = DB::table('expenses')->orderByDesc('id')->limit(10)->get();
+    // Per-manager totals
+    $fundBalance = (float) (DB::table('manager_funds')->where('manager_username', $manager)->sum('amount') ?? 0);
+    $expenses = DB::table('expenses')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
+    $expensesTotal = (float) (DB::table('expenses')->where('manager_username', $manager)->sum('amount') ?? 0);
+    $availableBalance = $fundBalance - $expensesTotal;
     $requests = DB::table('requests')->orderByDesc('id')->limit(10)->get();
     $tasks = Task::where('active', true)->orderBy('id')->get();
 
     return view('manager.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
+        'expensesTotal' => $expensesTotal,
+        'availableBalance' => $availableBalance,
         'expenses' => $expenses,
         'requests' => $requests,
         'tasks' => $tasks,
     ]);
 })->name('manager.home');
+
+// Manager totals JSON endpoint for live updates
+Route::get('/manager/totals', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return response()->json(['error' => 'Unauthorized'], 401);
+    $manager = (string) $request->session()->get('username');
+    $fundBalance = (float) (DB::table('manager_funds')->where('manager_username', $manager)->sum('amount') ?? 0);
+    $expensesTotal = (float) (DB::table('expenses')->where('manager_username', $manager)->sum('amount') ?? 0);
+    $availableBalance = $fundBalance - $expensesTotal;
+    return response()->json([
+        'fundBalance' => $fundBalance,
+        'expensesTotal' => $expensesTotal,
+        'availableBalance' => $availableBalance,
+    ]);
+})->name('manager.totals');
 
 Route::post('/manager/report', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
@@ -199,10 +223,12 @@ Route::post('/manager/fund', function (Request $request) {
 Route::post('/manager/expense', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
     $data = $request->validate([
+        'amount' => 'required|numeric|min:0',
         'note' => 'required|string',
     ]);
     DB::table('expenses')->insert([
         'manager_username' => (string) $request->session()->get('username'),
+        'amount' => $data['amount'],
         'note' => $data['note'],
         'created_at' => now(),
         'updated_at' => now(),
@@ -245,6 +271,37 @@ Route::post('/manager/assign', function (Request $request) {
     ]);
     return redirect()->route('manager.home')->with('status', 'Task assigned');
 })->name('manager.assign');
+
+// Delete manager-owned records
+Route::post('/manager/report/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    $deleted = DB::table('manager_reports')->where('id', $id)->where('manager_username', $manager)->delete();
+    if ($request->ajax()) {
+        return response()->json(['ok' => (bool) $deleted]);
+    }
+    return redirect()->route('manager.home')->with('status', 'Report removed');
+})->name('manager.report.delete');
+
+Route::post('/manager/expense/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    $deleted = DB::table('expenses')->where('id', $id)->where('manager_username', $manager)->delete();
+    if ($request->ajax()) {
+        return response()->json(['ok' => (bool) $deleted]);
+    }
+    return redirect()->route('manager.home')->with('status', 'Expense removed');
+})->name('manager.expense.delete');
+
+Route::post('/manager/request/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    $deleted = DB::table('requests')->where('id', $id)->where('manager_username', $manager)->delete();
+    if ($request->ajax()) {
+        return response()->json(['ok' => (bool) $deleted]);
+    }
+    return redirect()->route('manager.home')->with('status', 'Request removed');
+})->name('manager.request.delete');
 
 Route::get('/employee/tasks/{type}', function (Request $request, string $type) {
     if ($request->session()->get('role') !== 'employee') {

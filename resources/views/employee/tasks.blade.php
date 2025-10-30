@@ -1,14 +1,10 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Tasks - {{ ucfirst($type) }}</title>
-  <style>html,body{background:#f6f6f6;color:#1b1b18;font-family:ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased}</style>
-</head>
-<body>
-  <div style="max-width:880px;margin:40px auto;background:#fff;padding:16px;border:1px solid #e3e3e0;border-radius:8px">
-    <h1 style="margin:0 0 12px">{{ ucfirst($type) }} Tasks</h1>
-    @if(session('status'))<div style="margin-bottom:10px">{{ session('status') }}</div>@endif
+@extends('layouts.app')
+
+@section('title', 'Tasks - '.ucfirst($type))
+
+@section('content')
+  <div class="card" style="max-width:880px;margin:0 auto;padding:16px">
+    <h1 class="section-title" style="margin:0 0 12px">{{ ucfirst($type) }} Tasks</h1>
     <ul style="display:grid;gap:10px">
       @foreach($tasks as $task)
         <li style="border:1px solid #e3e3e0;border-radius:8px;padding:12px">
@@ -26,5 +22,4 @@
       @endforeach
     </ul>
   </div>
-</body>
-</html>
+@endsection

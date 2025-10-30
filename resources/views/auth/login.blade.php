@@ -1,11 +1,11 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Login</title>
+@extends('layouts.app')
+
+@section('title', 'Login')
+@section('hide-auth-button', '1')
+
+@section('content')
   <style>
-    html,body{background:#f6f6f6;color:#1b1b18;font-family:ui-sans-serif,system-ui;-webkit-font-smoothing:antialiased}
-    .card{max-width:480px;margin:40px auto;background:#fff;padding:20px;border:1px solid #e3e3e0;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.04)}
+    .card{max-width:480px;margin:20px auto;background:#fff;padding:20px;border:1px solid #e3e3e0;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.04)}
     .tabs{display:flex;gap:8px;margin-bottom:16px;background:#f3f4f6;border-radius:12px;padding:4px}
     .tab{flex:1;text-align:center;min-height:50px;display:flex;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;font-weight:700;color:#6b7280;border:2px solid transparent;transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease}
     .tab:hover{border-color:#d1d5db}
@@ -22,8 +22,6 @@
     .logo{display:flex;justify-content:center;margin-bottom:12px}
     .logo img{max-width:260px;height:auto}
   </style>
-</head>
-<body>
   <div class="card">
     <div class="logo">
       <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon logo">
@@ -65,7 +63,6 @@
       <p class="muted" style="margin-top:10px">Already have an account? <a href="{{ url('/login?tab=login') }}">Sign in</a></p>
     </div>
   </div>
-
   <script>
     (function(){
       function q(k){return new URLSearchParams(window.location.search).get(k)}
@@ -89,5 +86,4 @@
       setTab(current==='register' ? 'register' : 'login');
     })();
   </script>
-</body>
-</html>
+@endsection

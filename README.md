@@ -62,3 +62,81 @@ It provides real-time tracking of employee tasks, photo verification, and built-
 ```bash
 git clone https://github.com/BunquinTheodore/WebSys-Coffee-Shop.git
 cd WebSys-Coffee-Shop
+```
+
+### 2️⃣ Install PHP Dependencies
+```bash
+composer install
+```
+
+### 3️⃣ Set Up Environment File
+```bash
+cp .env.example .env
+```
+
+### 4️⃣ Generate Application Key
+```bash
+php artisan key:generate
+```
+
+### 5️⃣ Run Database Migrations
+```bash
+php artisan migrate
+```
+
+### 6️⃣ Seed the Database (Optional)
+```bash
+php artisan db:seed
+```
+
+### 7️⃣ Start the Development Server
+```bash
+php artisan serve
+```
+
+---
+
+## 🪟 Local development on Windows
+
+The default "dev" script uses Laravel Pail, which requires the `pcntl` extension (not available on Windows). Use these Windows-friendly options:
+
+### Option A — Composer one-liner
+
+```powershell
+composer run dev:win
+```
+
+Starts the Laravel server, queue worker, and Vite in one terminal.
+
+### Option B — PowerShell helper scripts
+
+From the project root (`WebSystem_FinalProject_Group9`), run:
+
+```powershell
+./dev.ps1          # start Laravel, Vite, and queue worker
+./dev-status.ps1   # show RUNNING/STOPPED status and URLs
+./dev-stop.ps1     # stop all dev processes cleanly
+```
+
+If your PowerShell execution policy blocks scripts, run them like this:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File dev.ps1
+```
+
+### Notes
+
+- Local DB defaults to SQLite. Ensure your `.env` contains:
+
+  ```ini
+  DB_CONNECTION=sqlite
+  DB_DATABASE=database/database.sqlite
+  ```
+
+- If port 8000 is busy:
+
+  ```powershell
+  php artisan serve --port 8001
+  # or
+  ./dev.ps1 -Port 8001
+  ```
