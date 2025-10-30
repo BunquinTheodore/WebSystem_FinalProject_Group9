@@ -90,7 +90,7 @@
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title">Manager Fund</h3>
-      <form method="POST" action="{{ route('manager.fund') }}" style="margin-top:8px">
+      <form id="mgr-fund-form" method="POST" action="{{ route('manager.fund') }}" style="margin-top:8px">
         @csrf
         <table style="width:100%;border-collapse:collapse">
           <tbody>
@@ -113,7 +113,7 @@
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title">Expenses</h3>
-      <form method="POST" action="{{ route('manager.expense') }}">
+      <form id="mgr-expense-form" method="POST" action="{{ route('manager.expense') }}">
         @csrf
         <table style="width:100%;border-collapse:collapse">
           <tbody>
@@ -136,21 +136,41 @@
           </tbody>
         </table>
       </form>
-      <ul style="margin-top:10px">
+      <div style="margin-top:10px;display:grid;gap:10px">
         @forelse($expenses as $e)
-          <li style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-            <span>₱{{ number_format(($e->amount ?? 0), 2) }} — {{ $e->note }} <span style="color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</span></span>
-            @if(session('username') === ($e->manager_username ?? null))
-              <form class="mgr-del-form" method="POST" action="{{ route('manager.expense.delete', ['id' => $e->id]) }}">
-                @csrf
-                <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this expense?">Delete</button>
-              </form>
-            @endif
-          </li>
+          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding:8px">₱{{ number_format(($e->amount ?? 0), 2) }}</td>
+                  <td style="padding:8px">{{ $e->note }}</td>
+                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</td>
+                  <td style="padding:8px">
+                    @if(session('username') === ($e->manager_username ?? null))
+                      <form class="mgr-del-form" method="POST" action="{{ route('manager.expense.delete', ['id' => $e->id]) }}" style="margin:0">
+                        @csrf
+                        <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this expense?">Delete</button>
+                      </form>
+                    @else
+                      <span style="color:#706f6c">—</span>
+                    @endif
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         @empty
-          <li style="color:#706f6c">No expenses yet.</li>
+          <div style="color:#706f6c">No expenses yet.</div>
         @endforelse
-      </ul>
+      </div>
     </div>
 
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
@@ -272,14 +292,22 @@
         const expForm = document.getElementById('mgr-expense-form');
         if(expForm){ expForm.addEventListener('submit', function(ev){ ev.preventDefault(); submitAjax(expForm); }); }
         // Deletion via AJAX for manager lists
-        function closestLi(el){ while(el && el.tagName && el.tagName.toLowerCase() !== 'li'){ el = el.parentElement; } return el; }
+        function findEntryContainer(el){
+          let node = el;
+          while(node){
+            if(node.classList && node.classList.contains('card')) return node;
+            if(node.tagName && node.tagName.toLowerCase() === 'li') return node;
+            node = node.parentElement;
+          }
+          return null;
+        }
         async function handleDelete(form){
           try{
             const fd = new FormData(form);
             const res = await fetch(form.action, { method: 'POST', body: fd, headers: { "X-Requested-With":"XMLHttpRequest" } });
             if(!res.ok) throw new Error('Delete failed');
-            const li = closestLi(form);
-            if(li && li.parentElement){ li.parentElement.removeChild(li); }
+            const el = findEntryContainer(form);
+            if(el && el.parentElement){ el.parentElement.removeChild(el); }
             try { await refreshTotals(); } catch(e){}
               if(window.toast){ window.toast('Removed. Totals updated.','success'); }
           }catch(err){ form.submit(); }
