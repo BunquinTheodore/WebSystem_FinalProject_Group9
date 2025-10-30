@@ -145,7 +145,7 @@ Route::get('/owner', function (Request $request) {
             $toDt = $to ? \Carbon\Carbon::parse($to)->endOfDay() : \Carbon\Carbon::now()->endOfDay();
             $apepoQuery->whereBetween('created_at', [$fromDt, $toDt]);
         } catch (\Throwable $e) {
-            // ignore parse errors, fall back to no date filter
+            
         }
     }
     $apepo = $apepoQuery->orderByDesc('id')->paginate(20);
@@ -153,6 +153,91 @@ Route::get('/owner', function (Request $request) {
 
     // Inventory overview for owner
     $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
+
+    // Store KPIs and data
+    $today = \Carbon\Carbon::today();
+    $openingTotal = (int) DB::table('tasks')->where('active', true)->where('type', 'opening')->count();
+    $closingTotal = (int) DB::table('tasks')->where('active', true)->where('type', 'closing')->count();
+    $openingCompleted = (int) DB::table('task_assignments')
+        ->join('tasks','task_assignments.task_id','=','tasks.id')
+        ->where('tasks.type','opening')
+        ->where('task_assignments.status','completed')
+        ->whereDate('task_assignments.updated_at', $today)
+        ->count();
+    $closingCompleted = (int) DB::table('task_assignments')
+        ->join('tasks','task_assignments.task_id','=','tasks.id')
+        ->where('tasks.type','closing')
+        ->where('task_assignments.status','completed')
+        ->whereDate('task_assignments.updated_at', $today)
+        ->count();
+    $kitchenTasks = (int) DB::table('tasks')
+        ->leftJoin('locations','tasks.location_id','=','locations.id')
+        ->where('tasks.active', true)
+        ->whereRaw("LOWER(COALESCE(locations.name, '')) LIKE ?", ['%kitchen%'])
+        ->count();
+    $coffeeBarTasks = (int) DB::table('tasks')
+        ->leftJoin('locations','tasks.location_id','=','locations.id')
+        ->where('tasks.active', true)
+        ->whereRaw("LOWER(COALESCE(locations.name, '')) LIKE ?", ['%coffee%'])
+        ->count();
+
+    $locations = DB::table('locations')->orderBy('name')->get();
+    $ownerTasks = DB::table('tasks')
+        ->leftJoin('locations','tasks.location_id','=','locations.id')
+        ->select('tasks.id','tasks.title','tasks.type','tasks.active','tasks.location_id','locations.name as location_name')
+        ->orderBy('tasks.type')->orderBy('tasks.id')
+        ->get();
+
+    // Build task lists with completion info for today
+    $openingTasks = DB::table('tasks')
+        ->leftJoin('locations','tasks.location_id','=','locations.id')
+        ->where('tasks.active', true)->where('tasks.type','opening')
+        ->select('tasks.id','tasks.title','tasks.location_id','locations.name as location_name')
+        ->orderBy('tasks.id')->get();
+    $closingTasks = DB::table('tasks')
+        ->leftJoin('locations','tasks.location_id','=','locations.id')
+        ->where('tasks.active', true)->where('tasks.type','closing')
+        ->select('tasks.id','tasks.title','tasks.location_id','locations.name as location_name')
+        ->orderBy('tasks.id')->get();
+
+    $openingIds = $openingTasks->pluck('id')->all();
+    $closingIds = $closingTasks->pluck('id')->all();
+    $todayCompletedRows = DB::table('task_assignments')
+        ->whereIn('task_id', array_merge($openingIds, $closingIds))
+        ->where('status','completed')
+        ->whereDate('updated_at', $today)
+        ->orderBy('task_id')->orderByDesc('updated_at')
+        ->get();
+    $latestByTask = [];
+    foreach ($todayCompletedRows as $row) {
+        if (!isset($latestByTask[$row->task_id])) {
+            $latestByTask[$row->task_id] = $row; // first row per task_id is the latest due to order
+        }
+    }
+    $openingList = [];
+    foreach ($openingTasks as $t) {
+        $meta = $latestByTask[$t->id] ?? null;
+        $openingList[] = [
+            'id' => $t->id,
+            'title' => $t->title,
+            'location' => $t->location_name,
+            'completed' => (bool) $meta,
+            'employee' => $meta?->employee_username,
+            'time' => $meta?->updated_at,
+        ];
+    }
+    $closingList = [];
+    foreach ($closingTasks as $t) {
+        $meta = $latestByTask[$t->id] ?? null;
+        $closingList[] = [
+            'id' => $t->id,
+            'title' => $t->title,
+            'location' => $t->location_name,
+            'completed' => (bool) $meta,
+            'employee' => $meta?->employee_username,
+            'time' => $meta?->updated_at,
+        ];
+    }
 
     return view('owner.index', [
         'reports' => $reports,
@@ -164,6 +249,16 @@ Route::get('/owner', function (Request $request) {
         'apepo' => $apepo,
         'apepoManagers' => $apepoManagers,
         'inventory' => $inventory,
+        'openingTotal' => $openingTotal,
+        'closingTotal' => $closingTotal,
+        'openingCompleted' => $openingCompleted,
+        'closingCompleted' => $closingCompleted,
+        'kitchenTasks' => $kitchenTasks,
+        'coffeeBarTasks' => $coffeeBarTasks,
+        'locations' => $locations,
+        'ownerTasks' => $ownerTasks,
+        'openingTaskList' => $openingList,
+        'closingTaskList' => $closingList,
     ]);
 })->name('owner.home');
 
@@ -184,6 +279,76 @@ Route::post('/owner/requests/{id}/deny', function (Request $request, int $id) {
     ]);
     return back()->with('status', 'Request denied');
 })->name('owner.request.deny');
+
+// Owner: Store management endpoints
+Route::post('/owner/location', function (Request $request) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+    ]);
+    $slug = Str::slug($data['name']);
+    $base = $slug; $i = 1;
+    while (DB::table('locations')->where('slug', $slug)->exists()) { $slug = $base.'-'.$i++; }
+    DB::table('locations')->insert([
+        'name' => $data['name'],
+        'slug' => $slug,
+        'qrcode_payload' => (string) Str::uuid(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Location added');
+})->name('owner.location.create');
+
+Route::post('/owner/location/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    DB::table('locations')->where('id', $id)->delete();
+    DB::table('tasks')->where('location_id', $id)->update(['location_id' => null, 'updated_at' => now()]);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Location removed');
+})->name('owner.location.delete');
+
+Route::post('/owner/location/{id}/regen', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    DB::table('locations')->where('id', $id)->update([
+        'qrcode_payload' => (string) Str::uuid(),
+        'updated_at' => now(),
+    ]);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','QR regenerated');
+})->name('owner.location.regen');
+
+Route::post('/owner/task/{id}/set-location', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    $data = $request->validate([
+        'location_id' => 'nullable|integer|exists:locations,id',
+    ]);
+    DB::table('tasks')->where('id', $id)->update([
+        'location_id' => $data['location_id'] ?? null,
+        'updated_at' => now(),
+    ]);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Task updated');
+})->name('owner.task.setLocation');
+
+Route::get('/manager/store-preview', function () {
+    $openingTaskList = [
+        ['id'=>1,'title'=>'Turn on espresso machine','location'=>'Coffee Bar','completed'=>true,'employee'=>'Emma Davis','time'=>now()->setTime(7,50)],
+        ['id'=>2,'title'=>'Clean group heads and portafilters','location'=>'Coffee Bar','completed'=>true,'employee'=>'Emma Davis','time'=>now()->setTime(8,0)],
+        ['id'=>3,'title'=>'Grind fresh coffee beans','location'=>'Coffee Bar','completed'=>true,'employee'=>'James Wilson','time'=>now()->setTime(8,10)],
+        ['id'=>4,'title'=>'Check dishwashing area','location'=>'Kitchen','completed'=>false,'employee'=>'Mike Chen','time'=>now()->setTime(8,20)],
+        ['id'=>5,'title'=>'Label and date open items','location'=>'Kitchen','completed'=>false,'employee'=>'Mike Chen','time'=>now()->setTime(8,25)],
+    ];
+    $closingTaskList = [
+        ['id'=>6,'title'=>'Wipe counters and machines','location'=>'Coffee Bar','completed'=>false,'employee'=>'Emma Davis','time'=>now()->setTime(20,30)],
+        ['id'=>7,'title'=>'Mop kitchen floor','location'=>'Kitchen','completed'=>false,'employee'=>'Mike Chen','time'=>now()->setTime(20,45)],
+    ];
+    $openingTotal = count($openingTaskList);
+    $closingTotal = count($closingTaskList);
+    $openingCompleted = collect($openingTaskList)->where('completed', true)->count();
+    $closingCompleted = collect($closingTaskList)->where('completed', true)->count();
+    $kitchenTasks = collect(array_merge($openingTaskList, $closingTaskList))->where(fn($t)=>stripos($t['location'],'kitchen')!==false)->count();
+    $coffeeBarTasks = collect(array_merge($openingTaskList, $closingTaskList))->where(fn($t)=>stripos($t['location'],'coffee')!==false)->count();
+    return view('manager.store_preview', compact(
+        'openingTaskList','closingTaskList','openingTotal','closingTotal','openingCompleted','closingCompleted','kitchenTasks','coffeeBarTasks'
+    ));
+})->name('manager.store.preview');
 
 Route::get('/manager', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') {

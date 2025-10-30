@@ -5,7 +5,238 @@
 @section('content')
   <div style="max-width:1000px;margin:0 auto;display:grid;gap:16px">
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+    <div id="owner-welcome" style="text-align:center;padding:20px 12px">
+      <h1 style="margin:0 0 6px;font-size:28px;color:#0f172a">Welcome back, owner</h1>
+      <div style="color:#64748b">Choose a section to view details</div>
+    </div>
+
+    <div id="owner-nav" class="owner-nav" style="display:grid;gap:16px;grid-template-columns:repeat(3,minmax(0,1fr));padding:0 8px">
+      <a href="#store" data-target="store" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#e0f2fe;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">🏬</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Store</div>
+          <div style="font-size:12px;color:#64748b">Opening & Closing Tasks</div>
+        </div>
+      </a>
+      <a href="#sales" data-target="sales" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#dcfce7;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">💵</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Sales</div>
+          <div style="font-size:12px;color:#64748b">Reports & Performance</div>
+        </div>
+      </a>
+      <a href="#inventory" data-target="inventory" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#f1f5ff;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">📦</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Inventory</div>
+          <div style="font-size:12px;color:#64748b">Stock Levels</div>
+        </div>
+      </a>
+      <a href="#requests" data-target="requests" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#fff7ed;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">📝</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Requests</div>
+          <div style="font-size:12px;color:#64748b">Shop Needs</div>
+        </div>
+      </a>
+      <a href="#apepo" data-target="apepo" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#fef3c7;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">📊</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Audit / Payroll</div>
+          <div style="font-size:12px;color:#64748b">Employee Payments</div>
+        </div>
+      </a>
+      <a href="#employees" data-target="employees" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
+        <div style="width:56px;height:56px;border-radius:999px;background:#eef2ff;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:28px">👥</span>
+        </div>
+        <div style="text-align:center">
+          <div style="font-weight:600">Employees</div>
+          <div style="font-size:12px;color:#64748b">Staff Management</div>
+        </div>
+      </a>
+    </div>
+
+
+    <div id="store" class="owner-section" data-section="store" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <h3 class="section-title" style="margin:0 0 12px">Store Tasks</h3>
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:#166534;font-size:12px;margin-bottom:4px">Opening Completed</div>
+            <div style="font-size:22px;font-weight:700;color:#065f46">{{ $openingCompleted ?? 0 }}/{{ $openingTotal ?? 0 }}</div>
+          </div>
+          <div style="font-size:22px;color:#16a34a">✅</div>
+        </div>
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:#9a3412;font-size:12px;margin-bottom:4px">Closing Completed</div>
+            <div style="font-size:22px;font-weight:700;color:#7c2d12">{{ $closingCompleted ?? 0 }}/{{ $closingTotal ?? 0 }}</div>
+          </div>
+          <div style="font-size:22px;color:#ea580c">⏱️</div>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:#1e40af;font-size:12px;margin-bottom:4px">Kitchen Tasks</div>
+            <div style="font-size:22px;font-weight:700;color:#1d4ed8">{{ $kitchenTasks ?? 0 }}</div>
+          </div>
+          <div style="font-size:22px;color:#2563eb">👩‍🍳</div>
+        </div>
+        <div style="background:#fff7ed;border:1px solid #fde68a;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="color:#92400e;font-size:12px;margin-bottom:4px">Coffee Bar Tasks</div>
+            <div style="font-size:22px;font-weight:700;color:#b45309">{{ $coffeeBarTasks ?? 0 }}</div>
+          </div>
+          <div style="font-size:22px;color:#b45309">☕</div>
+        </div>
+      </div>
+
+      <div id="store-stations" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">
+          <button class="pill station-pill is-active" data-station="all" style="padding:6px 12px;border-radius:999px;border:1px solid #dbe2ff;background:#111827;color:#fff">All Stations</button>
+          <button class="pill station-pill" data-station="kitchen" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
+            <span style="font-size:14px">👩‍🍳</span>
+            <span>Kitchen</span>
+          </button>
+          <button class="pill station-pill" data-station="coffee" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
+            <span style="font-size:14px">☕</span>
+            <span>Coffee Bar</span>
+          </button>
+      </div>
+      <div id="store-toggle" style="position:relative;display:inline-flex;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:12px">
+        <div id="store-toggle-indicator" style="position:absolute;top:2px;left:2px;height:calc(100% - 4px);width:0;border-radius:999px;background:#111827;transition:all .2s ease"></div>
+        <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#111827;z-index:1">Opening Tasks</button>
+        <button class="tab-btn" data-tab="closing" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#111827;z-index:1">Closing Tasks</button>
+      </div>
+      <div id="store-task-list" style="background:#fff;border:1px solid #e3e3e0;border-radius:12px;padding:16px;margin-bottom:12px;display:grid;gap:8px">
+          @php
+            $renderTask = function($t){
+              $badge = $t['completed'] ? '<span style="background:#22c55e;color:#fff;padding:4px 8px;border-radius:999px;font-size:12px">Completed</span>' : '<span style="background:#e5e7eb;color:#111827;padding:4px 8px;border-radius:999px;font-size:12px">Pending</span>';
+              $loc = $t['location'] ?: 'Unassigned';
+              $time = $t['time'] ? \Carbon\Carbon::parse($t['time'])->format('g:i A') : '';
+              $emp = $t['employee'] ? ('By '. $t['employee']) : '';
+              $sub = trim(($emp.' '.($time?('at '.$time):'')));
+              return '<div class="store-task" data-location="'.strtolower($loc).'" style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e5e7eb;background:'.($t['completed'] ? '#ecfdf5' : '#fff').' ;border-radius:10px;padding:12px 14px">'
+                .'<div>'
+                  .'<div style="font-weight:600;color:#0f172a">'.e($t['title']).'</div>'
+                  .'<div style="font-size:12px;color:#6b7280">'.($sub ?: '&nbsp;').'</div>'
+                .'</div>'
+                .'<div style="display:flex;gap:8px;align-items:center">'
+                  .'<span style="background:#eef2ff;border:1px solid #dbe2ff;padding:4px 8px;border-radius:999px;font-size:12px">'.e($loc).'</span>'
+                  .$badge.
+                '</div>'
+              .'</div>';
+            };
+          @endphp
+          <div class="store-list" data-type="opening">
+            <div style="margin:4px 0 8px">
+              <div style="font-weight:600;color:#0f172a">Opening Tasks</div>
+              <div style="font-size:12px;color:#6b7280">{{ ($openingCompleted ?? 0) }} of {{ ($openingTotal ?? 0) }} completed</div>
+            </div>
+            @foreach(($openingTaskList ?? []) as $t)
+              {!! $renderTask($t) !!}
+            @endforeach
+          </div>
+          <div class="store-list" data-type="closing" style="display:none">
+            <div style="margin:4px 0 8px">
+              <div style="font-weight:600;color:#0f172a">Closing Tasks</div>
+              <div style="font-size:12px;color:#6b7280">{{ ($closingCompleted ?? 0) }} of {{ ($closingTotal ?? 0) }} completed</div>
+            </div>
+            @foreach(($closingTaskList ?? []) as $t)
+              {!! $renderTask($t) !!}
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+        <div>
+          <h4 style="margin:0 0 8px">Locations</h4>
+          <div style="border:1px solid #e3e3e0;border-radius:8px;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Name</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">QR Payload</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse(($locations ?? []) as $loc)
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $loc->name }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><code style="font-size:12px">{{ $loc->qrcode_payload }}</code></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.location.regen', ['id'=>$loc->id]) }}" style="display:inline">@csrf<button style="padding:6px 10px;border:1px solid #e3e3e0;border-radius:6px;background:#fff">Regenerate</button></form>
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.location.delete', ['id'=>$loc->id]) }}" style="display:inline;margin-left:6px">@csrf<button style="padding:6px 10px;background:#b91c1c;color:#fff;border-radius:6px">Delete</button></form>
+                  </td>
+                </tr>
+                @empty
+                <tr><td colspan="3" style="padding:8px;color:#706f6c">No locations yet.</td></tr>
+                @endforelse
+                <tr>
+                  <td colspan="3" style="padding:8px">
+                    <form id="owner-add-location" class="owner-ajax" method="POST" action="{{ route('owner.location.create') }}" style="display:flex;gap:8px;align-items:center">
+                      @csrf
+                      <input name="name" required placeholder="Add new location (e.g., Kitchen, Coffee Bar)" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+                      <button style="padding:8px 12px;background:#0891b2;color:#fff;border-radius:6px">Add</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin:0 0 8px">Task Location Mapping</h4>
+          <div style="border:1px solid #e3e3e0;border-radius:8px;overflow:auto;max-height:360px">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Task</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Type</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Location</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse(($ownerTasks ?? []) as $t)
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $t->title }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ ucfirst($t->type) }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
+                    <form class="owner-ajax task-location" method="POST" action="{{ route('owner.task.setLocation', ['id'=>$t->id]) }}" style="display:flex;gap:8px;align-items:center">
+                      @csrf
+                      <select name="location_id" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px">
+                        <option value="">Unassigned</option>
+                        @foreach(($locations ?? []) as $l)
+                          <option value="{{ $l->id }}" @if((int)$t->location_id === (int)$l->id) selected @endif>{{ $l->name }}</option>
+                        @endforeach
+                      </select>
+                      <button style="padding:6px 10px;border:1px solid #e3e3e0;border-radius:6px;background:#fff">Save</button>
+                    </form>
+                  </td>
+                </tr>
+                @empty
+                <tr><td colspan="3" style="padding:8px;color:#706f6c">No tasks found.</td></tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;color:#706f6c;font-size:12px">Assign each task to the correct physical location. Employees must scan the location QR when submitting proof.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sales-overview" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h2 class="section-title" style="margin:0 0 8px">Overview</h2>
       <div>Current Fund Balance: <strong>₱{{ number_format($fundBalance ?? 0, 2) }}</strong></div>
       <div>Total Expenses: <strong>₱{{ number_format($expensesTotal ?? 0, 2) }}</strong></div>
@@ -13,7 +244,7 @@
     </div>
 
   <div style="display:grid;gap:16px;grid-template-columns:2fr 1fr">
-      <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <div id="reports" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
         <h3 class="section-title" style="margin:0 0 8px">Recent Reports</h3>
         <div style="display:grid;gap:10px">
           @forelse($reports as $r)
@@ -45,7 +276,7 @@
         </div>
       </div>
 
-      <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <div id="sales" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
         <h3 class="section-title" style="margin:0 0 8px">Recent Expenses</h3>
         <div style="display:grid;gap:10px">
           @forelse($expenses as $e)
@@ -74,7 +305,7 @@
       </div>
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+    <div id="apepo" class="owner-section" data-section="apepo" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
       <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1.5fr 1fr 1fr auto">
         <div>
@@ -164,7 +395,7 @@
       </div>
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+    <div id="requests" class="owner-section" data-section="requests" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Requests</h3>
       <table style="width:100%;border-collapse:collapse">
         <thead>
@@ -199,7 +430,7 @@
       </table>
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+    <div id="inventory" class="owner-section" data-section="inventory" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Inventory</h3>
       <div style="display:grid;gap:10px">
         @forelse(($inventory ?? []) as $it)
@@ -230,11 +461,133 @@
         @endforelse
       </div>
     </div>
+
+    <div id="employees" class="owner-section" data-section="employees" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <h3 class="section-title" style="margin:0 0 8px">Employees</h3>
+      <div style="color:#706f6c">Manage staff assignments and performance. Coming soon.</div>
+    </div>
   </div>
   <script>
     (function(){
+      var nav = document.getElementById('owner-nav');
+      var welcome = document.getElementById('owner-welcome');
+      function showSection(key){
+        document.querySelectorAll('.owner-section').forEach(function(el){
+          el.style.display = (el.getAttribute('data-section') === key) ? '' : 'none';
+        });
+        if(nav){ nav.style.display = 'none'; }
+        if(welcome){ welcome.style.display = 'none'; }
+        var targetFirst = document.querySelector('.owner-section[data-section="'+key+'"]');
+        if(targetFirst){ targetFirst.scrollIntoView({ behavior:'smooth', block:'start' }); }
+      }
+      function backToMain(){
+        document.querySelectorAll('.owner-section').forEach(function(el){ el.style.display = 'none'; });
+        if(nav){ nav.style.display = 'grid'; }
+        if(welcome){ welcome.style.display = ''; }
+        history.replaceState(null, '', location.pathname); // clear hash
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if(nav){
+        nav.addEventListener('click', function(ev){
+          var a = ev.target.closest('a[data-target]');
+          if(!a) return;
+          ev.preventDefault();
+          var key = a.getAttribute('data-target');
+          location.hash = key; // keep deep-link; hashchange handler will call showSection
+        });
+      }
+      window.addEventListener('hashchange', function(){
+        var h = (location.hash||'').replace('#','');
+        if(h){ showSection(h); } else { backToMain(); }
+      });
+      if(location.hash){
+        var h = (location.hash||'').replace('#','');
+        if(h){ showSection(h); }
+      }
+
+      // Store tasks UI
+      var tabs = document.getElementById('store-toggle');
+      var lists = document.querySelectorAll('.store-list');
+      function applyToggleStyles(){
+        if(!tabs) return;
+        var ind = document.getElementById('store-toggle-indicator');
+        var btns = tabs.querySelectorAll('.tab-btn');
+        if(btns.length < 2) return;
+        var openingBtn = btns[0];
+        var closingBtn = btns[1];
+        var active = tabs.querySelector('.tab-btn.is-active') || openingBtn;
+        var isOpen = active.getAttribute('data-tab') === 'opening';
+        // Indicator sizing/position
+        if(ind){
+          ind.style.width = openingBtn.offsetWidth + 'px';
+          ind.style.left = isOpen ? '2px' : (openingBtn.offsetWidth + 4) + 'px';
+        }
+        // Text colors for visibility
+        openingBtn.style.color = isOpen ? '#fff' : '#111827';
+        closingBtn.style.color = isOpen ? '#111827' : '#fff';
+      }
+      function setActiveTab(tab){
+        if(!tabs) return;
+        tabs.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('is-active'); });
+        var btn = tabs.querySelector('.tab-btn[data-tab="'+tab+'"]');
+        if(btn){ btn.classList.add('is-active'); }
+        lists.forEach(function(el){ el.style.display = (el.getAttribute('data-type')===tab)?'':'none'; });
+        applyToggleStyles();
+        filterByStation();
+      }
+      if(tabs){
+        // Default to opening tab on load and ensure styles after layout
+        setActiveTab('opening');
+        setTimeout(applyToggleStyles, 0);
+        window.addEventListener('load', applyToggleStyles);
+        tabs.addEventListener('click', function(ev){
+          var btn = ev.target.closest('.tab-btn');
+          if(!btn) return;
+          ev.preventDefault();
+          setActiveTab(btn.getAttribute('data-tab'));
+        });
+        window.addEventListener('resize', function(){ applyToggleStyles(); });
+      }
+      var stationWrap = document.getElementById('store-stations');
+      function filterByStation(){
+        var active = stationWrap ? stationWrap.querySelector('.station-pill.is-active') : null;
+        var key = active ? active.getAttribute('data-station') : 'all';
+        var activeTab = (tabs && tabs.querySelector('.tab-btn.is-active')) ? tabs.querySelector('.tab-btn.is-active').getAttribute('data-tab') : 'opening';
+        var container = document.querySelector('.store-list[data-type="'+activeTab+'"]');
+        if(!container) return;
+        container.querySelectorAll('.store-task').forEach(function(card){
+          var loc = (card.getAttribute('data-location')||'').toLowerCase();
+          var show = (key==='all') || (loc.indexOf(key) !== -1);
+          card.style.display = show ? '' : 'none';
+        });
+      }
+      if(stationWrap){
+        stationWrap.addEventListener('click', function(ev){
+          var pill = ev.target.closest('.station-pill');
+          if(!pill) return;
+          ev.preventDefault();
+          stationWrap.querySelectorAll('.station-pill').forEach(function(p){ p.classList.remove('is-active'); p.style.background='#fff'; p.style.color=''; p.style.borderColor='#e5e7eb'; });
+          pill.classList.add('is-active'); pill.style.background='#111827'; pill.style.color='#fff'; pill.style.borderColor='#111827';
+          filterByStation();
+        });
+      }
+      filterByStation();
       function closestRow(el){ while(el && el.tagName && el.tagName.toLowerCase() !== 'tr'){ el = el.parentElement; } return el; }
       document.addEventListener('submit', async function(ev){
+        const ajaxForm = ev.target.closest('form.owner-ajax');
+        if(ajaxForm){
+          ev.preventDefault();
+          try {
+            const fd = new FormData(ajaxForm);
+            const res = await fetch(ajaxForm.action, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } });
+            if(!res.ok) throw new Error('Request failed');
+            if(ajaxForm.id === 'owner-add-location') { location.reload(); return; }
+            const locForm = ajaxForm.classList.contains('task-location');
+            if(locForm && window.toast){ window.toast('Task updated','success'); }
+            if(!locForm){ location.reload(); }
+          } catch(e){ ajaxForm.submit(); }
+          return;
+        }
         const form = ev.target.closest('form.owner-req-form');
         if(!form) return;
         ev.preventDefault();
