@@ -47,13 +47,30 @@
 
       <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
         <h3 class="section-title" style="margin:0 0 8px">Recent Expenses</h3>
-        <ul>
+        <div style="display:grid;gap:10px">
           @forelse($expenses as $e)
-            <li>₱{{ number_format(($e->amount ?? 0), 2) }} — {{ $e->note }} <span style="color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</span></li>
+            <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+              <table style="width:100%;border-collapse:collapse">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
+                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
+                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:8px">₱{{ number_format(($e->amount ?? 0), 2) }}</td>
+                    <td style="padding:8px">{{ $e->note }}</td>
+                    <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           @empty
-            <li style="color:#706f6c">No expenses yet.</li>
+            <div style="color:#706f6c">No expenses yet.</div>
           @endforelse
-        </ul>
+        </div>
       </div>
     </div>
 
@@ -75,11 +92,11 @@
               <td style="border-bottom:1px solid #f0f0ef;padding:8px">{{ $q->item }}</td>
               <td style="border-bottom:1px solid #f0f0ef;padding:8px">{{ $q->quantity }}</td>
               <td style="border-bottom:1px solid #f0f0ef;padding:8px">{{ ucfirst($q->priority) }}</td>
-              <td style="border-bottom:1px solid #f0f0ef;padding:8px">{{ ucfirst($q->status) }}</td>
+              <td class="req-status" style="border-bottom:1px solid #f0f0ef;padding:8px">{{ ucfirst($q->status) }}</td>
               <td style="border-bottom:1px solid #f0f0ef;padding:8px">
                 @if($q->status === 'pending')
-                  <form method="POST" action="{{ route('owner.request.approve', ['id' => $q->id]) }}" style="display:inline">@csrf<button style="padding:6px 10px;background:#16a34a;color:#fff;border-radius:6px">Approve</button></form>
-                  <form method="POST" action="{{ route('owner.request.deny', ['id' => $q->id]) }}" style="display:inline;margin-left:6px">@csrf<button style="padding:6px 10px;background:#b91c1c;color:#fff;border-radius:6px">Deny</button></form>
+                  <form class="owner-req-form" data-result="approved" method="POST" action="{{ route('owner.request.approve', ['id' => $q->id]) }}" style="display:inline">@csrf<button style="padding:6px 10px;background:#16a34a;color:#fff;border-radius:6px" data-confirm="Approve this request?">Approve</button></form>
+                  <form class="owner-req-form" data-result="denied" method="POST" action="{{ route('owner.request.deny', ['id' => $q->id]) }}" style="display:inline;margin-left:6px">@csrf<button style="padding:6px 10px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Deny this request?">Deny</button></form>
                 @else
                   <span style="color:#706f6c">No actions</span>
                 @endif
@@ -92,4 +109,38 @@
       </table>
     </div>
   </div>
+  <script>
+    (function(){
+      function closestRow(el){ while(el && el.tagName && el.tagName.toLowerCase() !== 'tr'){ el = el.parentElement; } return el; }
+      document.addEventListener('submit', async function(ev){
+        const form = ev.target.closest('form.owner-req-form');
+        if(!form) return;
+        ev.preventDefault();
+        const btn = form.querySelector('button');
+        const msg = (btn && btn.getAttribute('data-confirm')) || 'Are you sure?';
+        let proceed = true;
+        if(window.modalConfirm){
+          try { proceed = await window.modalConfirm(msg, { title: 'Please confirm' }); } catch(_) { proceed = false; }
+        } else {
+          proceed = window.confirm(msg);
+        }
+        if(!proceed) return;
+        try {
+          const fd = new FormData(form);
+          const res = await fetch(form.action, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } });
+          if(!res.ok){ throw new Error('Request failed'); }
+          const tr = closestRow(form);
+          const statusCell = tr ? tr.querySelector('.req-status') : null;
+          const actionsCell = tr ? tr.querySelector('td:last-child') : null;
+          const result = (form.getAttribute('data-result') || '').toLowerCase();
+          if(statusCell){ statusCell.textContent = result ? (result.charAt(0).toUpperCase()+result.slice(1)) : 'Updated'; }
+          if(actionsCell){ actionsCell.innerHTML = '<span style="color:#706f6c">No actions</span>'; }
+          if(window.toast){ window.toast('Request '+(result||'updated')+'.','success'); }
+        } catch(err){
+          // Fallback: normal submission
+          form.submit();
+        }
+      });
+    })();
+  </script>
 @endsection
