@@ -116,7 +116,24 @@ Route::get('/owner', function (Request $request) {
     $expensesTotal = (float) (DB::table('expenses')->sum('amount') ?? 0);
     $availableBalance = $fundBalance - $expensesTotal;
     $requests = DB::table('requests')->orderByDesc('id')->limit(50)->get();
-    $apepo = DB::table('apepo_reports')->orderByDesc('id')->limit(20)->get();
+    // Filters for APEPO list only
+    $apepoQuery = DB::table('apepo_reports');
+    $managerFilter = trim((string) $request->query('manager'));
+    $from = $request->query('from');
+    $to = $request->query('to');
+    if ($managerFilter !== '') {
+        $apepoQuery->where('manager_username', $managerFilter);
+    }
+    if (!empty($from) || !empty($to)) {
+        try {
+            $fromDt = $from ? \Carbon\Carbon::parse($from)->startOfDay() : \Carbon\Carbon::create(1970,1,1,0,0,0);
+            $toDt = $to ? \Carbon\Carbon::parse($to)->endOfDay() : \Carbon\Carbon::now()->endOfDay();
+            $apepoQuery->whereBetween('created_at', [$fromDt, $toDt]);
+        } catch (\Throwable $e) {
+            // ignore parse errors, fall back to no date filter
+        }
+    }
+    $apepo = $apepoQuery->orderByDesc('id')->limit(20)->get();
 
     return view('owner.index', [
         'reports' => $reports,
