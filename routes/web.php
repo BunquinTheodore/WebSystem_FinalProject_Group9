@@ -12,8 +12,20 @@ use App\Models\TaskAssignment;
 use App\Models\TaskProof;
 
 Route::get('/', function (Request $request) {
-    if ($request->session()->has('role')) {
-        return redirect('/dashboard');
+    $role = $request->session()->get('role');
+    $username = $request->session()->get('username');
+    if ($role && $username) {
+        return match ((string) $role) {
+            'owner' => redirect()->route('owner.home'),
+            'manager' => redirect()->route('manager.home'),
+            'employee' => redirect(url('/employee/tasks/opening')),
+            default => redirect('/dashboard'),
+        };
+    }
+    // If there is a partial session (role without username), reset it
+    if ($role xor $username) {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
     return view('auth.login');
 });
@@ -47,8 +59,20 @@ Route::post('/register', function (Request $request) {
 })->name('register');
 
 Route::get('/login', function (Request $request) {
-    if ($request->session()->has('role')) {
-        return redirect('/dashboard');
+    $role = $request->session()->get('role');
+    $username = $request->session()->get('username');
+    if ($role && $username) {
+        return match ((string) $role) {
+            'owner' => redirect()->route('owner.home'),
+            'manager' => redirect()->route('manager.home'),
+            'employee' => redirect(url('/employee/tasks/opening')),
+            default => redirect('/dashboard'),
+        };
+    }
+    // clear partial session on login page too
+    if ($role xor $username) {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
     return view('auth.login');
 })->name('login');
@@ -74,7 +98,11 @@ Route::post('/login', function (Request $request) {
     if ($user && Hash::check($password, $user->password)) {
         $request->session()->put('username', $user->username);
         $request->session()->put('role', $user->role);
-        return redirect('/dashboard');
+        return match ($user->role) {
+            'owner' => redirect()->route('owner.home'),
+            'manager' => redirect()->route('manager.home'),
+            default => redirect(url('/employee/tasks/opening')),
+        };
     }
 
     // Fallback to demo accounts (optional)
@@ -86,7 +114,11 @@ Route::post('/login', function (Request $request) {
     if (isset($demo[$login]) && $password === $demo[$login]['pass']) {
         $request->session()->put('username', $login);
         $request->session()->put('role', $demo[$login]['role']);
-        return redirect('/dashboard');
+        return match ($demo[$login]['role']) {
+            'owner' => redirect()->route('owner.home'),
+            'manager' => redirect()->route('manager.home'),
+            default => redirect(url('/employee/tasks/opening')),
+        };
     }
 
     return back()->withErrors(['auth' => 'Invalid credentials'])->withInput();
@@ -491,9 +523,16 @@ Route::get('/employee/tasks/{type}', function (Request $request, string $type) {
     }
     abort_unless(in_array($type, ['opening','closing']), 404);
 
+    $employee = (string) $request->session()->get('username');
+    $completedIds = TaskAssignment::where('employee_username', $employee)
+        ->where('status', 'completed')
+        ->whereDate('created_at', now()->toDateString())
+        ->pluck('task_id');
+
     $tasks = Task::with(['checklistItems', 'location'])
         ->where('type', $type)
         ->where('active', true)
+        ->whereNotIn('id', $completedIds)
         ->orderBy('id')
         ->get();
 
@@ -549,6 +588,14 @@ Route::post('/employee/proof', function (Request $request) {
     ]);
 
     $taskType = Task::find($data['task_id'])?->type ?? 'opening';
-
+    // If this is an AJAX/JSON request, respond with JSON so the UI can fade out without reload
+    if ($request->expectsJson() || $request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+        return response()->json([
+            'ok' => true,
+            'assignment_id' => $assignment->id,
+            'photo_path' => asset('storage/'.$path),
+            'task_type' => $taskType,
+        ]);
+    }
     return redirect(url('/employee/tasks/'.$taskType))->with('status', 'Proof submitted');
 })->name('employee.proof');

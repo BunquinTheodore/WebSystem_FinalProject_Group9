@@ -3,23 +3,134 @@
 @section('title', 'Tasks - '.ucfirst($type))
 
 @section('content')
-  <div class="card" style="max-width:880px;margin:0 auto;padding:16px">
-    <h1 class="section-title" style="margin:0 0 12px">{{ ucfirst($type) }} Tasks</h1>
-    <ul style="display:grid;gap:10px">
-      @foreach($tasks as $task)
-        <li style="border:1px solid #e3e3e0;border-radius:8px;padding:12px">
-          <div style="font-weight:600">{{ $task->title }}</div>
-          <div style="color:#706f6c">{{ $task->location?->name }}</div>
-          <ul style="margin-top:6px;color:#1b1b18">
-            @foreach($task->checklistItems as $item)
-              <li>- {{ $item->label }}</li>
-            @endforeach
-          </ul>
-          <div style="margin-top:8px;display:flex;gap:8px">
-            <a href="{{ route('scan', ['task_id' => $task->id]) }}">Scan</a>
-          </div>
-        </li>
-      @endforeach
-    </ul>
+  <style>
+    .tabs-wrap{display:flex;justify-content:center;margin:10px 0 16px}
+    .tabs{display:inline-flex;background:#e6f6fa;border-radius:999px;padding:4px;gap:4px}
+    .tab{padding:8px 14px;border-radius:999px;border:1px solid transparent;background:#ffffff;color:#0b7285;font-weight:600}
+    .tab.inactive{background:transparent;border-color:#cce9f1;color:#0b7285}
+    .tab:hover{filter:brightness(0.98)}
+    .panel{position:relative;overflow:hidden}
+    .anim{animation-duration:220ms;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+    @keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideOutLeft{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-8px)}}
+    @keyframes slideOutRight{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(8px)}}
+    .in{animation-name:slideIn}
+    .out-left{animation-name:slideOutLeft}
+    .out-right{animation-name:slideOutRight}
+    .task{border:1px solid #e3e3e0;border-radius:12px;padding:12px;background:#fff;display:flex;align-items:flex-start;gap:12px}
+    .task .badge{margin-left:auto;background:#0ea5b7;color:#fff;border:1px solid #0ea5b7;border-radius:8px;padding:8px 10px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+    .muted{color:#706f6c}
+    .section-box{border:1px solid #e3e3e0;border-radius:12px;background:#fff;padding:16px}
+    .fade{transition:opacity .25s ease, transform .25s ease}
+    .fade.is-hide{opacity:0;transform:translateY(6px)}
+  </style>
+
+  <div class="card" style="max-width:1000px;margin:0 auto;padding:16px 16px 24px">
+    <div class="tabs-wrap">
+      <div class="tabs" role="tablist" aria-label="Task Type">
+        <a id="tab-opening" class="tab {{ $type==='opening' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='opening' ? 'true':'false' }}" href="{{ url('/employee/tasks/opening') }}">Opening Tasks</a>
+        <a id="tab-closing" class="tab {{ $type==='closing' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='closing' ? 'true':'false' }}" href="{{ url('/employee/tasks/closing') }}">Closing Tasks</a>
+      </div>
+    </div>
+
+    <div id="panel" class="panel anim in section-box">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <h2 class="section-title" style="margin:0">{{ ucfirst($type) }} Tasks</h2>
+        <span class="muted" style="font-size:14px">0 of {{ count($tasks) }} completed</span>
+      </div>
+
+      <ul style="display:grid;gap:10px">
+        @foreach($tasks as $task)
+          @php($subtitle = optional($task->checklistItems->first())->label)
+          <li class="task">
+            <div style="margin-top:3px;width:20px;height:20px;border:1px solid #dcdcdc;border-radius:999px;background:#fff;flex:0 0 20px"></div>
+            <div style="flex:1 1 auto">
+              <div style="font-weight:600">{{ $task->title }}</div>
+              <div class="muted" style="font-size:13px">{{ $subtitle }}</div>
+            </div>
+            <button class="badge pick-photo" data-task-id="{{ $task->id }}" type="button" title="Add photo">
+              <span style="font-size:16px">📷</span><span style="font-weight:600">Photo</span>
+            </button>
+          </li>
+        @endforeach
+      </ul>
+    </div>
   </div>
+
+  <script>
+    (function(){
+      const panel = document.getElementById('panel');
+      const opening = document.getElementById('tab-opening');
+      const closing = document.getElementById('tab-closing');
+      // Hidden file input and form for uploading base64 image
+      const file = document.createElement('input');
+      file.type = 'file';
+      file.accept = 'image/*';
+      file.style.display = 'none';
+      document.body.appendChild(file);
+
+      let currentTaskId = null;
+      const CSRF = '{{ csrf_token() }}';
+
+      async function submitImage(dataUrl, triggerBtn){
+        const li = triggerBtn ? triggerBtn.closest('li') : null;
+        try{
+          const res = await fetch('{{ route('employee.proof') }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': CSRF,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({
+              task_id: currentTaskId,
+              qr_payload: 'manual-upload',
+              photo_base64: dataUrl,
+            })
+          });
+          if(!res.ok){ throw new Error('Upload failed'); }
+          const json = await res.json();
+          if(li){
+            li.classList.add('fade','is-hide');
+            setTimeout(()=>{ li.remove(); }, 260);
+          }
+        }catch(e){
+          // fallback: navigate to scan page
+          window.location.href = '{{ route('scan') }}?task_id=' + encodeURIComponent(currentTaskId);
+        }
+      }
+
+      file.addEventListener('change', function(){
+        const f = this.files && this.files[0];
+        if(!f) return;
+        const reader = new FileReader();
+        const btnRef = document.querySelector('.pick-photo[data-task-id="'+currentTaskId+'"]');
+        reader.onload = function(e){ submitImage(e.target.result, btnRef); };
+        reader.readAsDataURL(f);
+        // Optional: reset value so same file can be re-picked later
+        this.value = '';
+      });
+
+      document.addEventListener('click', function(e){
+        const btn = e.target.closest('.pick-photo');
+        if(!btn) return;
+        e.preventDefault();
+        currentTaskId = btn.getAttribute('data-task-id');
+        file.click();
+      });
+      function go(el, dir){
+        if(!panel) return;
+        panel.classList.remove('in');
+        panel.classList.add(dir === 'left' ? 'out-left' : 'out-right');
+        setTimeout(()=>{ window.location.href = el.getAttribute('href'); }, 180);
+      }
+      if(opening){ opening.addEventListener('click', function(e){
+        if(this.classList.contains('inactive')){ e.preventDefault(); go(this, 'right'); }
+      }); }
+      if(closing){ closing.addEventListener('click', function(e){
+        if(this.classList.contains('inactive')){ e.preventDefault(); go(this, 'left'); }
+      }); }
+    })();
+  </script>
 @endsection
