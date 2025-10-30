@@ -527,18 +527,25 @@ Route::get('/employee/tasks/{type}', function (Request $request, string $type) {
     $completedIds = TaskAssignment::where('employee_username', $employee)
         ->where('status', 'completed')
         ->whereDate('created_at', now()->toDateString())
-        ->pluck('task_id');
+        ->pluck('task_id')
+        ->all();
+
+    $includeCompleted = (bool) $request->boolean('include_completed');
 
     $tasks = Task::with(['checklistItems', 'location'])
         ->where('type', $type)
         ->where('active', true)
-        ->whereNotIn('id', $completedIds)
+        ->when(!$includeCompleted && !empty($completedIds), function($q) use ($completedIds){
+            $q->whereNotIn('id', $completedIds);
+        })
         ->orderBy('id')
         ->get();
 
     return view('employee.tasks', [
         'type' => $type,
         'tasks' => $tasks,
+        'completedIds' => $completedIds,
+        'includeCompleted' => $includeCompleted,
     ]);
 });
 

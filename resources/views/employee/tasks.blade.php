@@ -23,6 +23,11 @@
     .section-box{border:1px solid #e3e3e0;border-radius:12px;background:#fff;padding:16px}
     .fade{transition:opacity .25s ease, transform .25s ease}
     .fade.is-hide{opacity:0;transform:translateY(6px)}
+    .completed{opacity:.55}
+    .controls{display:flex;gap:10px;align-items:center;margin-bottom:8px;justify-content:space-between}
+    .toggle{display:inline-flex;gap:8px;align-items:center;font-size:14px}
+    .toast{position:fixed;top:16px;right:16px;background:#0ea5b7;color:#fff;padding:10px 14px;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.12);opacity:0;transform:translateY(-6px);transition:opacity .2s ease, transform .2s ease;z-index:50}
+    .toast.show{opacity:1;transform:translateY(0)}
   </style>
 
   <div class="card" style="max-width:1000px;margin:0 auto;padding:16px 16px 24px">
@@ -34,15 +39,19 @@
     </div>
 
     <div id="panel" class="panel anim in section-box">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div class="controls">
         <h2 class="section-title" style="margin:0">{{ ucfirst($type) }} Tasks</h2>
-        <span class="muted" style="font-size:14px">0 of {{ count($tasks) }} completed</span>
+        <label class="toggle">
+          <input id="toggle-completed" type="checkbox" {{ $includeCompleted ? 'checked' : '' }}>
+          <span class="muted">Show completed</span>
+        </label>
       </div>
 
       <ul style="display:grid;gap:10px">
         @foreach($tasks as $task)
+          @php($isDone = in_array($task->id, $completedIds ?? []))
           @php($subtitle = optional($task->checklistItems->first())->label)
-          <li class="task">
+          <li class="task {{ $isDone ? 'completed' : '' }}">
             <div style="margin-top:3px;width:20px;height:20px;border:1px solid #dcdcdc;border-radius:999px;background:#fff;flex:0 0 20px"></div>
             <div style="flex:1 1 auto">
               <div style="font-weight:600">{{ $task->title }}</div>
@@ -56,6 +65,8 @@
       </ul>
     </div>
   </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Uploaded</div>
 
   <script>
     (function(){
@@ -72,9 +83,35 @@
       let currentTaskId = null;
       const CSRF = '{{ csrf_token() }}';
 
+      async function compressImage(dataUrl, maxW=1280, maxH=1280, quality=0.8){
+        return new Promise((resolve)=>{
+          const img = new Image();
+          img.onload = function(){
+            let {width:w, height:h} = img;
+            const ratio = Math.min(maxW / w, maxH / h, 1);
+            const cw = Math.round(w * ratio), ch = Math.round(h * ratio);
+            const canvas = document.createElement('canvas');
+            canvas.width = cw; canvas.height = ch;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cw, ch);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+          };
+          img.src = dataUrl;
+        });
+      }
+
+      function showToast(){
+        const t = document.getElementById('toast');
+        if(!t) return;
+        t.classList.add('show');
+        setTimeout(()=> t.classList.remove('show'), 1500);
+      }
+
       async function submitImage(dataUrl, triggerBtn){
         const li = triggerBtn ? triggerBtn.closest('li') : null;
         try{
+          // compress before sending
+          const compressed = await compressImage(dataUrl, 1280, 1280, 0.82);
           const res = await fetch('{{ route('employee.proof') }}', {
             method: 'POST',
             headers: {
@@ -86,7 +123,7 @@
             body: JSON.stringify({
               task_id: currentTaskId,
               qr_payload: 'manual-upload',
-              photo_base64: dataUrl,
+              photo_base64: compressed,
             })
           });
           if(!res.ok){ throw new Error('Upload failed'); }
@@ -95,6 +132,7 @@
             li.classList.add('fade','is-hide');
             setTimeout(()=>{ li.remove(); }, 260);
           }
+          showToast();
         }catch(e){
           // fallback: navigate to scan page
           window.location.href = '{{ route('scan') }}?task_id=' + encodeURIComponent(currentTaskId);
@@ -119,6 +157,17 @@
         currentTaskId = btn.getAttribute('data-task-id');
         file.click();
       });
+
+      // toggle completed
+      const toggle = document.getElementById('toggle-completed');
+      if(toggle){
+        toggle.addEventListener('change', function(){
+          const url = new URL(window.location.href);
+          if(this.checked){ url.searchParams.set('include_completed', '1'); }
+          else { url.searchParams.delete('include_completed'); }
+          window.location.href = url.toString();
+        });
+      }
       function go(el, dir){
         if(!panel) return;
         panel.classList.remove('in');
