@@ -113,8 +113,8 @@
           </button>
       </div>
       <div id="store-toggle" style="position:relative;display:inline-flex;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:12px">
-        <div id="store-toggle-indicator" style="position:absolute;top:2px;left:2px;height:calc(100% - 4px);width:0;border-radius:999px;background:#111827;transition:all .2s ease"></div>
-        <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#111827;z-index:1">Opening Tasks</button>
+        <div id="store-toggle-indicator" style="position:absolute;top:2px;left:2px;height:calc(100% - 4px);width:50%;border-radius:999px;background:#111827;transition:all .2s ease"></div>
+        <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#fff;z-index:1">Opening Tasks</button>
         <button class="tab-btn" data-tab="closing" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#111827;z-index:1">Closing Tasks</button>
       </div>
       <div id="store-task-list" style="background:#fff;border:1px solid #e3e3e0;border-radius:12px;padding:16px;margin-bottom:12px;display:grid;gap:8px">
@@ -158,150 +158,79 @@
         </div>
       </div>
 
+      </div>
+    </div>
+
+    <div id="sales-overview" class="owner-section" data-section="sales" style="display:none;background:#f8fffe;border:1px solid #daf1ee;padding:16px;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#e7fff9;border:1px solid #c8ede7">💰</div>
         <div>
-          <h4 style="margin:0 0 8px">Locations</h4>
-          <div style="border:1px solid #e3e3e0;border-radius:8px;overflow:hidden">
+          <h2 class="section-title" style="margin:0;color:#0f172a">Sales & Reports</h2>
+          <div style="font-size:12px;color:#6b7280">Financial and operational reports</div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:8px">
+        <div style="background:#effafc;border:1px solid #ccebf4;border-radius:12px;padding:14px">
+          <div style="font-weight:600;color:#0f172a">Opening Shift</div>
+          <div style="font-size:12px;color:#64748b;margin-bottom:8px">Morning financial summary</div>
+          <div style="display:grid;gap:8px">
+            <div style="display:flex;justify-content:space-between;border:1px solid #e9f4f8;background:#fff;border-radius:8px;padding:8px 10px"><span>Cash</span><strong>₱{{ number_format(($openingSales->cash ?? 0), 0) }}</strong></div>
+            <div style="display:flex;justify-content:space-between;border:1px solid #e9f4f8;background:#fff;border-radius:8px;padding:8px 10px"><span>Digital Wallet</span><strong>₱{{ number_format(($openingSales->wallet ?? 0), 0) }}</strong></div>
+            <div style="display:flex;justify-content:space-between;border:1px solid #e9f4f8;background:#fff;border-radius:8px;padding:8px 10px"><span>Bank Amount</span><strong>₱{{ number_format(($openingSales->bank ?? 0), 0) }}</strong></div>
+            <div style="border-top:2px solid #c9e8f3;margin:2px 0"></div>
+            <div style="display:flex;justify-content:space-between;color:#0f172a"><span>Total</span><strong>₱{{ number_format(($openingSales->total ?? 0), 0) }}</strong></div>
+          </div>
+        </div>
+        <div style="background:#fff8ef;border:1px solid #fde9cc;border-radius:12px;padding:14px">
+          <div style="font-weight:600;color:#7a3f00">Closing Shift</div>
+          <div style="font-size:12px;color:#9a6700;margin-bottom:8px">Evening financial summary</div>
+          <div style="display:grid;gap:8px">
+            <div style="display:flex;justify-content:space-between;border:1px solid #feefd8;background:#fff;border-radius:8px;padding:8px 10px"><span>Cash</span><strong>₱{{ number_format(($closingSales->cash ?? 0), 0) }}</strong></div>
+            <div style="display:flex;justify-content:space-between;border:1px solid #feefd8;background:#fff;border-radius:8px;padding:8px 10px"><span>Digital Wallet</span><strong>₱{{ number_format(($closingSales->wallet ?? 0), 0) }}</strong></div>
+            <div style="display:flex;justify-content:space-between;border:1px solid #feefd8;background:#fff;border-radius:8px;padding:8px 10px"><span>Bank Amount</span><strong>₱{{ number_format(($closingSales->bank ?? 0), 0) }}</strong></div>
+            <div style="border-top:2px solid #f6d5a7;margin:2px 0"></div>
+            <div style="display:flex;justify-content:space-between;color:#7a3f00"><span>Total</span><strong>₱{{ number_format(($closingSales->total ?? 0), 0) }}</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;background:#f0fff8;border:1px solid #c8f1dd;border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:14px;color:#047857">Total Daily Earnings</div>
+        <div style="font-size:24px;font-weight:700;color:#047857">₱{{ number_format(($dailyEarnings ?? 0), 0) }}</div>
+      </div>
+    </div>
+
+    <!-- Recent Reports below header -->
+    <div id="reports" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
+      <h3 class="section-title" style="margin:0 0 8px">Recent Reports</h3>
+      <div style="display:grid;gap:10px">
+        @forelse($reports as $r)
+          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
             <table style="width:100%;border-collapse:collapse">
               <thead>
                 <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Name</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">QR Payload</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Actions</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Shift</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Cash (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Wallet (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Bank (₱)</th>
+                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
                 </tr>
               </thead>
               <tbody>
-                @forelse(($locations ?? []) as $loc)
                 <tr>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $loc->name }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><code style="font-size:12px">{{ $loc->qrcode_payload }}</code></td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.location.regen', ['id'=>$loc->id]) }}" style="display:inline">@csrf<button style="padding:6px 10px;border:1px solid #e3e3e0;border-radius:6px;background:#fff">Regenerate</button></form>
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.location.delete', ['id'=>$loc->id]) }}" style="display:inline;margin-left:6px">@csrf<button style="padding:6px 10px;background:#b91c1c;color:#fff;border-radius:6px">Delete</button></form>
-                  </td>
-                </tr>
-                @empty
-                <tr><td colspan="3" style="padding:8px;color:#706f6c">No locations yet.</td></tr>
-                @endforelse
-                <tr>
-                  <td colspan="3" style="padding:8px">
-                    <form id="owner-add-location" class="owner-ajax" method="POST" action="{{ route('owner.location.create') }}" style="display:flex;gap:8px;align-items:center">
-                      @csrf
-                      <input name="name" required placeholder="Add new location (e.g., Kitchen, Coffee Bar)" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-                      <button style="padding:8px 12px;background:#0891b2;color:#fff;border-radius:6px">Add</button>
-                    </form>
-                  </td>
+                  <td style="padding:8px">{{ strtoupper($r->shift) }}</td>
+                  <td style="padding:8px">₱{{ number_format($r->cash,2) }}</td>
+                  <td style="padding:8px">₱{{ number_format($r->wallet,2) }}</td>
+                  <td style="padding:8px">₱{{ number_format($r->bank,2) }}</td>
+                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div>
-          <h4 style="margin:0 0 8px">Task Location Mapping</h4>
-          <div style="border:1px solid #e3e3e0;border-radius:8px;overflow:auto;max-height:360px">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Task</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Type</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Location</th>
-                </tr>
-              </thead>
-              <tbody>
-                @forelse(($ownerTasks ?? []) as $t)
-                <tr>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $t->title }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ ucfirst($t->type) }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <form class="owner-ajax task-location" method="POST" action="{{ route('owner.task.setLocation', ['id'=>$t->id]) }}" style="display:flex;gap:8px;align-items:center">
-                      @csrf
-                      <select name="location_id" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px">
-                        <option value="">Unassigned</option>
-                        @foreach(($locations ?? []) as $l)
-                          <option value="{{ $l->id }}" @if((int)$t->location_id === (int)$l->id) selected @endif>{{ $l->name }}</option>
-                        @endforeach
-                      </select>
-                      <button style="padding:6px 10px;border:1px solid #e3e3e0;border-radius:6px;background:#fff">Save</button>
-                    </form>
-                  </td>
-                </tr>
-                @empty
-                <tr><td colspan="3" style="padding:8px;color:#706f6c">No tasks found.</td></tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
-          <div style="margin-top:8px;color:#706f6c;font-size:12px">Assign each task to the correct physical location. Employees must scan the location QR when submitting proof.</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="sales-overview" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h2 class="section-title" style="margin:0 0 8px">Overview</h2>
-      <div>Current Fund Balance: <strong>₱{{ number_format($fundBalance ?? 0, 2) }}</strong></div>
-      <div>Total Expenses: <strong>₱{{ number_format($expensesTotal ?? 0, 2) }}</strong></div>
-      <div>Available Balance: <strong>₱{{ number_format($availableBalance ?? 0, 2) }}</strong></div>
-    </div>
-
-  <div style="display:grid;gap:16px;grid-template-columns:2fr 1fr">
-      <div id="reports" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-        <h3 class="section-title" style="margin:0 0 8px">Recent Reports</h3>
-        <div style="display:grid;gap:10px">
-          @forelse($reports as $r)
-            <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-              <table style="width:100%;border-collapse:collapse">
-                <thead>
-                  <tr>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Shift</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Cash (₱)</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Wallet (₱)</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Bank (₱)</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="padding:8px">{{ strtoupper($r->shift) }}</td>
-                    <td style="padding:8px">₱{{ number_format($r->cash,2) }}</td>
-                    <td style="padding:8px">₱{{ number_format($r->wallet,2) }}</td>
-                    <td style="padding:8px">₱{{ number_format($r->bank,2) }}</td>
-                    <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          @empty
-            <div style="color:#706f6c">No reports yet.</div>
-          @endforelse
-        </div>
-      </div>
-
-      <div id="sales" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-        <h3 class="section-title" style="margin:0 0 8px">Recent Expenses</h3>
-        <div style="display:grid;gap:10px">
-          @forelse($expenses as $e)
-            <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-              <table style="width:100%;border-collapse:collapse">
-                <thead>
-                  <tr>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
-                    <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="padding:8px">₱{{ number_format(($e->amount ?? 0), 2) }}</td>
-                    <td style="padding:8px">{{ $e->note }}</td>
-                    <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          @empty
-            <div style="color:#706f6c">No expenses yet.</div>
-          @endforelse
-        </div>
+        @empty
+          <div style="color:#706f6c">No reports yet.</div>
+        @endforelse
       </div>
     </div>
 

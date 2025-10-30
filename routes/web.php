@@ -202,6 +202,31 @@ Route::get('/owner', function (Request $request) {
         ->where('task_assignments.status','completed')
         ->whereDate('task_assignments.updated_at', $today)
         ->count();
+
+    // Sales aggregates per shift (today)
+    $openAgg = DB::table('manager_reports')
+        ->whereDate('created_at', $today)
+        ->where('shift', 'opening')
+        ->selectRaw('COALESCE(SUM(cash),0) as cash, COALESCE(SUM(wallet),0) as wallet, COALESCE(SUM(bank),0) as bank')
+        ->first();
+    $closeAgg = DB::table('manager_reports')
+        ->whereDate('created_at', $today)
+        ->where('shift', 'closing')
+        ->selectRaw('COALESCE(SUM(cash),0) as cash, COALESCE(SUM(wallet),0) as wallet, COALESCE(SUM(bank),0) as bank')
+        ->first();
+    $openingSales = (object) [
+        'cash' => (float) ($openAgg->cash ?? 0),
+        'wallet' => (float) ($openAgg->wallet ?? 0),
+        'bank' => (float) ($openAgg->bank ?? 0),
+    ];
+    $openingSales->total = (float) ($openingSales->cash + $openingSales->wallet + $openingSales->bank);
+    $closingSales = (object) [
+        'cash' => (float) ($closeAgg->cash ?? 0),
+        'wallet' => (float) ($closeAgg->wallet ?? 0),
+        'bank' => (float) ($closeAgg->bank ?? 0),
+    ];
+    $closingSales->total = (float) ($closingSales->cash + $closingSales->wallet + $closingSales->bank);
+    $dailyEarnings = (float) ($openingSales->total + $closingSales->total);
     $kitchenTasks = (int) DB::table('tasks')
         ->leftJoin('locations','tasks.location_id','=','locations.id')
         ->where('tasks.active', true)
@@ -291,6 +316,9 @@ Route::get('/owner', function (Request $request) {
         'ownerTasks' => $ownerTasks,
         'openingTaskList' => $openingList,
         'closingTaskList' => $closingList,
+        'openingSales' => $openingSales,
+        'closingSales' => $closingSales,
+        'dailyEarnings' => $dailyEarnings,
     ]);
 })->name('owner.home');
 
