@@ -301,13 +301,35 @@
           }
           return null;
         }
+        function animateRemove(el){
+          if(!el) return false;
+          try {
+            const h = el.getBoundingClientRect().height;
+            el.style.boxSizing = 'border-box';
+            el.style.height = h + 'px';
+            el.style.transition = 'height 180ms ease, opacity 160ms ease, transform 160ms ease, margin 160ms ease, padding 160ms ease';
+            // Force reflow
+            void el.offsetHeight;
+            el.style.opacity = '0';
+            el.style.transform = 'scale(0.98)';
+            el.style.height = '0px';
+            el.style.marginTop = '0px';
+            el.style.marginBottom = '0px';
+            el.style.paddingTop = '0px';
+            el.style.paddingBottom = '0px';
+            setTimeout(function(){ if(el && el.parentElement){ el.parentElement.removeChild(el); } }, 220);
+            return true;
+          } catch(_) { return false; }
+        }
         async function handleDelete(form){
           try{
             const fd = new FormData(form);
             const res = await fetch(form.action, { method: 'POST', body: fd, headers: { "X-Requested-With":"XMLHttpRequest" } });
             if(!res.ok) throw new Error('Delete failed');
             const el = findEntryContainer(form);
-            if(el && el.parentElement){ el.parentElement.removeChild(el); }
+            if(!animateRemove(el)){
+              if(el && el.parentElement){ el.parentElement.removeChild(el); }
+            }
             try { await refreshTotals(); } catch(e){}
               if(window.toast){ window.toast('Removed. Totals updated.','success'); }
           }catch(err){ form.submit(); }
