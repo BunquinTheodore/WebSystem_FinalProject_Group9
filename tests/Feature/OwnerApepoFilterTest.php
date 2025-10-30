@@ -60,4 +60,28 @@ class OwnerApepoFilterTest extends TestCase
         $resp->assertSeeText('Recent report');
         $resp->assertDontSeeText('Old report');
     }
+
+    public function test_owner_filter_supports_partial_manager_match(): void
+    {
+        DB::table('apepo_reports')->insert([
+            'manager_username' => 'alice',
+            'audit' => 'Alice partial',
+            'people' => '', 'equipment' => '', 'product' => '', 'others' => '', 'notes' => '',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('apepo_reports')->insert([
+            'manager_username' => 'bob',
+            'audit' => 'Bob stays hidden',
+            'people' => '', 'equipment' => '', 'product' => '', 'others' => '', 'notes' => '',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $resp = $this->withSession(['role' => 'owner', 'username' => 'owner1'])
+                     ->get(route('owner.home', ['manager' => 'ali']));
+        $resp->assertOk();
+        $resp->assertSeeText('Alice partial');
+        $resp->assertDontSeeText('Bob stays hidden');
+    }
 }

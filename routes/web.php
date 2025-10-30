@@ -122,7 +122,7 @@ Route::get('/owner', function (Request $request) {
     $from = $request->query('from');
     $to = $request->query('to');
     if ($managerFilter !== '') {
-        $apepoQuery->where('manager_username', $managerFilter);
+        $apepoQuery->where('manager_username', 'like', '%'.$managerFilter.'%');
     }
     if (!empty($from) || !empty($to)) {
         try {
@@ -134,6 +134,7 @@ Route::get('/owner', function (Request $request) {
         }
     }
     $apepo = $apepoQuery->orderByDesc('id')->limit(20)->get();
+    $apepoManagers = DB::table('apepo_reports')->distinct()->orderBy('manager_username')->pluck('manager_username');
 
     return view('owner.index', [
         'reports' => $reports,
@@ -143,6 +144,7 @@ Route::get('/owner', function (Request $request) {
         'expenses' => $expenses,
         'requests' => $requests,
         'apepo' => $apepo,
+        'apepoManagers' => $apepoManagers,
     ]);
 })->name('owner.home');
 

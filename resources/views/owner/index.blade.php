@@ -77,7 +77,7 @@
     <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
       <form method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr auto">
-        <input name="manager" value="{{ request('manager') }}" placeholder="Manager username" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
+        <input name="manager" list="apepo-managers" value="{{ request('manager') }}" placeholder="Manager username (type to search)" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
         <input name="from" type="date" value="{{ request('from') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
         <input name="to" type="date" value="{{ request('to') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
         <div style="display:flex;gap:8px;align-items:center">
@@ -85,6 +85,11 @@
           <a href="{{ route('owner.home') }}" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18;text-decoration:none">Clear</a>
         </div>
       </form>
+      <datalist id="apepo-managers">
+        @foreach(($apepoManagers ?? []) as $m)
+          <option value="{{ $m }}"></option>
+        @endforeach
+      </datalist>
       <div style="display:grid;gap:10px">
         @forelse($apepo as $p)
           <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
