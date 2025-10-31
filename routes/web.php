@@ -752,7 +752,8 @@ Route::post('/owner/employee', function (Request $request) {
     if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
 
     DB::table('employees')->insert($payload);
-    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee added');
+    if ($request->ajax()) { return response()->json(['ok' => true]); }
+    return redirect()->to(route('owner.home') . '#employees')->with('status','Employee added');
 })->name('owner.employee.create');
 
 Route::post('/owner/employee/{id}/update', function (Request $request, int $id) {
@@ -783,13 +784,15 @@ Route::post('/owner/employee/{id}/update', function (Request $request, int $id) 
     if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
 
     DB::table('employees')->where('id',$id)->update($payload);
-    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee updated');
+    if ($request->ajax()) { return response()->json(['ok' => true]); }
+    return redirect()->to(route('owner.home') . '#employees')->with('status','Employee updated');
 })->name('owner.employee.update');
 
 Route::post('/owner/employee/{id}/delete', function (Request $request, int $id) {
     if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
     DB::table('employees')->where('id',$id)->delete();
-    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee removed');
+    if ($request->ajax()) { return response()->json(['ok' => true]); }
+    return redirect()->to(route('owner.home') . '#employees')->with('status','Employee removed');
 })->name('owner.employee.delete');
 
 // Owner: Inventory bulk delete (owner only)
