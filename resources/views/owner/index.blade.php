@@ -235,83 +235,8 @@
     </div>
 
     <div id="apepo" class="owner-section" data-section="apepo" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fffbea;border:1px solid #fde68a">💼</div>
-        <div>
-          <h3 class="section-title" style="margin:0;color:#0f172a">Audit / Payroll</h3>
-          <div style="font-size:12px;color:#6b7280">Employee payments and audit trail</div>
-        </div>
-      </div>
-
-      <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin:8px 0 16px">
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">Current Week Total</div>
-              <div style="font-size:26px;font-weight:800;color:#047857">₱{{ number_format(($payrollWeekTotal ?? 0), 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#ecfdf5;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center">💲</div>
-          </div>
-        </div>
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">All-Time Total</div>
-              <div style="font-size:26px;font-weight:800;color:#b45309">₱{{ number_format(($payrollAllTimeTotal ?? 0), 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#fff7ed;border:1px solid #fde9cc;display:flex;align-items:center;justify-content:center">🧾</div>
-          </div>
-        </div>
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">Total Employees</div>
-              <div style="font-size:26px;font-weight:800;color:#3730a3">{{ (int)($employeeCount ?? 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#eef2ff;border:1px solid #dbe2ff;display:flex;align-items:center;justify-content:center">👥</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:14px;margin-bottom:14px">
-        <div style="font-weight:700;color:#0f172a;margin:0 0 8px">Payroll Records</div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Complete payment history for all employees</div>
-        <div style="overflow:auto">
-          <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:600px">
-            <thead>
-              <tr>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Employee Name</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Status</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Hours</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Pay Rate</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Total Pay</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Period</th>
-              </tr>
-            </thead>
-            <tbody>
-              @forelse(($payrollRecords ?? []) as $p)
-                @php
-                  $statusClr = ($p->employment_type === 'parttime') ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
-                  $totalPay = (float)($p->hourly_rate * $p->hours_worked);
-                @endphp
-                <tr>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $p->employee_name ?? 'Employee' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $statusClr[0] }};background:{{ $statusClr[1] }};border:1px solid {{ $statusClr[2] }};font-size:12px">{{ $p->employment_type === 'parttime' ? 'Part-time' : 'Full-time' }}</span></td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ number_format((float)($p->hours_worked ?? 0), 2) }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">₱{{ number_format((float)($p->hourly_rate ?? 0), 0) }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5;color:#047857;font-weight:700">₱{{ number_format($totalPay, 0) }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ optional($p->period_start ?? null)->format('M d, Y') ?? '' }}{{ ($p->period_start && $p->period_end) ? (' - ' . \Carbon\Carbon::parse($p->period_end)->format('M d, Y')) : '' }}</td>
-                </tr>
-              @empty
-                <tr><td colspan="6" style="padding:8px;color:#706f6c">No payroll records yet.</td></tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- APEPO reports hidden -->
-      <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="display:none">
+      <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
+      <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1.5fr 1fr 1fr auto">
         <div>
           <input id="mgr-input" list="apepo-managers" placeholder="Type manager name, then Add" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px;width:100%" />
           <div id="mgr-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
@@ -394,7 +319,9 @@
           <div style="color:#706f6c">No APEPO reports yet.</div>
         @endforelse
       </div>
-      <!-- APEPO pagination hidden -->
+      <div style="margin-top:8px">
+        {!! $apepo->appends(request()->query())->links() !!}
+      </div>
     </div>
 
     <div id="requests" class="owner-section" data-section="requests" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
