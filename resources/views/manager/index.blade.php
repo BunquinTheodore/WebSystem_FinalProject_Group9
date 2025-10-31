@@ -4,442 +4,90 @@
 
 @section('content')
   <div style="max-width:880px;margin:0 auto;display:grid;gap:16px">
+    <style>
+      .mgr-tabs { position:relative; display:flex; gap:0; background:#e6f9fd; border:1px solid #c8eef7; padding:6px; border-radius:999px; align-items:center; overflow:hidden; }
+      .mgr-tab { position:relative; z-index:1; padding:8px 16px; border:none; background:transparent; border-radius:999px; cursor:pointer; font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px; flex:1 1 0%; justify-content:center; }
+      .mgr-tab.is-active { color:#0f172a; }
+      .mgr-tabs-indicator { position:absolute; top:6px; left:6px; height:calc(100% - 12px); width:0; background:#bdeff9; border-radius:999px; transition: all .25s cubic-bezier(0.4,0,0.2,1); box-shadow: inset 0 0 0 1px #a7e5f3; }
+      .mgr-section { display:none; }
+      .mgr-section.is-active { display:block; }
+      @media (max-width: 640px){
+        .mgr-tabs { overflow:auto; white-space:nowrap; }
+        .mgr-tab { flex:0 0 auto; min-width: 120px; }
+      }
+    </style>
+    <div id="mgr-tabs" class="mgr-tabs" role="tablist" aria-label="Manager sections">
+      <div id="mgr-tabs-indicator" class="mgr-tabs-indicator" aria-hidden="true"></div>
+      <button class="mgr-tab is-active" data-tab="tasks" role="tab" aria-selected="true">Tasks</button>
+      <button class="mgr-tab" data-tab="reports" role="tab" aria-selected="false">Reports</button>
+      <button class="mgr-tab" data-tab="inventory" role="tab" aria-selected="false">Inventory</button>
+      <button class="mgr-tab" data-tab="requests" role="tab" aria-selected="false">Requests</button>
+      <button class="mgr-tab" data-tab="payroll" role="tab" aria-selected="false">Payroll</button>
+      <button class="mgr-tab" data-tab="employees" role="tab" aria-selected="false">Employees</button>
+    </div>
+    <script>
+      (function(){
+        const tabs = document.getElementById('mgr-tabs');
+        const ind = document.getElementById('mgr-tabs-indicator');
+        function activate(tabKey){
+          document.querySelectorAll('.mgr-tab').forEach(b=>{
+            const active = b.getAttribute('data-tab')===tabKey;
+            b.classList.toggle('is-active', active);
+            b.setAttribute('aria-selected', active?'true':'false');
+          });
+          document.querySelectorAll('.mgr-section').forEach(s=>{
+            s.classList.toggle('is-active', s.getAttribute('data-section')===tabKey);
+          });
+          // move indicator
+          const btn = document.querySelector('.mgr-tab.is-active');
+          if(btn && ind){
+            ind.style.width = btn.offsetWidth + 'px';
+            ind.style.left = (btn.offsetLeft + 6) + 'px';
+          }
+          // persist in hash
+          if(location.hash.replace('#','')!==tabKey){
+            history.replaceState(null,'', '#'+tabKey);
+          }
+        }
+        if(tabs){
+          tabs.addEventListener('click', function(ev){
+            const b = ev.target.closest('.mgr-tab');
+            if(!b) return;
+            ev.preventDefault();
+            activate(b.getAttribute('data-tab'));
+          });
+          window.addEventListener('resize', function(){ const act = document.querySelector('.mgr-tab.is-active'); if(act){ activate(act.getAttribute('data-tab')); }});
+          const initial = (location.hash||'#tasks').replace('#','');
+          activate(initial);
+          window.addEventListener('hashchange', function(){ const h=(location.hash||'').replace('#',''); if(h){ activate(h); }});
+        }
+      })();
+    </script>
 
-      <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-        <h3 class="section-title">Overview</h3>
-        <div id="mgr-total-fund">Current balance: <strong>₱{{ number_format($fundBalance ?? 0, 2) }}</strong></div>
-        <div id="mgr-total-exp">Total expenses: <strong>₱{{ number_format($expensesTotal ?? 0, 2) }}</strong></div>
-        <div id="mgr-total-avail">Available balance: <strong>₱{{ number_format($availableBalance ?? 0, 2) }}</strong></div>
+      <div class="mgr-section" data-section="reports">
+        @include('manager.sections.reports')
       </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Daily Report</h3>
-      <form id="mgr-report-form" method="POST" action="{{ route('manager.report') }}">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Shift</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px">
-                <select name="shift" style="width:100%"><option value="opening">Opening</option><option value="closing">Closing</option></select>
-              </td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Cash (₱)</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="cash" type="number" step="0.01" placeholder="Cash" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Wallet (₱)</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="wallet" type="number" step="0.01" placeholder="Wallet" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Bank (₱)</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="bank" type="number" step="0.01" placeholder="Bank" style="width:100%"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Submit</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <div id="mgr-report-list" style="margin-top:10px;display:grid;gap:10px">
-        @forelse($reports as $r)
-          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Shift</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Cash (₱)</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Wallet (₱)</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Bank (₱)</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:8px">{{ strtoupper($r->shift) }}</td>
-                  <td style="padding:8px">₱{{ number_format($r->cash,2) }}</td>
-                  <td style="padding:8px">₱{{ number_format($r->wallet,2) }}</td>
-                  <td style="padding:8px">₱{{ number_format($r->bank,2) }}</td>
-                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
-                  <td style="padding:8px">
-                    @if(session('username') === ($r->manager_username ?? null))
-                      <form class="mgr-del-form" method="POST" action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="margin:0">
-                        @csrf
-                        <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
-                      </form>
-                    @else
-                      <span style="color:#706f6c">—</span>
-                    @endif
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        @empty
-          <div style="color:#706f6c">No reports yet.</div>
-        @endforelse
-      </div>
+
+
+    <div class="mgr-section" data-section="payroll">
+      @include('manager.sections.payroll')
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">APEPO Report</h3>
-      <form id="mgr-apepo-form" method="POST" action="{{ route('manager.apepo') }}">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Audit</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><textarea name="audit" rows="2" style="width:100%" placeholder="Audit notes..."></textarea></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">People</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><textarea name="people" rows="2" style="width:100%" placeholder="People updates..."></textarea></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Equipment</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><textarea name="equipment" rows="2" style="width:100%" placeholder="Equipment status..."></textarea></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Product</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><textarea name="product" rows="2" style="width:100%" placeholder="Product quality/stock..."></textarea></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Others</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><textarea name="others" rows="2" style="width:100%" placeholder="Other notes..."></textarea></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Notes</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="notes" style="width:100%" placeholder="Optional notes"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Submit APEPO</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <div id="mgr-apepo-list" style="margin-top:10px;display:grid;gap:10px">
-        @forelse($apepo as $p)
-          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Section</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Details</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:8px">Audit</td>
-                  <td style="padding:8px">{{ $p->audit }}</td>
-                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
-                  <td style="padding:8px" rowspan="5">
-                    @if(session('username') === ($p->manager_username ?? null))
-                      <form class="mgr-del-form" method="POST" action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="margin:0">
-                        @csrf
-                        <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
-                      </form>
-                    @else
-                      <span style="color:#706f6c">—</span>
-                    @endif
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:8px">People</td>
-                  <td style="padding:8px">{{ $p->people }}</td>
-                  <td style="padding:8px;color:#706f6c"></td>
-                </tr>
-                <tr>
-                  <td style="padding:8px">Equipment</td>
-                  <td style="padding:8px">{{ $p->equipment }}</td>
-                  <td style="padding:8px;color:#706f6c"></td>
-                </tr>
-                <tr>
-                  <td style="padding:8px">Product</td>
-                  <td style="padding:8px">{{ $p->product }}</td>
-                  <td style="padding:8px;color:#706f6c"></td>
-                </tr>
-                <tr>
-                  <td style="padding:8px">Others</td>
-                  <td style="padding:8px">{{ $p->others }}</td>
-                  <td style="padding:8px;color:#706f6c"></td>
-                </tr>
-                @if(!empty($p->notes))
-                <tr>
-                  <td style="padding:8px">Notes</td>
-                  <td style="padding:8px" colspan="2">{{ $p->notes }}</td>
-                </tr>
-                @endif
-              </tbody>
-            </table>
-          </div>
-        @empty
-          <div style="color:#706f6c">No APEPO reports yet.</div>
-        @endforelse
-      </div>
+
+    <div class="mgr-section" data-section="requests">
+    @include('manager.sections.requests')
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Manager Fund</h3>
-      <form id="mgr-fund-form" method="POST" action="{{ route('manager.fund') }}" style="margin-top:8px">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Amount (₱)</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="amount" type="number" step="0.01" placeholder="Amount" style="width:100%"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Add / Adjust</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
+    <div class="mgr-section is-active" data-section="tasks">
+    @include('manager.sections.tasks')
+    </div>
+    <div class="mgr-section" data-section="inventory">
+    @include('manager.sections.inventory')
     </div>
 
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Expenses</h3>
-      <form id="mgr-expense-form" method="POST" action="{{ route('manager.expense') }}">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Amount (₱)</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="amount" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Description</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="note" placeholder="Describe expense..." style="width:100%"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Add</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <div id="mgr-expense-list" style="margin-top:10px;display:grid;gap:10px">
-        @forelse($expenses as $e)
-          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:8px">₱{{ number_format(($e->amount ?? 0), 2) }}</td>
-                  <td style="padding:8px">{{ $e->note }}</td>
-                  <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</td>
-                  <td style="padding:8px">
-                    @if(session('username') === ($e->manager_username ?? null))
-                      <form class="mgr-del-form" method="POST" action="{{ route('manager.expense.delete', ['id' => $e->id]) }}" style="margin:0">
-                        @csrf
-                        <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this expense?">Delete</button>
-                      </form>
-                    @else
-                      <span style="color:#706f6c">—</span>
-                    @endif
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        @empty
-          <div style="color:#706f6c">No expenses yet.</div>
-        @endforelse
-      </div>
-    </div>
-
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Requests</h3>
-      <form method="POST" action="{{ route('manager.request') }}">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Item</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="item" placeholder="Item" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Quantity</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="quantity" type="number" min="1" value="1" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Priority</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><select name="priority" style="width:100%"><option>low</option><option selected>medium</option><option>high</option></select></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Submit</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <ul style="margin-top:10px">
-        @forelse($requests as $q)
-          <li style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-            <span>{{ $q->item }} × {{ $q->quantity }} • {{ ucfirst($q->priority) }}</span>
-            <span style="display:flex;align-items:center;gap:8px">
-              <span style="color:#706f6c">{{ ucfirst($q->status) }}</span>
-              @if(session('username') === ($q->manager_username ?? null))
-                <form class="mgr-del-form" method="POST" action="{{ route('manager.request.delete', ['id' => $q->id]) }}">
-                  @csrf
-                  <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this request?">Delete</button>
-                </form>
-              @endif
-            </span>
-          </li>
-        @empty
-          <li style="color:#706f6c">No requests yet.</li>
-        @endforelse
-      </ul>
-    </div>
-
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Assign Task</h3>
-      <form method="POST" action="{{ route('manager.assign') }}">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Task</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px">
-                <select name="task_id" style="width:100%">
-                  @foreach($tasks as $t)
-                    <option value="{{ $t->id }}">{{ $t->title }} ({{ $t->type }})</option>
-                  @endforeach
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Employee Username</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="employee_username" placeholder="employee" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Due At</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="due_at" type="datetime-local" style="width:100%"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Create Assignment</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-    </div>
-    <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title">Inventory</h3>
-      <form id="inv-item-form" method="POST" action="{{ route('manager.inventory.item') }}" style="margin:8px 0 12px">
-        @csrf
-        <table style="width:100%;border-collapse:collapse">
-          <tbody>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:160px">Name</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="name" required placeholder="Item name" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Category</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="category" placeholder="Category (optional)" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Unit</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="unit" placeholder="pcs / kg / L ..." style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Initial Qty</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="quantity" type="number" min="0" value="0" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Min Threshold</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="min_threshold" type="number" min="0" value="0" style="width:100%"></td>
-            </tr>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Notes</th>
-              <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="notes" placeholder="Optional" style="width:100%"></td>
-            </tr>
-            <tr>
-              <td colspan="2" style="padding:8px">
-                <div style="display:flex;justify-content:flex-end;gap:8px">
-                  <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-                  <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Add Item</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
-      <div id="inv-list" style="display:grid;gap:8px">
-        @forelse(($inventory ?? []) as $it)
-          <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Item</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Category</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Qty</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Min</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Unit</th>
-                  <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Adjust</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style="padding:8px">{{ $it->name }}</td>
-                  <td style="padding:8px">{{ $it->category }}</td>
-                  <td class="inv-qty" data-id="{{ $it->id }}" style="padding:8px"><span @if($it->quantity <= $it->min_threshold) style="color:#b91c1c;font-weight:600" @endif>{{ $it->quantity }}</span></td>
-                  <td style="padding:8px">{{ $it->min_threshold }}</td>
-                  <td style="padding:8px">{{ $it->unit }}</td>
-                  <td style="padding:8px">
-                    <form class="inv-adjust" method="POST" action="{{ route('manager.inventory.adjust', ['id' => $it->id]) }}" style="display:inline-flex;gap:6px;align-items:center">
-                      @csrf
-                      <input name="delta" type="number" value="1" style="width:80px" />
-                      <input name="reason" placeholder="reason" style="width:160px" />
-                      <button style="padding:6px 10px;background:#16a34a;color:#fff;border-radius:6px">Apply</button>
-                    </form>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        @empty
-          <div style="color:#706f6c">No inventory yet.</div>
-        @endforelse
-      </div>
+    <div class="mgr-section" data-section="employees">
+      @include('manager.sections.employees')
     </div>
     <script>
       (function(){

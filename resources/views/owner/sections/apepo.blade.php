@@ -5,43 +5,83 @@
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
-        <h3 class="section-title" style="margin:0">Recent APEPO Reports</h3>
-      </div>
-      <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1.5fr 1fr 1fr auto">
         <div>
-          <input id="mgr-input" list="apepo-managers" placeholder="Type manager name, then Add" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px;width:100%" />
-          <div id="mgr-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-            @php
-              $mgrParam = request()->query('manager');
-              $mgrVals = is_array($mgrParam) ? $mgrParam : (strlen((string)$mgrParam) ? [(string)$mgrParam] : []);
-            @endphp
-            @foreach($mgrVals as $val)
-              <span class="mgr-chip" data-value="{{ $val }}" style="display:inline-flex;align-items:center;gap:6px;background:#eef2ff;border:1px solid #dbe2ff;color:#1b1b18;padding:4px 8px;border-radius:999px">
-                <span>{{ $val }}</span>
-                <button type="button" class="chip-x" aria-label="Remove" style="background:transparent;border:none;color:#555;cursor:pointer">×</button>
-              </span>
-            @endforeach
-          </div>
-          <div id="mgr-hidden" aria-hidden="true" style="display:none">
-            @foreach($mgrVals as $val)
-              <input type="hidden" name="manager[]" value="{{ $val }}" />
-            @endforeach
+          <h3 class="section-title" style="margin:0;color:#0f172a">Audit / Payroll</h3>
+          <div style="font-size:12px;color:#6b7280">Employee payments and audit trail</div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px">
+        <div style="background:#f0fff8;border:1px solid #c8f1dd;border-radius:12px;padding:14px">
+          <div style="font-size:12px;color:#047857;margin-bottom:4px">Current Week Total</div>
+          <div style="font-size:26px;font-weight:800;color:#047857">₱{{ number_format(($payrollWeekTotal ?? 0), 0) }}</div>
+        </div>
+        <div style="background:#fff8ef;border:1px solid #fde9cc;border-radius:12px;padding:14px">
+          <div style="font-size:12px;color:#a04900;margin-bottom:4px">All-Time Total</div>
+          <div style="font-size:26px;font-weight:800;color:#b91c1c">₱{{ number_format(($payrollAllTimeTotal ?? 0), 0) }}</div>
+        </div>
+        <div style="background:#eef2ff;border:1px solid #dbe2ff;border-radius:12px;padding:14px">
+          <div style="font-size:12px;color:#4338ca;margin-bottom:4px">Total Employees</div>
+          <div style="font-size:26px;font-weight:800;color:#4338ca">{{ (int)($empTotal ?? 0) }}</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;color:#0f172a">Payroll Records</div>
+            <div style="font-size:12px;color:#6b7280">Complete payment history for all employees</div>
           </div>
         </div>
-        <input name="from" type="date" value="{{ request('from') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
-        <input name="to" type="date" value="{{ request('to') }}" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px" />
-        <div style="display:flex;gap:8px;align-items:center">
-          <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Filter</button>
-          <a href="{{ route('owner.home') }}" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18;text-decoration:none">Clear</a>
+        <div style="overflow:auto">
+          <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:860px">
+            <thead>
+              <tr>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Employee Name</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Status</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Days Worked</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Pay Rate</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Total Pay</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Period</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse(($payrollRecords ?? []) as $row)
+                @php
+                  $name = $row->employee_name ?? ($row['employee_name'] ?? ($row->name ?? ($row['name'] ?? '—')));
+                  $etype = $row->employment_type ?? ($row['employment_type'] ?? ($row->status ?? ($row['status'] ?? '—')));
+                  $days = $row->days_worked ?? ($row['days_worked'] ?? ($row->days ?? ($row['days'] ?? 0)));
+                  $rate = $row->pay_rate ?? ($row['pay_rate'] ?? ($row->rate ?? ($row['rate'] ?? 0)));
+                  $total = $row->total_pay ?? ($row['total_pay'] ?? ($row->total ?? ($row['total'] ?? ($days * $rate))));
+                  $from = $row->period_from ?? ($row['period_from'] ?? null);
+                  $to = $row->period_to ?? ($row['period_to'] ?? null);
+                  $period = ($from && $to) ? (\Carbon\Carbon::parse($from)->format('M d') . '–' . \Carbon\Carbon::parse($to)->format('d, Y')) : ($row->period ?? ($row['period'] ?? '—'));
+                  $isPart = strtolower((string)$etype) === 'parttime' || strtolower((string)$etype) === 'part-time' || strtolower((string)$etype) === 'part time';
+                  $badgeClr = $isPart ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
+                @endphp
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $name }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $badgeClr[0] }};background:{{ $badgeClr[1] }};border:1px solid {{ $badgeClr[2] }};font-size:12px">{{ $isPart ? 'Part-time' : 'Full-time' }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ (int)$days }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">₱{{ number_format((float)$rate, 0) }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5;color:#047857">₱{{ number_format((float)$total, 0) }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $period }}</td>
+                </tr>
+              @empty
+                <tr><td colspan="6" style="padding:10px;color:#706f6c">No payroll records yet.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
         </div>
-      </form>
-      <datalist id="apepo-managers">
-        @foreach(($apepoManagers ?? []) as $m)
-          <option value="{{ $m }}"></option>
-        @endforeach
-      </datalist>
+      </div>
+
+      <div style="margin-top:16px;height:1px;background:#eef2f7"></div>
+
+      <div style="display:flex;align-items:center;gap:12px;margin:16px 0 8px">
+        <div style="font-weight:700;color:#0f172a">Recent APEPO Reports</div>
+      </div>
       <div style="display:grid;gap:10px">
-        @forelse($apepo as $p)
+        @forelse(($apepo ?? []) as $p)
           <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
             <table style="width:100%;border-collapse:collapse">
               <thead>
@@ -91,6 +131,6 @@
         @endforelse
       </div>
       <div style="margin-top:8px">
-        {!! $apepo->appends(request()->query())->links() !!}
+        {!! ($apepo ?? collect())->appends(request()->query())->links() !!}
       </div>
     </div>
