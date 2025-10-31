@@ -1,84 +1,63 @@
-<div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-  <h3 class="section-title">Manager Fund</h3>
-  <form id="mgr-fund-form" method="POST" action="{{ route('manager.fund') }}" style="margin-top:8px">
+<div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
+  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Payroll Entry</div>
+  <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Submit employee payroll information</div>
+  <form id="mgr-payroll-form" method="POST" action="{{ url()->current() }}">
     @csrf
-    <table style="width:100%;border-collapse:collapse">
-      <tbody>
-        <tr>
-          <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Amount (₱)</th>
-          <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="amount" type="number" step="0.01" placeholder="Amount" style="width:100%"></td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:8px">
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-              <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Add / Adjust</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="display:grid;gap:10px">
+      <div style="display:grid;gap:6px">
+        <label style="font-size:12px;color:#0f172a">Employee Name</label>
+        @if(!empty($employees ?? null) && count($employees) > 0)
+          <select name="employee" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px">
+            <option value="">Select employee</option>
+            @foreach($employees as $emp)
+              <option value="{{ $emp->username ?? $emp->id ?? $emp->name }}">{{ $emp->name ?? $emp->username ?? ('Employee #'.($emp->id ?? '')) }}</option>
+            @endforeach
+          </select>
+        @else
+          <input name="employee" placeholder="Type employee name or username" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        @endif
+      </div>
+      <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
+        <div style="display:grid;gap:6px">
+          <label style="font-size:12px;color:#0f172a">Days Worked</label>
+          <input name="days_worked" type="number" min="0" step="1" placeholder="e.g., 5" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        </div>
+        <div style="display:grid;gap:6px">
+          <label style="font-size:12px;color:#0f172a">Pay Rate (₱/day)</label>
+          <input name="pay_rate" type="number" min="0" step="0.01" placeholder="e.g., 600.00" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        </div>
+      </div>
+      <div>
+        <button style="width:100%;background:#d97706;color:#fff;border-radius:8px;padding:10px 14px">Submit Payroll Entry</button>
+      </div>
+    </div>
   </form>
 </div>
 
-<div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-  <h3 class="section-title">Expenses</h3>
-  <form id="mgr-expense-form" method="POST" action="{{ route('manager.expense') }}">
-    @csrf
-    <table style="width:100%;border-collapse:collapse">
-      <tbody>
-        <tr>
-          <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Amount (₱)</th>
-          <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="amount" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%"></td>
-        </tr>
-        <tr>
-          <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px;width:180px">Description</th>
-          <td style="border-bottom:1px solid #e3e3e0;padding:8px"><input name="note" placeholder="Describe expense..." style="width:100%"></td>
-        </tr>
-        <tr>
-          <td colspan="2" style="padding:8px">
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-              <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Add</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </form>
-  <div id="mgr-expense-list" style="margin-top:10px;display:grid;gap:10px">
-    @forelse($expenses as $e)
-      <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
+@if(!empty($payrollEntries ?? null))
+  <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
+    <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Recent Entries</div>
+    <div style="overflow:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Employee</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Days</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Rate (₱/day)</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($payrollEntries as $p)
             <tr>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount (₱)</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Description</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+              <td style="padding:8px">{{ $p->employee_name ?? $p->employee ?? '-' }}</td>
+              <td style="padding:8px">{{ $p->days_worked ?? '-' }}</td>
+              <td style="padding:8px">₱{{ number_format(($p->pay_rate ?? 0),2) }}</td>
+              <td style="padding:8px;color:#706f6c">{{ optional($p->created_at ?? null) ? \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') : '-' }}</td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding:8px">₱{{ number_format(($e->amount ?? 0), 2) }}</td>
-              <td style="padding:8px">{{ $e->note }}</td>
-              <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($e->created_at)->format('M d, Y H:i') }}</td>
-              <td style="padding:8px">
-                @if(session('username') === ($e->manager_username ?? null))
-                  <form class="mgr-del-form" method="POST" action="{{ route('manager.expense.delete', ['id' => $e->id]) }}" style="margin:0">
-                    @csrf
-                    <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this expense?">Delete</button>
-                  </form>
-                @else
-                  <span style="color:#706f6c">—</span>
-                @endif
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    @empty
-      <div style="color:#706f6c">No expenses yet.</div>
-    @endforelse
+          @endforeach
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
+@endif
