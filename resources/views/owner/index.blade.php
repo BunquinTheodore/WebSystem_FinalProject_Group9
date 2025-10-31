@@ -67,7 +67,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    cursor: pointer;
+    cursor: default;
     padding: 6px 12px;
     border-radius: 999px;
     transition: background 0.2s ease;
@@ -165,7 +165,14 @@
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
       </a>
-      <div class="owner-topbar-user" onclick="document.getElementById('logout-form').submit();">
+      <a href="#" class="owner-topbar-icon" title="Logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 17l-5-5 5-5"/>
+          <path d="M15 12H5"/>
+          <path d="M19 21V3a2 2 0 0 0-2-2H9"/>
+        </svg>
+      </a>
+      <div class="owner-topbar-user">
         <div class="owner-topbar-avatar">{{ strtoupper(substr(session('username', 'O'), 0, 1)) }}</div>
         <div class="owner-topbar-info">
           <div class="owner-topbar-name">{{ session('username', 'Owner') }}</div>
@@ -248,47 +255,49 @@
         <h3 class="section-title" style="margin:0">Store Tasks</h3>
       </div>
       <div style="display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px">
+        @php
+          $openList = $openingTaskList ?? [];
+          $closeList = $closingTaskList ?? [];
+          $openTotalCalc = count($openList) ?: (int)($openingTotal ?? 0);
+          $closeTotalCalc = count($closeList) ?: (int)($closingTotal ?? 0);
+          $openDoneCalc = count(array_filter($openList, function($t){ return !empty($t['completed']); })) ?: (int)($openingCompleted ?? 0);
+          $closeDoneCalc = count(array_filter($closeList, function($t){ return !empty($t['completed']); })) ?: (int)($closingCompleted ?? 0);
+          $allDoneCalc = $openDoneCalc + $closeDoneCalc;
+          $allTotalCalc = $openTotalCalc + $closeTotalCalc;
+          $allPendingCalc = max($allTotalCalc - $allDoneCalc, 0);
+        @endphp
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
           <div>
             <div style="color:#166534;font-size:12px;margin-bottom:4px">Opening Completed</div>
-            <div style="font-size:22px;font-weight:700;color:#065f46">{{ $openingCompleted ?? 0 }}/{{ $openingTotal ?? 0 }}</div>
+            <div style="font-size:22px;font-weight:700;color:#065f46">{{ $openDoneCalc }}/{{ $openTotalCalc }}</div>
           </div>
           <div style="font-size:22px;color:#16a34a">✅</div>
         </div>
         <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
           <div>
             <div style="color:#9a3412;font-size:12px;margin-bottom:4px">Closing Completed</div>
-            <div style="font-size:22px;font-weight:700;color:#7c2d12">{{ $closingCompleted ?? 0 }}/{{ $closingTotal ?? 0 }}</div>
+            <div style="font-size:22px;font-weight:700;color:#7c2d12">{{ $closeDoneCalc }}/{{ $closeTotalCalc }}</div>
           </div>
           <div style="font-size:22px;color:#ea580c">⏱️</div>
         </div>
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="color:#1e40af;font-size:12px;margin-bottom:4px">Kitchen Tasks</div>
-            <div style="font-size:22px;font-weight:700;color:#1d4ed8">{{ $kitchenTasks ?? 0 }}</div>
+            <div style="color:#334155;font-size:12px;margin-bottom:4px">Total Pending</div>
+            <div style="font-size:22px;font-weight:700;color:#0f172a">{{ $allPendingCalc }}/{{ $allTotalCalc }}</div>
           </div>
-          <div style="font-size:22px;color:#2563eb">👩‍🍳</div>
+          <div style="font-size:22px;color:#475569">⏳</div>
         </div>
-        <div style="background:#fff7ed;border:1px solid #fde68a;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:#ecfdf5;border:1px solid #86efac;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
           <div>
-            <div style="color:#92400e;font-size:12px;margin-bottom:4px">Coffee Bar Tasks</div>
-            <div style="font-size:22px;font-weight:700;color:#b45309">{{ $coffeeBarTasks ?? 0 }}</div>
+            <div style="color:#047857;font-size:12px;margin-bottom:4px">Total Completed</div>
+            <div style="font-size:22px;font-weight:700;color:#065f46">{{ $allDoneCalc }}/{{ $allTotalCalc }}</div>
           </div>
-          <div style="font-size:22px;color:#b45309">☕</div>
+          <div style="font-size:22px;color:#10b981">🏁</div>
         </div>
+        
       </div>
 
-      <div id="store-stations" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">
-          <button class="pill station-pill is-active" data-station="all" style="padding:6px 12px;border-radius:999px;border:1px solid #dbe2ff;background:#111827;color:#fff">All Stations</button>
-          <button class="pill station-pill" data-station="kitchen" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
-            <span style="font-size:14px">👩‍🍳</span>
-            <span>Kitchen</span>
-          </button>
-          <button class="pill station-pill" data-station="coffee" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
-            <span style="font-size:14px">☕</span>
-            <span>Coffee Bar</span>
-          </button>
-      </div>
+      
       <div id="store-toggle" style="position:relative;display:inline-flex;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:12px">
         <div id="store-toggle-indicator" style="position:absolute;top:2px;left:2px;height:calc(100% - 4px);width:50%;border-radius:999px;background:#111827;transition:all .2s ease"></div>
         <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#fff;z-index:1">Opening Tasks</button>
@@ -792,7 +801,6 @@
         if(btn){ btn.classList.add('is-active'); }
         lists.forEach(function(el){ el.style.display = (el.getAttribute('data-type')===tab)?'':'none'; });
         applyToggleStyles();
-        filterByStation();
       }
       if(tabs){
         // Default to opening tab on load and ensure styles after layout
@@ -807,30 +815,7 @@
         });
         window.addEventListener('resize', function(){ applyToggleStyles(); });
       }
-      var stationWrap = document.getElementById('store-stations');
-      function filterByStation(){
-        var active = stationWrap ? stationWrap.querySelector('.station-pill.is-active') : null;
-        var key = active ? active.getAttribute('data-station') : 'all';
-        var activeTab = (tabs && tabs.querySelector('.tab-btn.is-active')) ? tabs.querySelector('.tab-btn.is-active').getAttribute('data-tab') : 'opening';
-        var container = document.querySelector('.store-list[data-type="'+activeTab+'"]');
-        if(!container) return;
-        container.querySelectorAll('.store-task').forEach(function(card){
-          var loc = (card.getAttribute('data-location')||'').toLowerCase();
-          var show = (key==='all') || (loc.indexOf(key) !== -1);
-          card.style.display = show ? '' : 'none';
-        });
-      }
-      if(stationWrap){
-        stationWrap.addEventListener('click', function(ev){
-          var pill = ev.target.closest('.station-pill');
-          if(!pill) return;
-          ev.preventDefault();
-          stationWrap.querySelectorAll('.station-pill').forEach(function(p){ p.classList.remove('is-active'); p.style.background='#fff'; p.style.color=''; p.style.borderColor='#e5e7eb'; });
-          pill.classList.add('is-active'); pill.style.background='#111827'; pill.style.color='#fff'; pill.style.borderColor='#111827';
-          filterByStation();
-        });
-      }
-      filterByStation();
+      
       function closestRow(el){ while(el && el.tagName && el.tagName.toLowerCase() !== 'tr'){ el = el.parentElement; } return el; }
       document.addEventListener('submit', async function(ev){
         const ajaxForm = ev.target.closest('form.owner-ajax');

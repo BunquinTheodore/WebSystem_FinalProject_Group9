@@ -7,86 +7,168 @@
         </button>
         <h3 class="section-title" style="margin:0">Store Tasks</h3>
       </div>
-      <div style="display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px">
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="color:#166534;font-size:12px;margin-bottom:4px">Opening Completed</div>
-            <div style="font-size:22px;font-weight:700;color:#065f46">{{ $openingCompleted ?? 0 }}/{{ $openingTotal ?? 0 }}</div>
+      <!-- Enhanced Stats Grid -->
+      <div style="display:grid;gap:24px;grid-template-columns:repeat(2,1fr);margin-bottom:32px;max-width:1000px">
+        @php
+          $openList = $openingTaskList ?? [];
+          $closeList = $closingTaskList ?? [];
+          $openTotal = count($openList) ?: (int)($openingTotal ?? 0);
+          $closeTotal = count($closeList) ?: (int)($closingTotal ?? 0);
+          $openDone = count(array_filter($openList, function($t){ return !empty($t['completed']); })) ?: (int)($openingCompleted ?? 0);
+          $closeDone = count(array_filter($closeList, function($t){ return !empty($t['completed']); })) ?: (int)($closingCompleted ?? 0);
+          $allDone = $openDone + $closeDone;
+          $allTotal = $openTotal + $closeTotal;
+          $allPending = max($allTotal - $allDone, 0);
+        @endphp
+        
+        <!-- Opening Card -->
+        <div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #6ee7b7;border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 25px 50px -12px rgba(16,185,129,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:rgba(16,185,129,0.15);border-radius:50%;filter:blur(50px)"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative">
+            <div>
+              <div style="color:#047857;font-size:13px;font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.2px">☀️ Opening Tasks</div>
+              <div style="font-size:48px;font-weight:900;color:#065f46;line-height:1;margin-bottom:10px">
+                {{ $openingCompleted ?? 0 }}
+                <span style="font-size:28px;color:#10b981;font-weight:700">/{{ $openingTotal ?? 0 }}</span>
+              </div>
+              <div style="margin-top:12px;font-size:14px;color:#059669;font-weight:700">
+                {{ $openingTotal > 0 ? round(($openingCompleted / $openingTotal) * 100) : 0 }}% Complete
+              </div>
+            </div>
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(16,185,129,0.4)">✅</div>
           </div>
-          <div style="font-size:22px;color:#16a34a">✅</div>
+          <div style="margin-top:16px;height:8px;background:#d1fae5;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)">
+            <div style="height:100%;background:linear-gradient(90deg,#10b981 0%,#059669 100%);border-radius:999px;width:{{ $openingTotal > 0 ? (($openingCompleted / $openingTotal) * 100) : 0 }}%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
+          </div>
         </div>
-        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="color:#9a3412;font-size:12px;margin-bottom:4px">Closing Completed</div>
-            <div style="font-size:22px;font-weight:700;color:#7c2d12">{{ $closingCompleted ?? 0 }}/{{ $closingTotal ?? 0 }}</div>
+
+        <!-- Closing Card -->
+        <div style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:2px solid #fdba74;border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 25px 50px -12px rgba(249,115,22,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:rgba(249,115,22,0.15);border-radius:50%;filter:blur(50px)"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative">
+            <div>
+              <div style="color:#c2410c;font-size:13px;font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.2px">🌙 Closing Tasks</div>
+              <div style="font-size:48px;font-weight:900;color:#7c2d12;line-height:1;margin-bottom:10px">
+                {{ $closingCompleted ?? 0 }}
+                <span style="font-size:28px;color:#ea580c;font-weight:700">/{{ $closingTotal ?? 0 }}</span>
+              </div>
+              <div style="margin-top:12px;font-size:14px;color:#ea580c;font-weight:700">
+                {{ $closingTotal > 0 ? round(($closingCompleted / $closingTotal) * 100) : 0 }}% Complete
+              </div>
+            </div>
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#f97316 0%,#ea580c 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(249,115,22,0.4)">⏱️</div>
           </div>
-          <div style="font-size:22px;color:#ea580c">⏱️</div>
+          <div style="margin-top:16px;height:8px;background:#ffedd5;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)">
+            <div style="height:100%;background:linear-gradient(90deg,#f97316 0%,#ea580c 100%);border-radius:999px;width:{{ $closingTotal > 0 ? (($closingCompleted / $closingTotal) * 100) : 0 }}%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
+          </div>
         </div>
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="color:#1e40af;font-size:12px;margin-bottom:4px">Kitchen Tasks</div>
-            <div style="font-size:22px;font-weight:700;color:#1d4ed8">{{ $kitchenTasks ?? 0 }}</div>
+
+        <!-- Total Pending Card -->
+        <div style="background:linear-gradient(135deg,#f8fafc 0%,#e5e7eb 100%);border:2px solid #cbd5e1;border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 25px 50px -12px rgba(100,116,139,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:rgba(100,116,139,0.15);border-radius:50%;filter:blur(50px)"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative">
+            <div>
+              <div style="color:#334155;font-size:13px;font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.2px">🕓 Total Pending</div>
+              <div style="font-size:48px;font-weight:900;color:#0f172a;line-height:1;margin-bottom:10px">
+                {{ $allPending }}
+                <span style="font-size:28px;color:#64748b;font-weight:700">/{{ $allTotal }}</span>
+              </div>
+              <div style="margin-top:12px;font-size:14px;color:#64748b;font-weight:700">Across Opening + Closing</div>
+            </div>
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#94a3b8 0%,#64748b 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(100,116,139,0.35)">⏳</div>
           </div>
-          <div style="font-size:22px;color:#2563eb">👩‍🍳</div>
         </div>
-        <div style="background:#fff7ed;border:1px solid #fde68a;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
-          <div>
-            <div style="color:#92400e;font-size:12px;margin-bottom:4px">Coffee Bar Tasks</div>
-            <div style="font-size:22px;font-weight:700;color:#b45309">{{ $coffeeBarTasks ?? 0 }}</div>
+
+        <!-- Total Completed Card -->
+        <div style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border:2px solid #86efac;border-radius:20px;padding:28px;position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 25px 50px -12px rgba(16,185,129,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;background:rgba(16,185,129,0.15);border-radius:50%;filter:blur(50px)"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;position:relative">
+            <div>
+              <div style="color:#047857;font-size:13px;font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:1.2px">✅ Total Completed</div>
+              <div style="font-size:48px;font-weight:900;color:#065f46;line-height:1;margin-bottom:10px">
+                {{ $allDone }}
+                <span style="font-size:28px;color:#10b981;font-weight:700">/{{ $allTotal }}</span>
+              </div>
+              <div style="margin-top:12px;font-size:14px;color:#059669;font-weight:700">Across Opening + Closing</div>
+            </div>
+            <div style="width:64px;height:64px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(16,185,129,0.4)">🏁</div>
           </div>
-          <div style="font-size:22px;color:#b45309">☕</div>
         </div>
       </div>
 
-      <div id="store-stations" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">
-          <button class="pill station-pill is-active" data-station="all" style="padding:6px 12px;border-radius:999px;border:1px solid #dbe2ff;background:#111827;color:#fff">All Stations</button>
-          <button class="pill station-pill" data-station="kitchen" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
-            <span style="font-size:14px">👩‍🍳</span>
-            <span>Kitchen</span>
-          </button>
-          <button class="pill station-pill" data-station="coffee" style="padding:6px 12px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;display:inline-flex;align-items:center;gap:6px">
-            <span style="font-size:14px">☕</span>
-            <span>Coffee Bar</span>
-          </button>
+      <!-- Modern Tab Toggle -->
+      <div id="store-toggle" style="position:relative;display:inline-flex;background:#f9fafb;border:3px solid #e5e7eb;border-radius:20px;padding:6px;margin-bottom:28px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.08)">
+        <div id="store-toggle-indicator" style="position:absolute;top:6px;left:6px;height:calc(100% - 12px);width:calc(50% - 6px);border-radius:16px;background:linear-gradient(135deg,#0891b2 0%,#06b6d4 100%);transition:all 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 6px 10px -1px rgba(8,145,178,0.3)"></div>
+        <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:14px 36px;border:none;background:transparent;color:#fff;z-index:1;font-weight:800;font-size:16px;transition:all 0.3s ease;cursor:pointer;border-radius:16px">☀️ Opening</button>
+        <button class="tab-btn" data-tab="closing" style="position:relative;padding:14px 36px;border:none;background:transparent;color:#6b7280;z-index:1;font-weight:800;font-size:16px;transition:all 0.3s ease;cursor:pointer;border-radius:16px">🌙 Closing</button>
       </div>
-      <div id="store-toggle" style="position:relative;display:inline-flex;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:12px">
-        <div id="store-toggle-indicator" style="position:absolute;top:2px;left:2px;height:calc(100% - 4px);width:50%;border-radius:999px;background:#111827;transition:all .2s ease"></div>
-        <button class="tab-btn is-active" data-tab="opening" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#fff;z-index:1">Opening Tasks</button>
-        <button class="tab-btn" data-tab="closing" style="position:relative;padding:8px 14px;border:none;background:transparent;color:#111827;z-index:1">Closing Tasks</button>
-      </div>
-      <div id="store-task-list" style="background:#fff;border:1px solid #e3e3e0;border-radius:12px;padding:16px;margin-bottom:12px;display:grid;gap:8px">
+      
+      <style>
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      </style>
+      <!-- Task List Container -->
+      <div id="store-task-list" style="background:#ffffff;border:3px solid #e5e7eb;border-radius:20px;padding:32px;display:grid;gap:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);max-width:1000px">
           @php
             $renderTask = function($t){
-              $badge = $t['completed'] ? '<span style="background:#22c55e;color:#fff;padding:4px 8px;border-radius:999px;font-size:12px">Completed</span>' : '<span style="background:#e5e7eb;color:#111827;padding:4px 8px;border-radius:999px;font-size:12px">Pending</span>';
+              $isCompleted = $t['completed'];
+              $badge = $isCompleted
+                ? '<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(16,185,129,0.3)"><span>✓</span><span>Done</span></div>' 
+                : '<div style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;border:2px solid #fcd34d">⏳ Pending</div>';
+              
               $loc = $t['location'] ?: 'Unassigned';
               $time = $t['time'] ? \Carbon\Carbon::parse($t['time'])->format('g:i A') : '';
               $emp = $t['employee'] ? ('By '. $t['employee']) : '';
               $sub = trim(($emp.' '.($time?('at '.$time):'')));
-              return '<div class="store-task" data-location="'.strtolower($loc).'" style="display:flex;justify-content:space-between;align-items:center;border:1px solid #e5e7eb;background:'.($t['completed'] ? '#ecfdf5' : '#fff').' ;border-radius:10px;padding:12px 14px">'
-                .'<div>'
-                  .'<div style="font-weight:600;color:#0f172a">'.e($t['title']).'</div>'
-                  .'<div style="font-size:12px;color:#6b7280">'.($sub ?: '&nbsp;').'</div>'
+              
+              $bgColor = $isCompleted ? 'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)' : '#ffffff';
+              $borderColor = $isCompleted ? '#86efac' : '#e5e7eb';
+              
+              $locationColors = [
+                'kitchen' => ['bg' => '#eff6ff', 'border' => '#93c5fd', 'text' => '#1e40af'],
+                'coffee' => ['bg' => '#fefce8', 'border' => '#fcd34d', 'text' => '#92400e'],
+                'default' => ['bg' => '#f3f4f6', 'border' => '#d1d5db', 'text' => '#4b5563']
+              ];
+              
+              $locLower = strtolower($loc);
+              $locColor = $locationColors[$locLower] ?? $locationColors['default'];
+              
+              return '<div class="store-task" data-location="'.$locLower.'" style="display:flex;justify-content:space-between;align-items:center;border:2px solid '.$borderColor.';background:'.$bgColor.';border-radius:14px;padding:18px 20px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform=\'translateX(8px)\'; this.style.boxShadow=\'0 10px 15px -3px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateX(0)\'; this.style.boxShadow=\'none\'">'
+                .'<div style="flex:1;min-width:0">'
+                  .'<div style="font-weight:800;color:#111827;font-size:16px;margin-bottom:6px;line-height:1.3">'.e($t['title']).'</div>'
+                  .'<div style="font-size:13px;color:#6b7280;font-weight:500">'.($sub ?: '<span style="color:#d1d5db">No details</span>').'</div>'
                 .'</div>'
-                .'<div style="display:flex;gap:8px;align-items:center">'
-                  .'<span style="background:#eef2ff;border:1px solid #dbe2ff;padding:4px 8px;border-radius:999px;font-size:12px">'.e($loc).'</span>'
-                  .$badge.
-                '</div>'
+                .'<div style="display:flex;gap:12px;align-items:center;flex-shrink:0;margin-left:16px">'
+                  .'<div style="background:'.$locColor['bg'].';border:2px solid '.$locColor['border'].';padding:6px 14px;border-radius:12px;font-size:13px;font-weight:700;color:'.$locColor['text'].'">'.e($loc).'</div>'
+                  .$badge
+                .'</div>'
               .'</div>';
             };
           @endphp
-          <div class="store-list" data-type="opening">
-            <div style="margin:4px 0 8px">
-              <div style="font-weight:600;color:#0f172a">Opening Tasks</div>
-              <div style="font-size:12px;color:#6b7280">{{ ($openingCompleted ?? 0) }} of {{ ($openingTotal ?? 0) }} completed</div>
+          <div class="store-list" data-type="opening" style="animation:fadeIn 0.4s ease-out">
+            <div style="margin:0 0 24px;padding-bottom:20px;border-bottom:4px solid #f3f4f6">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-weight:900;color:#111827;font-size:24px;margin-bottom:6px;letter-spacing:-0.5px">☀️ Opening Tasks</div>
+                  <div style="font-size:15px;color:#6b7280;font-weight:700">{{ ($openingCompleted ?? 0) }} of {{ ($openingTotal ?? 0) }} tasks completed</div>
+                </div>
+              </div>
             </div>
             @foreach(($openingTaskList ?? []) as $t)
               {!! $renderTask($t) !!}
             @endforeach
           </div>
-          <div class="store-list" data-type="closing" style="display:none">
-            <div style="margin:4px 0 8px">
-              <div style="font-weight:600;color:#0f172a">Closing Tasks</div>
-              <div style="font-size:12px;color:#6b7280">{{ ($closingCompleted ?? 0) }} of {{ ($closingTotal ?? 0) }} completed</div>
+          
+          <div class="store-list" data-type="closing" style="display:none;animation:fadeIn 0.4s ease-out">
+            <div style="margin:0 0 24px;padding-bottom:20px;border-bottom:4px solid #f3f4f6">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-weight:900;color:#111827;font-size:24px;margin-bottom:6px;letter-spacing:-0.5px">🌙 Closing Tasks</div>
+                  <div style="font-size:15px;color:#6b7280;font-weight:700">{{ ($closingCompleted ?? 0) }} of {{ ($closingTotal ?? 0) }} tasks completed</div>
+                </div>
+              </div>
             </div>
             @foreach(($closingTaskList ?? []) as $t)
               {!! $renderTask($t) !!}
