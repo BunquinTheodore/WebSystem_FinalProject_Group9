@@ -112,7 +112,7 @@
         try{
           // compress before sending
           const compressed = await compressImage(dataUrl, 1280, 1280, 0.82);
-          const res = await fetch('{{ route('employee.proof') }}', {
+          const res = await fetch("{{ route('employee.proof') }}", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -135,7 +135,7 @@
           showToast();
         }catch(e){
           // fallback: navigate to scan page
-          window.location.href = '{{ route('scan') }}?task_id=' + encodeURIComponent(currentTaskId);
+          window.location.href = "{{ route('scan') }}?task_id=" + encodeURIComponent(currentTaskId);
         }
       }
 

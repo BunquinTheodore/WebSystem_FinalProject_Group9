@@ -419,7 +419,7 @@
                   $rowBg = $it->status === 'Critical' ? '#fff1f2' : ($it->status === 'Low Stock' ? '#fff7ed' : '#fff');
                   $badgeBg = $it->status === 'Critical' ? '#dc2626' : ($it->status === 'Low Stock' ? '#f59e0b' : '#16a34a');
                 @endphp
-                <tr class="inv-row" data-cat="{{ $cat }}" style="background:{{ $rowBg }}">
+                <tr class="inv-row" data-cat="{{ $cat }}" style="background:<?php echo e($rowBg); ?>">
                   @if(session('role') === 'owner')
                     <td style="padding:8px;border-bottom:1px solid #f6f6f5"><input class="inv-check" type="checkbox" name="ids[]" value="{{ $it->id }}" /></td>
                   @endif
@@ -429,7 +429,7 @@
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ (int)($it->loose ?? 0) }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5"><input type="number" placeholder="Qty" style="width:80px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px" /></td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5"><input type="date" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px" /></td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:3px 8px;border-radius:999px;color:#fff;background:{{ $badgeBg }};font-size:12px">{{ $it->status }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:3px 8px;border-radius:999px;color:#fff;background:<?php echo e($badgeBg); ?>;font-size:12px">{{ $it->status }}</span></td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5;color:#6b7280">{{ \Carbon\Carbon::parse($it->updated_at ?? now())->format('M d, Y') }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ (int)($it->delivered_total ?? 0) ?: 'Qty' }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5"><input type="date" style="padding:4px 6px;border:1px solid #e5e7eb;border-radius:6px" /></td>
