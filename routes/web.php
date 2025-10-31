@@ -329,6 +329,11 @@ Route::get('/owner', function (Request $request) {
         ];
     }
 
+    // Fetch latest APEPO report for sales view
+    $latestApepo = DB::table('apepo_reports')
+        ->orderBy('created_at', 'desc')
+        ->first();
+
     return view('owner.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
@@ -354,6 +359,7 @@ Route::get('/owner', function (Request $request) {
         'openingSales' => $openingSales,
         'closingSales' => $closingSales,
         'dailyEarnings' => $dailyEarnings,
+        'latestApepo' => $latestApepo,
         // Audit / Payroll data
         'employeeCount' => $employeeCount,
         'payrollAllTimeTotal' => $payrollAllTimeTotal,
