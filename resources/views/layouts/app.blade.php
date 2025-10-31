@@ -24,8 +24,8 @@
     body { color: #1b1b18; font-family: 'Open Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
     a { color: #0891b2; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .app-header { max-width: 1100px; margin: 20px auto 0; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
-    .app-shell { max-width: 1100px; margin: 20px auto 40px; padding: 0 16px; }
+    .app-header { max-width: 1100px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; background:#fff; border-bottom:1px solid #e5e7eb; box-shadow: 0 1px 0 rgba(0,0,0,0.04); }
+    .app-shell { max-width: 1100px; margin: 16px auto 40px; padding: 0 16px; }
     .btn { display:inline-block; padding: 8px 12px; border-radius: 8px; border: 1px solid #e3e3e0; background:#fff; color:#1b1b18; cursor:pointer; }
     .btn-primary { background: #0891b2; color: #fff; border-color: #0891b2; }
     .card { background:#fff; border:1px solid #e3e3e0; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.04); }
@@ -53,6 +53,7 @@
   </style>
 </head>
 <body>
+  @unless(request()->routeIs('login'))
   <header class="app-header">
     <div style="display:flex;align-items:center;gap:10px">
       @if(!View::hasSection('hide-back-button') && !(request()->routeIs('login') || request()->is('/')) && !request()->routeIs('dashboard'))
@@ -69,6 +70,7 @@
       @endif
     </div>
   </header>
+  @endunless
 
   <main class="app-shell">
     @yield('content')

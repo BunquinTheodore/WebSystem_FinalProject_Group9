@@ -183,6 +183,21 @@ Route::get('/owner', function (Request $request) {
     $apepo = $apepoQuery->orderByDesc('id')->paginate(20);
     $apepoManagers = DB::table('apepo_reports')->distinct()->orderBy('manager_username')->pluck('manager_username');
 
+    // Audit / Payroll aggregates
+    $employeeCount = (int) DB::table('employees')->count();
+    $payrollAllTimeTotal = (float) (DB::table('payroll')->selectRaw('COALESCE(SUM(hourly_rate * hours_worked), 0) as total')->value('total') ?? 0);
+    $weekStart = \Carbon\Carbon::now()->startOfWeek();
+    $weekEnd = \Carbon\Carbon::now()->endOfWeek();
+    $payrollWeekTotal = (float) (DB::table('payroll')
+        ->whereBetween('created_at', [$weekStart, $weekEnd])
+        ->selectRaw('COALESCE(SUM(hourly_rate * hours_worked), 0) as total')
+        ->value('total') ?? 0);
+    $payrollRecords = DB::table('payroll')
+        ->leftJoin('employees','payroll.employee_id','=','employees.id')
+        ->orderByDesc('payroll.id')
+        ->limit(12)
+        ->get(['payroll.*','employees.name as employee_name','employees.employment_type']);
+
     // Inventory overview for owner with status computation
     $rawInventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
     $inventory = collect($rawInventory)->map(function($it){
@@ -333,6 +348,11 @@ Route::get('/owner', function (Request $request) {
         'openingSales' => $openingSales,
         'closingSales' => $closingSales,
         'dailyEarnings' => $dailyEarnings,
+        // Audit / Payroll data
+        'employeeCount' => $employeeCount,
+        'payrollAllTimeTotal' => $payrollAllTimeTotal,
+        'payrollWeekTotal' => $payrollWeekTotal,
+        'payrollRecords' => $payrollRecords,
     ]);
 })->name('owner.home');
 
