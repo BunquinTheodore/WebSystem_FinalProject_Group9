@@ -42,6 +42,7 @@ return new class extends Migration
             $table->string('item');
             $table->unsignedInteger('quantity')->default(1);
             $table->enum('priority', ['low','medium','high'])->default('medium');
+            $table->text('remarks')->nullable();
             $table->enum('status', ['pending','approved','rejected'])->default('pending');
             $table->timestamps();
         });
