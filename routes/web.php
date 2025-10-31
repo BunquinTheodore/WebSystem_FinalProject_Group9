@@ -348,10 +348,10 @@ Route::post('/owner/requests/{id}/approve', function (Request $request, int $id)
 Route::post('/owner/requests/{id}/deny', function (Request $request, int $id) {
     if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
     DB::table('requests')->where('id', $id)->update([
-        'status' => 'denied',
+        'status' => 'rejected',
         'updated_at' => now(),
     ]);
-    return back()->with('status', 'Request denied');
+    return back()->with('status', 'Request rejected');
 })->name('owner.request.deny');
 
 // Owner: Store management endpoints
