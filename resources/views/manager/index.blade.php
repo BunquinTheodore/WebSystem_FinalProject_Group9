@@ -421,7 +421,7 @@
                 <tr>
                   <td style="padding:8px">{{ $it->name }}</td>
                   <td style="padding:8px">{{ $it->category }}</td>
-                  <td class="inv-qty" data-id="{{ $it->id }}" style="padding:8px;{{ ($it->quantity <= $it->min_threshold) ? 'color:#b91c1c;font-weight:600' : '' }}">{{ $it->quantity }}</td>
+                  <td class="inv-qty" data-id="{{ $it->id }}" style="padding:8px"><span @if($it->quantity <= $it->min_threshold) style="color:#b91c1c;font-weight:600" @endif>{{ $it->quantity }}</span></td>
                   <td style="padding:8px">{{ $it->min_threshold }}</td>
                   <td style="padding:8px">{{ $it->unit }}</td>
                   <td style="padding:8px">
