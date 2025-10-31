@@ -99,6 +99,9 @@
           </div>
           <div style="font-size:22px;color:#b45309">☕</div>
         </div>
+        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
+          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
+        </div>
       </div>
 
       <div id="store-stations" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">
@@ -316,7 +319,6 @@
             </table>
           </div>
         @empty
-          <div style="color:#706f6c">No APEPO reports yet.</div>
         @endforelse
       </div>
       <div style="margin-top:8px">
@@ -495,8 +497,164 @@
     </div>
 
     <div id="employees" class="owner-section" data-section="employees" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title" style="margin:0 0 8px">Employees</h3>
-      <div style="color:#706f6c">Manage staff assignments and performance. Coming soon.</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#eef2ff;border:1px solid #dbe2ff">👥</div>
+        <div>
+          <h3 class="section-title" style="margin:0;color:#0f172a">Employees</h3>
+          <div style="font-size:12px;color:#6b7280">Staff directory and management</div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin:8px 0 16px">
+        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;color:#64748b">Total Employees</div>
+              <div style="font-size:26px;font-weight:800;color:#111827">{{ (int)($empTotal ?? 0) }}</div>
+            </div>
+            <div style="width:42px;height:42px;border-radius:10px;background:#eef2ff;border:1px solid #dbe2ff;display:flex;align-items:center;justify-content:center">👤</div>
+          </div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;color:#64748b">Full-Time</div>
+              <div style="font-size:26px;font-weight:800;color:#1d4ed8">{{ (int)($empFull ?? 0) }}</div>
+            </div>
+            <div style="width:42px;height:42px;border-radius:10px;background:#eef2ff;border:1px solid #dbe2ff;display:flex;align-items:center;justify-content:center">🏢</div>
+          </div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:12px;color:#64748b">Part-Time</div>
+              <div style="font-size:26px;font-weight:800;color:#0ea5e9">{{ (int)($empPart ?? 0) }}</div>
+            </div>
+            <div style="width:42px;height:42px;border-radius:10px;background:#ecfeff;border:1px solid #a5f3fc;display:flex;align-items:center;justify-content:center">🕒</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;color:#0f172a">All Employees</div>
+            <div style="font-size:12px;color:#6b7280">Complete staff directory</div>
+          </div>
+          <button id="emp-add-toggle" type="button" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px">+ Add Employee</button>
+        </div>
+
+
+        <div style="overflow:auto">
+          <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:980px">
+            <thead>
+              <tr>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Employee</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Status</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Position</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Birthday</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Email</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Contact</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Join Date</th>
+                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Inline Add Employee Row -->
+              <tr id="emp-add-row" style="display:none;background:#f9fafb">
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <form id="emp-add-form" class="owner-ajax" method="POST" action="{{ route('owner.employee.create') }}">
+                    @csrf
+                    <input type="hidden" name="role" value="employee">
+                    <input name="name" placeholder="Full name" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                  </form>
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <select form="emp-add-form" name="employment_type" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                    <option value="fulltime">Full-time</option>
+                    <option value="parttime">Part-time</option>
+                  </select>
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <input form="emp-add-form" name="position" placeholder="Position" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <input form="emp-add-form" name="birthday" type="date" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <input form="emp-add-form" name="email" type="email" placeholder="Email" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <input form="emp-add-form" name="contact" placeholder="Contact" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7">
+                  <input form="emp-add-form" name="join_date" type="date" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                </td>
+                <td style="padding:8px;border-bottom:1px solid #eef2f7;white-space:nowrap"></td>
+              </tr>
+
+              @foreach(($employees ?? []) as $e)
+                @php
+                  $statusClr = ($e->employment_type === 'parttime') ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
+                @endphp
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->name }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $statusClr[0] }};background:{{ $statusClr[1] }};border:1px solid {{ $statusClr[2] }};font-size:12px">{{ $e->employment_type === 'parttime' ? 'Part-time' : 'Full-time' }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->position ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->birthday ? \Carbon\Carbon::parse($e->birthday)->format('M d, Y') : '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->email ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->contact ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->join_date ? \Carbon\Carbon::parse($e->join_date)->format('M d, Y') : '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
+                    <button type="button" class="btn" data-emp-edit="{{ $e->id }}">Edit</button>
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.delete', ['id'=>$e->id]) }}" style="display:inline">@csrf<button class="btn" type="submit" onclick="return window.modalConfirm ? (event.preventDefault(), modalConfirm('Remove this employee?', {title:'Confirm delete'}).then(function(ok){ if(ok) event.target.closest('form').submit(); })) : confirm('Remove this employee?')">Delete</button></form>
+                  </td>
+                </tr>
+                <tr id="emp-edit-row-{{ $e->id }}" style="display:none;background:#f9fafb">
+                  <td colspan="8" style="padding:8px;border-bottom:1px solid #eef2f7">
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.update', ['id'=>$e->id]) }}" style="display:grid;gap:8px;grid-template-columns:2fr 1fr 2fr 1fr auto">
+                      @csrf
+                      <input name="name" value="{{ $e->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <select name="role" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                        <option value="employee" {{ $e->role==='employee'?'selected':'' }}>Employee</option>
+                        <option value="manager" {{ $e->role==='manager'?'selected':'' }}>Manager</option>
+                        <option value="owner" {{ $e->role==='owner'?'selected':'' }}>Owner</option>
+                      </select>
+                      <input name="email" type="email" value="{{ $e->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <select name="employment_type" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                        <option value="fulltime" {{ $e->employment_type==='fulltime'?'selected':'' }}>Full-time</option>
+                        <option value="parttime" {{ $e->employment_type==='parttime'?'selected':'' }}>Part-time</option>
+                      </select>
+                      <button class="btn btn-primary" type="submit">Update</button>
+                    </form>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <script>
+        (function(){
+          var addBtn = document.getElementById('emp-add-toggle');
+          var addRow = document.getElementById('emp-add-row');
+          var addActions = document.getElementById('emp-add-actions');
+          function toggleAdd(show){
+            var s = (typeof show==='boolean') ? show : (addRow.style.display==='none' || addRow.style.display==='');
+            addRow.style.display = s ? 'table-row' : 'none';
+            if(addActions) addActions.style.display = s ? '' : 'none';
+          }
+          if(addBtn && addRow){ addBtn.addEventListener('click', function(){ toggleAdd(); }); }
+          document.addEventListener('click', function(ev){
+            var btn = ev.target.closest('[data-emp-edit]');
+            if(!btn) return;
+            var id = btn.getAttribute('data-emp-edit');
+            var row = document.getElementById('emp-edit-row-'+id);
+            if(row){ row.style.display = (row.style.display==='none'||row.style.display==='') ? 'table-row' : 'none'; }
+          });
+        })();
+      </script>
     </div>
   </div>
   <script>

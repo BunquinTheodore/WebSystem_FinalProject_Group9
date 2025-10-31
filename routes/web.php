@@ -198,6 +198,12 @@ Route::get('/owner', function (Request $request) {
         ->limit(12)
         ->get(['payroll.*','employees.name as employee_name','employees.employment_type']);
 
+    // Employees directory data
+    $employees = DB::table('employees')->orderBy('name')->get();
+    $empTotal = (int) $employees->count();
+    $empFull = (int) $employees->where('employment_type','fulltime')->count();
+    $empPart = (int) $employees->where('employment_type','parttime')->count();
+
     // Inventory overview for owner with status computation
     $rawInventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
     $inventory = collect($rawInventory)->map(function($it){
@@ -353,6 +359,11 @@ Route::get('/owner', function (Request $request) {
         'payrollAllTimeTotal' => $payrollAllTimeTotal,
         'payrollWeekTotal' => $payrollWeekTotal,
         'payrollRecords' => $payrollRecords,
+        // Employees data
+        'employees' => $employees,
+        'empTotal' => $empTotal,
+        'empFull' => $empFull,
+        'empPart' => $empPart,
     ]);
 })->name('owner.home');
 
@@ -581,6 +592,73 @@ Route::post('/manager/apepo/{id}/delete', function (Request $request, int $id) {
     }
     return redirect()->route('manager.home')->with('status', 'APEPO removed');
 })->name('manager.apepo.delete');
+
+// Owner: Employees CRUD
+Route::post('/owner/employee', function (Request $request) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'role' => 'required|in:owner,manager,employee',
+        'email' => 'nullable|email|max:255',
+        'employment_type' => 'required|in:fulltime,parttime',
+        // Optional profile fields
+        'position' => 'nullable|string|max:255',
+        'birthday' => 'nullable|date',
+        'contact' => 'nullable|string|max:255',
+        'join_date' => 'nullable|date',
+    ]);
+    $payload = [
+        'name' => $data['name'],
+        'role' => $data['role'],
+        'email' => $data['email'] ?? null,
+        'employment_type' => $data['employment_type'],
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+    // Only include optional columns if they exist, to work before/after migration
+    if (\Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
+    if (\Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
+    if (\Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
+    if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
+
+    DB::table('employees')->insert($payload);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee added');
+})->name('owner.employee.create');
+
+Route::post('/owner/employee/{id}/update', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'role' => 'required|in:owner,manager,employee',
+        'email' => 'nullable|email|max:255',
+        'employment_type' => 'required|in:fulltime,parttime',
+        // Optional profile fields
+        'position' => 'nullable|string|max:255',
+        'birthday' => 'nullable|date',
+        'contact' => 'nullable|string|max:255',
+        'join_date' => 'nullable|date',
+    ]);
+    $payload = [
+        'name' => $data['name'],
+        'role' => $data['role'],
+        'email' => $data['email'] ?? null,
+        'employment_type' => $data['employment_type'],
+        'updated_at' => now(),
+    ];
+    if (\Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
+    if (\Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
+    if (\Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
+    if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
+
+    DB::table('employees')->where('id',$id)->update($payload);
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee updated');
+})->name('owner.employee.update');
+
+Route::post('/owner/employee/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    DB::table('employees')->where('id',$id)->delete();
+    return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Employee removed');
+})->name('owner.employee.delete');
 
 // Owner: Inventory bulk delete (owner only)
 Route::post('/owner/inventory/bulk-delete', function (Request $request) {
