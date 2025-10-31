@@ -522,6 +522,7 @@ Route::get('/manager', function (Request $request) {
     $tasks = Task::where('active', true)->orderBy('id')->get();
     $apepo = DB::table('apepo_reports')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
     $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
+    $employees = DB::table('employees')->orderBy('name')->get();
 
     return view('manager.index', [
         'reports' => $reports,
@@ -533,8 +534,42 @@ Route::get('/manager', function (Request $request) {
         'tasks' => $tasks,
         'apepo' => $apepo,
         'inventory' => $inventory,
+        'employees' => $employees,
     ]);
 })->name('manager.home');
+
+Route::post('/manager/employees', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'role' => 'nullable|string|max:255', // position/title
+        'birthday' => 'nullable|date',
+        'status' => 'nullable|in:full-time,part-time,fulltime,parttime',
+        'email' => 'nullable|email|max:255',
+        'contact' => 'nullable|string|max:255',
+    ]);
+    $employment = (string) ($data['status'] ?? 'full-time');
+    $employment_type = (str_replace('-', '', strtolower($employment)) === 'parttime') ? 'parttime' : 'fulltime';
+
+    $payload = [
+        'name' => $data['name'],
+        'role' => 'employee',
+        'email' => $data['email'] ?? null,
+        'employment_type' => $employment_type,
+        'position' => $data['role'] ?? null,
+        'birthday' => $data['birthday'] ?? null,
+        'contact' => $data['contact'] ?? null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+    // Only keep keys that exist on employees table
+    $cols = \Schema::hasTable('employees') ? \Schema::getColumnListing('employees') : [];
+    $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
+
+    DB::table('employees')->insert($payload);
+    return back()->with('status','Employee added');
+})->name('manager.employees.store');
+
 // Inventory: create item
 Route::post('/manager/inventory/item', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
