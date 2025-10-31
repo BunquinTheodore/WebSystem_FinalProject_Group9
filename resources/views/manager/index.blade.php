@@ -57,8 +57,20 @@
             activate(b.getAttribute('data-tab'));
           });
           window.addEventListener('resize', function(){ const act = document.querySelector('.mgr-tab.is-active'); if(act){ activate(act.getAttribute('data-tab')); }});
-          const initial = (location.hash||'#tasks').replace('#','');
-          activate(initial);
+          function getParam(name){ try { const url=new URL(window.location.href); return url.searchParams.get(name); } catch(e){ return null; } }
+          let initial = (location.hash||'').replace('#','');
+          if(!initial){
+            const qp = (getParam('tab')||'').trim();
+            if(qp){ initial = qp; }
+          }
+          if(!initial){ initial = 'tasks'; }
+          function runInitial(){ activate(initial); }
+          if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', runInitial);
+          } else {
+            // In case this script runs before sections, defer one tick
+            setTimeout(runInitial, 0);
+          }
           window.addEventListener('hashchange', function(){ const h=(location.hash||'').replace('#',''); if(h){ activate(h); }});
         }
       })();

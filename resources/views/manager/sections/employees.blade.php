@@ -21,19 +21,48 @@
  <td style="padding:8px">{{ $emp->role ?? $emp->position ?? '-' }}</td>
  <td style="padding:8px">{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('m/d/Y') : '-' }}</td>
  <td style="padding:8px">
- @php($status = strtolower($emp->status ?? ''))
- <span style="display:inline-block;padding:4px 8px;border-radius:9999px;font-size:12px;{{ $status==='full-time' ? 'background:#e0f2fe;color:#0369a1' : 'background:#f3e8ff;color:#6b21a8' }}">
- {{ ucfirst($emp->status ?? 'Unknown') }}
+ @php($et = strtolower($emp->employment_type ?? ''))
+ @php($isFull = $et === 'fulltime')
+ <span style="display:inline-block;padding:4px 8px;border-radius:9999px;font-size:12px;{{ $isFull ? 'background:#e0f2fe;color:#0369a1' : 'background:#f3e8ff;color:#6b21a8' }}">
+   {{ $isFull ? 'Full-time' : ($et==='parttime' ? 'Part-time' : 'Unknown') }}
  </span>
  </td>
  <td style="padding:8px">{{ $emp->email ?? '-' }}</td>
  <td style="padding:8px">{{ $emp->contact ?? $emp->phone ?? '-' }}</td>
  <td style="padding:8px">
- <div style="display:flex;gap:8px;align-items:center">
- <button title="Edit (view-only)" disabled style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#9ca3af;cursor:not-allowed">✎</button>
- <button title="Delete (owner-only)" disabled style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#9ca3af;cursor:not-allowed">🗑</button>
- </div>
+   <div style="display:flex;gap:8px;align-items:center">
+     <button type="button" onclick="document.getElementById('edit-emp-{{ $emp->id }}').style.display = (document.getElementById('edit-emp-{{ $emp->id }}').style.display==='none' || document.getElementById('edit-emp-{{ $emp->id }}').style.display==='') ? 'table-row' : 'none'" style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#0f172a">✎</button>
+     <form method="POST" action="{{ route('manager.employees.delete', ['id'=>$emp->id]) }}" onsubmit="return confirm('Delete this employee?')" style="margin:0">
+       @csrf
+       <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c">🗑</button>
+     </form>
+   </div>
  </td>
+ </tr>
+ <tr id="edit-emp-{{ $emp->id }}" style="display:none;background:#fafafa">
+   <td colspan="7" style="padding:8px">
+     <form method="POST" action="{{ route('manager.employees.update', ['id'=>$emp->id]) }}" style="display:grid;gap:10px">
+       @csrf
+       <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
+         <input name="name" value="{{ $emp->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         <input name="role" value="{{ $emp->position ?? $emp->role ?? '' }}" placeholder="Role/Position" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+       </div>
+       <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr">
+         <input name="birthday" type="date" value="{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('Y-m-d') : '' }}" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         @php($et = strtolower($emp->employment_type ?? 'fulltime'))
+         <select name="status" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px">
+           <option value="full-time" {{ $et==='fulltime' ? 'selected' : '' }}>Full-time</option>
+           <option value="part-time" {{ $et==='parttime' ? 'selected' : '' }}>Part-time</option>
+         </select>
+         <input name="contact" value="{{ $emp->contact ?? '' }}" placeholder="Contact" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+       </div>
+       <input name="email" type="email" value="{{ $emp->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+       <div style="display:flex;gap:8px;justify-content:flex-end">
+         <button type="button" onclick="document.getElementById('edit-emp-{{ $emp->id }}').style.display='none'" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Cancel</button>
+         <button style="padding:8px 12px;background:#16a34a;color:#fff;border-radius:6px">Save</button>
+       </div>
+     </form>
+   </td>
  </tr>
  @empty
  <tr><td colspan="7" style="padding:8px;color:#706f6c">No employees found.</td></tr>
@@ -41,14 +70,12 @@
  </tbody>
  </table>
  </div>
- <div style="margin-top:12px">
- <button type="button" onclick="document.getElementById('mgr-add-emp').classList.toggle('open')" style="display:block;width:100%;text-align:center;background:#4f46e5;color:#fff;border-radius:8px;padding:10px 14px">+ Add New Employee</button>
- </div>
+  <div style="margin-top:12px"></div>
 </div>
 
-<div id="mgr-add-emp" class="card" style="display:none;margin-top:12px;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
-  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">New Employee</div>
-  <form id="mgr-add-emp-form" method="POST" action="{{ \Illuminate\Support\Facades\Route::has('manager.employees.store') ? route('manager.employees.store') : route('manager.request') }}">
+<div id="mgr-add-emp" class="card" style="display:block;margin-top:12px;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
+  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Add New Employee</div>
+  <form id="mgr-add-emp-form" method="POST" action="{{ route('manager.employees.store') }}">
     @csrf
     <div style="display:grid;gap:10px">
       <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr">
@@ -64,50 +91,14 @@
         <input name="contact" placeholder="Contact" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
       <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-
-      <input type="hidden" name="item" value="New Employee" />
-      <input type="hidden" name="quantity" value="1" />
-      <input type="hidden" name="priority" value="medium" />
-      <input type="hidden" name="remarks" id="mgr-add-emp-remarks" />
-
       <div style="display:flex;gap:8px;justify-content:flex-end">
-        <button type="button" onclick="document.getElementById('mgr-add-emp').classList.remove('open');document.getElementById('mgr-add-emp').style.display='none'" style="padding:10px 14px;border:1px solid #e3e3e0;border-radius:8px;background:#fff;color:#1b1b18">Cancel</button>
-        <button style="padding:10px 14px;background:#16a34a;color:#fff;border-radius:8px">Submit</button>
+        <button type="button" onclick="document.getElementById('mgr-add-emp').style.display='none'" style="padding:10px 14px;border:1px solid #e3e3e0;border-radius:8px;background:#fff;color:#1b1b18">Cancel</button>
+        <button style="padding:10px 14px;background:#16a34a;color:#fff;border-radius:8px">Add Employee</button>
       </div>
     </div>
   </form>
 </div>
 
 <script>
-  (function(){
-    var panel = document.getElementById('mgr-add-emp');
-    if(panel){
-      Object.defineProperty(panel, 'classListToggleApplied', {value:true, configurable:true});
-      panel.addEventListener('transitionend', function(){});
-    }
-    var btnPanel = document.querySelector('button[onclick*="mgr-add-emp"]');
-    if(btnPanel){
-      btnPanel.addEventListener('click', function(){
-        var p = document.getElementById('mgr-add-emp');
-        if(p){ p.style.display = (p.style.display==='none' || p.style.display==='') ? 'block':'none'; }
-      });
-    }
-    var form = document.getElementById('mgr-add-emp-form');
-    if(form){
-      form.addEventListener('submit', function(){
-        var routeFallback = '{{ \Illuminate\Support\Facades\Route::has('manager.employees.store') ? '0' : '1' }}' === '1';
-        if(routeFallback){
-          var name = form.querySelector('[name=name]')?.value || '';
-          var role = form.querySelector('[name=role]')?.value || '';
-          var birthday = form.querySelector('[name=birthday]')?.value || '';
-          var status = form.querySelector('[name=status]')?.value || '';
-          var email = form.querySelector('[name=email]')?.value || '';
-          var contact = form.querySelector('[name=contact]')?.value || '';
-          var remarks = `Employee: ${name}\nRole: ${role}\nBirthday: ${birthday}\nStatus: ${status}\nEmail: ${email}\nContact: ${contact}`;
-          var r = document.getElementById('mgr-add-emp-remarks');
-          if(r){ r.value = remarks; }
-        }
-      });
-    }
-  })();
+  (function(){ try{ if(location.hash !== '#employees'){ history.replaceState(null,'', location.pathname + location.search + '#employees'); } }catch(_){ /* noop */ } })();
 </script>

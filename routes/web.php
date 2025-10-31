@@ -199,7 +199,7 @@ Route::get('/owner', function (Request $request) {
         ->get(['payroll.*','employees.name as employee_name','employees.employment_type']);
 
     // Employees directory data
-    $employees = DB::table('employees')->orderBy('name')->get();
+    $employees = DB::table('employees')->orderBy('id', 'asc')->get();
     $empTotal = (int) $employees->count();
     $empFull = (int) $employees->where('employment_type','fulltime')->count();
     $empPart = (int) $employees->where('employment_type','parttime')->count();
@@ -567,8 +567,52 @@ Route::post('/manager/employees', function (Request $request) {
     $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
 
     DB::table('employees')->insert($payload);
-    return back()->with('status','Employee added');
+    if ($request->ajax()) {
+        return response()->json(['ok'=>true]);
+    }
+    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee added');
 })->name('manager.employees.store');
+
+// Manager: update employee (limited fields)
+Route::post('/manager/employees/{id}/update', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'role' => 'nullable|string|max:255',
+        'birthday' => 'nullable|date',
+        'status' => 'nullable|in:full-time,part-time,fulltime,parttime',
+        'email' => 'nullable|email|max:255',
+        'contact' => 'nullable|string|max:255',
+    ]);
+    $employment = (string) ($data['status'] ?? 'full-time');
+    $employment_type = (str_replace('-', '', strtolower($employment)) === 'parttime') ? 'parttime' : 'fulltime';
+    $payload = [
+        'name' => $data['name'],
+        'email' => $data['email'] ?? null,
+        'employment_type' => $employment_type,
+        'position' => $data['role'] ?? null,
+        'birthday' => $data['birthday'] ?? null,
+        'contact' => $data['contact'] ?? null,
+        'updated_at' => now(),
+    ];
+    $cols = \Schema::hasTable('employees') ? \Schema::getColumnListing('employees') : [];
+    $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
+    DB::table('employees')->where('id', $id)->update($payload);
+    if ($request->ajax()) {
+        return response()->json(['ok'=>true]);
+    }
+    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee updated');
+})->name('manager.employees.update');
+
+// Manager: delete employee
+Route::post('/manager/employees/{id}/delete', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    DB::table('employees')->where('id', $id)->delete();
+    if ($request->ajax()) {
+        return response()->json(['ok'=>true]);
+    }
+    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee removed');
+})->name('manager.employees.delete');
 
 // Inventory: create item
 Route::post('/manager/inventory/item', function (Request $request) {
