@@ -18,12 +18,12 @@
     </style>
     <div id="mgr-tabs" class="mgr-tabs" role="tablist" aria-label="Manager sections">
       <div id="mgr-tabs-indicator" class="mgr-tabs-indicator" aria-hidden="true"></div>
-      <button class="mgr-tab is-active" data-tab="tasks" role="tab" aria-selected="true">Tasks</button>
-      <button class="mgr-tab" data-tab="reports" role="tab" aria-selected="false">Reports</button>
-      <button class="mgr-tab" data-tab="inventory" role="tab" aria-selected="false">Inventory</button>
-      <button class="mgr-tab" data-tab="requests" role="tab" aria-selected="false">Requests</button>
-      <button class="mgr-tab" data-tab="payroll" role="tab" aria-selected="false">Payroll</button>
-      <button class="mgr-tab" data-tab="employees" role="tab" aria-selected="false">Employees</button>
+      <button class="mgr-tab is-active" data-tab="tasks" role="tab" aria-selected="true"><span aria-hidden="true">📋</span><span>Tasks</span></button>
+      <button class="mgr-tab" data-tab="reports" role="tab" aria-selected="false"><span aria-hidden="true">📊</span><span>Reports</span></button>
+      <button class="mgr-tab" data-tab="inventory" role="tab" aria-selected="false"><span aria-hidden="true">📦</span><span>Inventory</span></button>
+      <button class="mgr-tab" data-tab="requests" role="tab" aria-selected="false"><span aria-hidden="true">📝</span><span>Requests</span></button>
+      <button class="mgr-tab" data-tab="payroll" role="tab" aria-selected="false"><span aria-hidden="true">💰</span><span>Payroll</span></button>
+      <button class="mgr-tab" data-tab="employees" role="tab" aria-selected="false"><span aria-hidden="true">👥</span><span>Employees</span></button>
     </div>
     <script>
       (function(){

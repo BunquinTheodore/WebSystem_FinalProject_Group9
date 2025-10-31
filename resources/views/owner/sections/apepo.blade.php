@@ -12,17 +12,26 @@
       </div>
 
       <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px">
-        <div style="background:#f0fff8;border:1px solid #c8f1dd;border-radius:12px;padding:14px">
-          <div style="font-size:12px;color:#047857;margin-bottom:4px">Current Week Total</div>
-          <div style="font-size:26px;font-weight:800;color:#047857">₱{{ number_format(($payrollWeekTotal ?? 0), 0) }}</div>
+        <div style="background:#f0fff8;border:1px solid #c8f1dd;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:12px;color:#047857;margin-bottom:4px">Current Week Total</div>
+            <div style="font-size:26px;font-weight:800;color:#047857">₱{{ number_format(($payrollWeekTotal ?? 0), 0) }}</div>
+          </div>
+          <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ecfdf5;color:#047857;border:1px solid #bbf7d0">💵</div>
         </div>
-        <div style="background:#fff8ef;border:1px solid #fde9cc;border-radius:12px;padding:14px">
-          <div style="font-size:12px;color:#a04900;margin-bottom:4px">All-Time Total</div>
-          <div style="font-size:26px;font-weight:800;color:#b91c1c">₱{{ number_format(($payrollAllTimeTotal ?? 0), 0) }}</div>
+        <div style="background:#fff8ef;border:1px solid #fde9cc;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:12px;color:#a04900;margin-bottom:4px">All-Time Total</div>
+            <div style="font-size:26px;font-weight:800;color:#b91c1c">₱{{ number_format(($payrollAllTimeTotal ?? 0), 0) }}</div>
+          </div>
+          <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff7ed;color:#b45309;border:1px solid #fed7aa">🧾</div>
         </div>
-        <div style="background:#eef2ff;border:1px solid #dbe2ff;border-radius:12px;padding:14px">
-          <div style="font-size:12px;color:#4338ca;margin-bottom:4px">Total Employees</div>
-          <div style="font-size:26px;font-weight:800;color:#4338ca">{{ (int)($empTotal ?? 0) }}</div>
+        <div style="background:#eef2ff;border:1px solid #dbe2ff;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:12px;color:#4338ca;margin-bottom:4px">Total Employees</div>
+            <div style="font-size:26px;font-weight:800;color:#4338ca">{{ (int)($empTotal ?? 0) }}</div>
+          </div>
+          <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eff6ff;color:#4338ca;border:1px solid #bfdbfe">👥</div>
         </div>
       </div>
 
