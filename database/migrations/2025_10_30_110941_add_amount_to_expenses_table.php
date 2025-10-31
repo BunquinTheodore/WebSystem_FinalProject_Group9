@@ -8,7 +8,9 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('expenses', function (Blueprint $table) {
-            $table->decimal('amount', 10, 2)->after('manager_username');
+            if (!Schema::hasColumn('expenses', 'amount')) {
+                $table->decimal('amount', 10, 2)->after('manager_username');
+            }
         });
     }
 

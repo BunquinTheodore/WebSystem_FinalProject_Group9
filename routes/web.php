@@ -432,6 +432,51 @@ Route::post('/owner/task/{id}/set-location', function (Request $request, int $id
     return $request->ajax() ? response()->json(['ok' => true]) : back()->with('status','Task updated');
 })->name('owner.task.setLocation');
 
+// Owner: Manage Tasks for Managers
+Route::get('/owner/manage-tasks', function (Request $request) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    
+    $managers = DB::table('users')->where('role', 'manager')->orderBy('username')->get();
+    $recentTasks = DB::table('manager_tasks')
+        ->leftJoin('users', 'manager_tasks.manager_id', '=', 'users.id')
+        ->select('manager_tasks.*', 'users.username as manager_username')
+        ->orderBy('manager_tasks.created_at', 'desc')
+        ->limit(10)
+        ->get();
+    
+    return view('owner.manage-tasks', [
+        'managers' => $managers,
+        'recentTasks' => $recentTasks->map(function($task) {
+            $task->manager = (object)['username' => $task->manager_username ?? 'N/A'];
+            return $task;
+        }),
+    ]);
+})->name('owner.manageTasks');
+
+Route::post('/owner/manage-tasks', function (Request $request) {
+    if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
+    
+    $data = $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'priority' => 'required|in:low,medium,high',
+    ]);
+    
+    DB::table('manager_tasks')->insert([
+        'title' => $data['title'],
+        'description' => $data['description'] ?? null,
+        'manager_id' => null, // Not assigned to specific manager
+        'priority' => $data['priority'],
+        'due_date' => null, // No due date
+        'status' => 'pending',
+        'created_by' => $request->session()->get('username', 'owner'),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    
+    return back()->with('success', 'Task created successfully!');
+})->name('owner.manageTasks.store');
+
 Route::get('/manager/store-preview', function () {
     $openingTaskList = [
         ['id'=>1,'title'=>'Turn on espresso machine','location'=>'Coffee Bar','completed'=>true,'employee'=>'Emma Davis','time'=>now()->setTime(7,50)],

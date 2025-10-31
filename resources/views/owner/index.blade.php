@@ -3,73 +3,250 @@
 @section('title', 'Owner')
 
 @section('content')
-  <div style="max-width:1000px;margin:0 auto;display:grid;gap:16px">
+<style>
+  /* Override parent layout for owner dashboard */
+  body {
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%) !important;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+  .app-header {
+    display: none !important;
+  }
+  .app-shell {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body::before {
+    display: none !important;
+  }
+  
+  /* Top navigation bar */
+  .owner-topbar {
+    background: #fff;
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .owner-topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0891b2;
+  }
+  .owner-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .owner-topbar-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f9ff;
+    color: #0891b2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  .owner-topbar-icon:hover {
+    background: #0891b2;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  .owner-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+  .owner-topbar-user:hover {
+    background: #f0f9ff;
+  }
+  .owner-topbar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #0891b2;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .owner-topbar-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .owner-topbar-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 14px;
+  }
+  .owner-topbar-role {
+    font-size: 12px;
+    color: #64748b;
+  }
+  
+  /* Dashboard cards */
+  .owner-dashboard-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .owner-dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+  }
+  .owner-dashboard-card:active {
+    transform: translateY(-2px);
+    transition: all 0.1s ease;
+  }
+  .owner-dashboard-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    transition: transform 0.3s ease;
+  }
+  .owner-dashboard-card:hover .owner-dashboard-icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+  .owner-dashboard-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #0f172a;
+    margin: 0;
+  }
+  .owner-dashboard-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+  }
+</style>
 
-    <div id="owner-welcome" style="text-align:center;padding:20px 12px">
-      <h1 style="margin:0 0 6px;font-size:28px;color:#0f172a">Welcome back, owner</h1>
-      <div style="color:#64748b">Choose a section to view details</div>
+  <!-- Top Navigation Bar -->
+  <div class="owner-topbar">
+    <div class="owner-topbar-logo">
+      <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon" style="height:48px;width:auto;object-fit:contain">
+    </div>
+    <div class="owner-topbar-right">
+      <a href="{{ url('/owner/manage-tasks') }}" class="owner-topbar-icon" title="Manage Tasks">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+      </a>
+      <div class="owner-topbar-user" onclick="document.getElementById('logout-form').submit();">
+        <div class="owner-topbar-avatar">{{ strtoupper(substr(session('username', 'O'), 0, 1)) }}</div>
+        <div class="owner-topbar-info">
+          <div class="owner-topbar-name">{{ session('username', 'Owner') }}</div>
+          <div class="owner-topbar-role">Owner</div>
+        </div>
+      </div>
+      <form id="logout-form" action="{{ url('/logout') }}" method="POST" style="display:none">@csrf</form>
+    </div>
+  </div>
+
+  <div style="max-width:1100px;margin:0 auto;padding:40px 20px">
+    <div id="owner-welcome" style="text-align:center;padding:20px 12px 40px">
+      <h1 style="margin:0 0 8px;font-size:32px;color:#0f172a;font-weight:400">Welcome back, {{ session('username', 'owner') }}!</h1>
+      <div style="color:#64748b;font-size:15px">Choose a section to view details</div>
     </div>
 
-    <div id="owner-nav" class="owner-nav" style="display:grid;gap:16px;grid-template-columns:repeat(3,minmax(0,1fr));padding:0 8px">
-      <a href="#store" data-target="store" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#e0f2fe;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">🏬</span>
+    <div id="owner-nav" class="owner-nav" style="display:grid;gap:24px;grid-template-columns:repeat(3,minmax(0,1fr));max-width:920px;margin:0 auto">
+      <a href="#store" data-target="store" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#dbeafe">
+          <span>🏬</span>
         </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Store</div>
-          <div style="font-size:12px;color:#64748b">Opening & Closing Tasks</div>
-        </div>
-      </a>
-      <a href="#sales" data-target="sales" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#dcfce7;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">💵</span>
-        </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Sales</div>
-          <div style="font-size:12px;color:#64748b">Reports & Performance</div>
+        <div>
+          <div class="owner-dashboard-title">Store</div>
+          <div class="owner-dashboard-subtitle">Opening & Closing Tasks</div>
         </div>
       </a>
-      <a href="#inventory" data-target="inventory" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#f1f5ff;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">📦</span>
+      <a href="#sales" data-target="sales" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#d1fae5">
+          <span>💵</span>
         </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Inventory</div>
-          <div style="font-size:12px;color:#64748b">Stock Levels</div>
-        </div>
-      </a>
-      <a href="#requests" data-target="requests" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#fff7ed;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">📝</span>
-        </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Requests</div>
-          <div style="font-size:12px;color:#64748b">Shop Needs</div>
+        <div>
+          <div class="owner-dashboard-title">Sales</div>
+          <div class="owner-dashboard-subtitle">Reports & Performance</div>
         </div>
       </a>
-      <a href="#apepo" data-target="apepo" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#fef3c7;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">📊</span>
+      <a href="#inventory" data-target="inventory" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#e9d5ff">
+          <span>📦</span>
         </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Audit / Payroll</div>
-          <div style="font-size:12px;color:#64748b">Employee Payments</div>
+        <div>
+          <div class="owner-dashboard-title">Inventory</div>
+          <div class="owner-dashboard-subtitle">Stock Levels</div>
         </div>
       </a>
-      <a href="#employees" data-target="employees" style="display:flex;flex-direction:column;align-items:center;gap:10px;background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:24px 16px;text-decoration:none;color:#0f172a;box-shadow:0 1px 0 rgba(0,0,0,0.02)">
-        <div style="width:56px;height:56px;border-radius:999px;background:#eef2ff;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:28px">👥</span>
+      <a href="#requests" data-target="requests" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#fed7aa">
+          <span>📝</span>
         </div>
-        <div style="text-align:center">
-          <div style="font-weight:600">Employees</div>
-          <div style="font-size:12px;color:#64748b">Staff Management</div>
+        <div>
+          <div class="owner-dashboard-title">Requests</div>
+          <div class="owner-dashboard-subtitle">Shop Needs</div>
+        </div>
+      </a>
+      <a href="#apepo" data-target="apepo" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#fde68a">
+          <span>📊</span>
+        </div>
+        <div>
+          <div class="owner-dashboard-title">Audit / Payroll</div>
+          <div class="owner-dashboard-subtitle">Employee Payments</div>
+        </div>
+      </a>
+      <a href="#employees" data-target="employees" class="owner-dashboard-card">
+        <div class="owner-dashboard-icon" style="background:#ddd6fe">
+          <span>👥</span>
+        </div>
+        <div>
+          <div class="owner-dashboard-title">Employees</div>
+          <div class="owner-dashboard-subtitle">Staff Management</div>
         </div>
       </a>
     </div>
 
 
     <div id="store" class="owner-section" data-section="store" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title" style="margin:0 0 12px">Store Tasks</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h3 class="section-title" style="margin:0">Store Tasks</h3>
+      </div>
       <div style="display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px">
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
           <div>
@@ -162,8 +339,10 @@
     </div>
 
     <div id="sales-overview" class="owner-section" data-section="sales" style="display:none;background:#f8fffe;border:1px solid #daf1ee;padding:16px;border-radius:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#e7fff9;border:1px solid #c8ede7">💰</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
         <div>
           <h2 class="section-title" style="margin:0;color:#0f172a">Sales & Reports</h2>
           <div style="font-size:12px;color:#6b7280">Financial and operational reports</div>
@@ -203,7 +382,12 @@
 
     <!-- Recent Reports below header -->
     <div id="reports" class="owner-section" data-section="sales" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title" style="margin:0 0 8px">Recent Reports</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h3 class="section-title" style="margin:0">Recent Reports</h3>
+      </div>
       <div style="display:grid;gap:10px">
         @forelse($reports as $r)
           <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
@@ -235,7 +419,12 @@
     </div>
 
     <div id="apepo" class="owner-section" data-section="apepo" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <h3 class="section-title" style="margin:0 0 8px">Recent APEPO Reports</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h3 class="section-title" style="margin:0">Recent APEPO Reports</h3>
+      </div>
       <form id="apepo-filter-form" method="GET" action="{{ route('owner.home') }}" style="margin:8px 0 12px;display:grid;gap:8px;grid-template-columns:1.5fr 1fr 1fr auto">
         <div>
           <input id="mgr-input" list="apepo-managers" placeholder="Type manager name, then Add" style="padding:6px 8px;border:1px solid #e3e3e0;border-radius:6px;width:100%" />
@@ -324,8 +513,10 @@
     </div>
 
     <div id="requests" class="owner-section" data-section="requests" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#fff7ed;border:1px solid #fde9cc">📝</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
         <div>
           <h3 class="section-title" style="margin:0;color:#0f172a">Shop Requests</h3>
           <div style="font-size:12px;color:#6b7280">Manager-submitted requests</div>
@@ -402,8 +593,10 @@
     </div>
 
     <div id="inventory" class="owner-section" data-section="inventory" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#eef2ff;border:1px solid #dbe2ff">📊</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
         <div>
           <h3 class="section-title" style="margin:0;color:#0f172a">Inventory</h3>
           <div style="font-size:12px;color:#6b7280">Current stock levels</div>
@@ -494,175 +687,19 @@
     </div>
 
     <div id="employees" class="owner-section" data-section="employees" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-        <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#eef2ff;border:1px solid #dbe2ff">👥</div>
-        <div>
-          <h3 class="section-title" style="margin:0;color:#0f172a">Employees</h3>
-          <div style="font-size:12px;color:#6b7280">Staff directory and management</div>
-        </div>
-      </div>
-
-      <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin:8px 0 16px">
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">Total Employees</div>
-              <div style="font-size:26px;font-weight:800;color:#111827">{{ (int)($empTotal ?? 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#eef2ff;border:1px solid #dbe2ff;display:flex;align-items:center;justify-content:center">👤</div>
-          </div>
-        </div>
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">Full-Time</div>
-              <div style="font-size:26px;font-weight:800;color:#1d4ed8">{{ (int)($empFull ?? 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#eef2ff;border:1px solid #dbe2ff;display:flex;align-items:center;justify-content:center">🏢</div>
-          </div>
-        </div>
-        <div style="background:#ffffff;border:1px solid #e3e3e0;border-radius:12px;padding:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:12px;color:#64748b">Part-Time</div>
-              <div style="font-size:26px;font-weight:800;color:#0ea5e9">{{ (int)($empPart ?? 0) }}</div>
-            </div>
-            <div style="width:42px;height:42px;border-radius:10px;background:#ecfeff;border:1px solid #a5f3fc;display:flex;align-items:center;justify-content:center">🕒</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="padding:14px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
-          <div>
-            <div style="font-weight:700;color:#0f172a">All Employees</div>
-            <div style="font-size:12px;color:#6b7280">Complete staff directory</div>
-          </div>
-          <button id="emp-add-toggle" type="button" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px">+ Add Employee</button>
-        </div>
-
-
-        <div style="overflow:auto">
-          <table style="width:100%;border-collapse:separate;border-spacing:0;min-width:980px">
-            <thead>
-              <tr>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Employee</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Status</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Position</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Birthday</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Email</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Contact</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Join Date</th>
-                <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach(($employees ?? []) as $e)
-                @php
-                  $statusClr = ($e->employment_type === 'parttime') ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
-                @endphp
-                <tr>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->name }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $statusClr[0] }};background:{{ $statusClr[1] }};border:1px solid {{ $statusClr[2] }};font-size:12px">{{ $e->employment_type === 'parttime' ? 'Part-time' : 'Full-time' }}</span></td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->position ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->birthday ? \Carbon\Carbon::parse($e->birthday)->format('M d, Y') : '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->email ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->contact ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->join_date ? \Carbon\Carbon::parse($e->join_date)->format('M d, Y') : '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <button type="button" class="btn" data-emp-edit="{{ $e->id }}">Edit</button>
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.delete', ['id'=>$e->id]) }}" style="display:inline">@csrf<button class="btn" type="submit" onclick="return window.modalConfirm ? (event.preventDefault(), modalConfirm('Remove this employee?', {title:'Confirm delete'}).then(function(ok){ if(ok) event.target.closest('form').submit(); })) : confirm('Remove this employee?')">Delete</button></form>
-                  </td>
-                </tr>
-                <tr id="emp-edit-row-{{ $e->id }}" style="display:none;background:#f9fafb">
-                  <td colspan="8" style="padding:8px;border-bottom:1px solid #eef2f7">
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.update', ['id'=>$e->id]) }}" style="display:grid;gap:8px;grid-template-columns:2fr 1fr 2fr 1fr 2fr 1.2fr 1.2fr auto">
-                      @csrf
-                      <input name="name" value="{{ $e->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <select name="employment_type" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                        <option value="fulltime" {{ $e->employment_type==='fulltime'?'selected':'' }}>Full-time</option>
-                        <option value="parttime" {{ $e->employment_type==='parttime'?'selected':'' }}>Part-time</option>
-                      </select>
-                      <input name="position" value="{{ $e->position ?? '' }}" placeholder="Position" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <input name="birthday" type="date" value="{{ $e->birthday ?? '' }}" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <input name="email" type="email" value="{{ $e->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <input name="contact" value="{{ $e->contact ?? '' }}" placeholder="Contact" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <input name="join_date" type="date" value="{{ $e->join_date ?? '' }}" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <button class="btn btn-primary" type="submit">Update</button>
-                    </form>
-                  </td>
-                </tr>
-              @endforeach
-              <!-- Inline Add Employee Row (moved to bottom) -->
-              <tr id="emp-add-row" style="display:none;background:#f9fafb">
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <form id="emp-add-form" class="owner-ajax" method="POST" action="{{ route('owner.employee.create') }}">
-                    @csrf
-                    <input type="hidden" name="role" value="employee">
-                    <input name="name" placeholder="Full name" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                  </form>
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <select form="emp-add-form" name="employment_type" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                    <option value="fulltime">Full-time</option>
-                    <option value="parttime">Part-time</option>
-                  </select>
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <input form="emp-add-form" name="position" placeholder="Position" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <input form="emp-add-form" name="birthday" type="date" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <input form="emp-add-form" name="email" type="email" placeholder="Email" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <input form="emp-add-form" name="contact" placeholder="Contact" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7">
-                  <input form="emp-add-form" name="join_date" type="date" style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                </td>
-                <td style="padding:8px;border-bottom:1px solid #eef2f7;white-space:nowrap"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
-          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
-        </div>
-        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
-          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
-        </div>
-      </div>
-
-      <script>
-        (function(){
-          var addBtn = document.getElementById('emp-add-toggle');
-          var addRow = document.getElementById('emp-add-row');
-          var addActions = document.getElementById('emp-add-actions');
-          function toggleAdd(show){
-            var s = (typeof show==='boolean') ? show : (addRow && (addRow.style.display==='none' || addRow.style.display===''));
-            if(addRow) addRow.style.display = s ? 'table-row' : 'none';
-            if(addActions) {
-              addActions.style.display = s ? '' : 'none';
-              if(s) try { addActions.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(_){}
-            }
-          }
-          if(addBtn){ addBtn.addEventListener('click', function(){ toggleAdd(); }); }
-          document.addEventListener('click', function(ev){
-            var btn = ev.target.closest('[data-emp-edit]');
-            if(!btn) return;
-            var id = btn.getAttribute('data-emp-edit');
-            var row = document.getElementById('emp-edit-row-'+id);
-            if(row){ row.style.display = (row.style.display==='none'||row.style.display==='') ? 'table-row' : 'none'; }
-          });
-        })();
-      </script>
+      <h3 class="section-title" style="margin:0 0 8px">Employees</h3>
+      <div style="color:#706f6c">Manage staff assignments and performance. Coming soon.</div>
     </div>
   </div>
   <script>
+    function backToMain() {
+      document.querySelectorAll('.owner-section').forEach(function(section) {
+        section.style.display = 'none';
+      });
+      document.getElementById('owner-welcome').style.display = 'block';
+      document.getElementById('owner-nav').style.display = 'grid';
+    }
+    
     (function(){
       var invFilters = document.getElementById('inventory-filters');
       function applyInvFilter(){
