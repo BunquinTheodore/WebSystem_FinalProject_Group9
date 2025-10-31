@@ -629,7 +629,7 @@ Route::post('/owner/employee/{id}/update', function (Request $request, int $id) 
     if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
     $data = $request->validate([
         'name' => 'required|string|max:255',
-        'role' => 'required|in:owner,manager,employee',
+        'role' => 'sometimes|in:owner,manager,employee',
         'email' => 'nullable|email|max:255',
         'employment_type' => 'required|in:fulltime,parttime',
         // Optional profile fields
@@ -640,11 +640,13 @@ Route::post('/owner/employee/{id}/update', function (Request $request, int $id) 
     ]);
     $payload = [
         'name' => $data['name'],
-        'role' => $data['role'],
         'email' => $data['email'] ?? null,
         'employment_type' => $data['employment_type'],
         'updated_at' => now(),
     ];
+    // Only change role if provided
+    if (array_key_exists('role', $data)) { $payload['role'] = $data['role']; }
+
     if (\Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
     if (\Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
     if (\Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
