@@ -99,9 +99,6 @@
           </div>
           <div style="font-size:22px;color:#b45309">☕</div>
         </div>
-        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
-          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
-        </div>
       </div>
 
       <div id="store-stations" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px">
@@ -560,7 +557,43 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Inline Add Employee Row -->
+              @foreach(($employees ?? []) as $e)
+                @php
+                  $statusClr = ($e->employment_type === 'parttime') ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
+                @endphp
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->name }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $statusClr[0] }};background:{{ $statusClr[1] }};border:1px solid {{ $statusClr[2] }};font-size:12px">{{ $e->employment_type === 'parttime' ? 'Part-time' : 'Full-time' }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->position ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->birthday ? \Carbon\Carbon::parse($e->birthday)->format('M d, Y') : '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->email ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->contact ?? '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->join_date ? \Carbon\Carbon::parse($e->join_date)->format('M d, Y') : '—' }}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
+                    <button type="button" class="btn" data-emp-edit="{{ $e->id }}">Edit</button>
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.delete', ['id'=>$e->id]) }}" style="display:inline">@csrf<button class="btn" type="submit" onclick="return window.modalConfirm ? (event.preventDefault(), modalConfirm('Remove this employee?', {title:'Confirm delete'}).then(function(ok){ if(ok) event.target.closest('form').submit(); })) : confirm('Remove this employee?')">Delete</button></form>
+                  </td>
+                </tr>
+                <tr id="emp-edit-row-{{ $e->id }}" style="display:none;background:#f9fafb">
+                  <td colspan="8" style="padding:8px;border-bottom:1px solid #eef2f7">
+                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.update', ['id'=>$e->id]) }}" style="display:grid;gap:8px;grid-template-columns:2fr 1fr 2fr 1fr 2fr 1.2fr 1.2fr auto">
+                      @csrf
+                      <input name="name" value="{{ $e->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <select name="employment_type" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                        <option value="fulltime" {{ $e->employment_type==='fulltime'?'selected':'' }}>Full-time</option>
+                        <option value="parttime" {{ $e->employment_type==='parttime'?'selected':'' }}>Part-time</option>
+                      </select>
+                      <input name="position" value="{{ $e->position ?? '' }}" placeholder="Position" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <input name="birthday" type="date" value="{{ $e->birthday ?? '' }}" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <input name="email" type="email" value="{{ $e->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <input name="contact" value="{{ $e->contact ?? '' }}" placeholder="Contact" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <input name="join_date" type="date" value="{{ $e->join_date ?? '' }}" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
+                      <button class="btn btn-primary" type="submit">Update</button>
+                    </form>
+                  </td>
+                </tr>
+              @endforeach
+              <!-- Inline Add Employee Row (moved to bottom) -->
               <tr id="emp-add-row" style="display:none;background:#f9fafb">
                 <td style="padding:8px;border-bottom:1px solid #eef2f7">
                   <form id="emp-add-form" class="owner-ajax" method="POST" action="{{ route('owner.employee.create') }}">
@@ -592,46 +625,15 @@
                 </td>
                 <td style="padding:8px;border-bottom:1px solid #eef2f7;white-space:nowrap"></td>
               </tr>
-
-              @foreach(($employees ?? []) as $e)
-                @php
-                  $statusClr = ($e->employment_type === 'parttime') ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
-                @endphp
-                <tr>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->name }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $statusClr[0] }};background:{{ $statusClr[1] }};border:1px solid {{ $statusClr[2] }};font-size:12px">{{ $e->employment_type === 'parttime' ? 'Part-time' : 'Full-time' }}</span></td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->position ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->birthday ? \Carbon\Carbon::parse($e->birthday)->format('M d, Y') : '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->email ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->contact ?? '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $e->join_date ? \Carbon\Carbon::parse($e->join_date)->format('M d, Y') : '—' }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <button type="button" class="btn" data-emp-edit="{{ $e->id }}">Edit</button>
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.delete', ['id'=>$e->id]) }}" style="display:inline">@csrf<button class="btn" type="submit" onclick="return window.modalConfirm ? (event.preventDefault(), modalConfirm('Remove this employee?', {title:'Confirm delete'}).then(function(ok){ if(ok) event.target.closest('form').submit(); })) : confirm('Remove this employee?')">Delete</button></form>
-                  </td>
-                </tr>
-                <tr id="emp-edit-row-{{ $e->id }}" style="display:none;background:#f9fafb">
-                  <td colspan="8" style="padding:8px;border-bottom:1px solid #eef2f7">
-                    <form class="owner-ajax" method="POST" action="{{ route('owner.employee.update', ['id'=>$e->id]) }}" style="display:grid;gap:8px;grid-template-columns:2fr 1fr 2fr 1fr auto">
-                      @csrf
-                      <input name="name" value="{{ $e->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <select name="role" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                        <option value="employee" {{ $e->role==='employee'?'selected':'' }}>Employee</option>
-                        <option value="manager" {{ $e->role==='manager'?'selected':'' }}>Manager</option>
-                        <option value="owner" {{ $e->role==='owner'?'selected':'' }}>Owner</option>
-                      </select>
-                      <input name="email" type="email" value="{{ $e->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                      <select name="employment_type" style="padding:8px;border:1px solid #e5e7eb;border-radius:8px">
-                        <option value="fulltime" {{ $e->employment_type==='fulltime'?'selected':'' }}>Full-time</option>
-                        <option value="parttime" {{ $e->employment_type==='parttime'?'selected':'' }}>Part-time</option>
-                      </select>
-                      <button class="btn btn-primary" type="submit">Update</button>
-                    </form>
-                  </td>
-                </tr>
-              @endforeach
             </tbody>
           </table>
+        </div>
+        
+        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
+          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
+        </div>
+        <div id="emp-add-actions" style="display:none;margin-top:8px;text-align:right">
+          <button form="emp-add-form" class="btn btn-primary" type="submit">Save</button>
         </div>
       </div>
 
@@ -641,11 +643,14 @@
           var addRow = document.getElementById('emp-add-row');
           var addActions = document.getElementById('emp-add-actions');
           function toggleAdd(show){
-            var s = (typeof show==='boolean') ? show : (addRow.style.display==='none' || addRow.style.display==='');
-            addRow.style.display = s ? 'table-row' : 'none';
-            if(addActions) addActions.style.display = s ? '' : 'none';
+            var s = (typeof show==='boolean') ? show : (addRow && (addRow.style.display==='none' || addRow.style.display===''));
+            if(addRow) addRow.style.display = s ? 'table-row' : 'none';
+            if(addActions) {
+              addActions.style.display = s ? '' : 'none';
+              if(s) try { addActions.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(_){}
+            }
           }
-          if(addBtn && addRow){ addBtn.addEventListener('click', function(){ toggleAdd(); }); }
+          if(addBtn){ addBtn.addEventListener('click', function(){ toggleAdd(); }); }
           document.addEventListener('click', function(ev){
             var btn = ev.target.closest('[data-emp-edit]');
             if(!btn) return;
