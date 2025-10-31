@@ -1,5 +1,6 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
-  <h3 class="section-title">Requests</h3>
+  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Submit Shop Request</div>
+  <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Request items needed for the shop</div>
   <form method="POST" action="{{ route('manager.request') }}">
     @csrf
     <table style="width:100%;border-collapse:collapse">
@@ -17,11 +18,14 @@
           <td style="border-bottom:1px solid #e3e3e0;padding:8px"><select name="priority" style="width:100%"><option>low</option><option selected>medium</option><option>high</option></select></td>
         </tr>
         <tr>
+          <th style="text-align:left;border-bottom:1px solid #e3e3e0;padding:8px">Remarks</th>
+          <td style="border-bottom:1px solid #e3e3e0;padding:8px">
+            <textarea name="remarks" rows="3" placeholder="Additional notes or specifications..." style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px"></textarea>
+          </td>
+        </tr>
+        <tr>
           <td colspan="2" style="padding:8px">
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button type="button" onclick="this.form.reset()" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
-              <button style="background:#0891b2;color:#fff;border-radius:6px;padding:8px 12px">Submit</button>
-            </div>
+            <button style="width:100%;background:#f97316;color:#fff;border-radius:6px;padding:10px 14px">Submit Request to Owner</button>
           </td>
         </tr>
       </tbody>
