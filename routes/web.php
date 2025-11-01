@@ -723,6 +723,108 @@ Route::post('/manager/apepo/{id}/delete', function (Request $request, int $id) {
     return redirect()->route('manager.home')->with('status', 'APEPO removed');
 })->name('manager.apepo.delete');
 
+// Manager: Unified submit for Reports page (Financial, APEPO, Fund, Expenses)
+Route::post('/manager/reports/unified', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+
+    $now = now();
+    $created = [];
+
+    // Financial Report: Opening
+    $oc = $request->input('opening_cash');
+    $ow = $request->input('opening_wallet');
+    $ob = $request->input('opening_bank');
+    if ($oc !== null || $ow !== null || $ob !== null) {
+        DB::table('manager_reports')->insert([
+            'manager_username' => $manager,
+            'shift' => 'opening',
+            'cash' => (float) ($oc ?: 0),
+            'wallet' => (float) ($ow ?: 0),
+            'bank' => (float) ($ob ?: 0),
+            'submitted_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $created[] = 'opening';
+    }
+
+    // Financial Report: Closing
+    $cc = $request->input('closing_cash');
+    $cw = $request->input('closing_wallet');
+    $cb = $request->input('closing_bank');
+    if ($cc !== null || $cw !== null || $cb !== null) {
+        DB::table('manager_reports')->insert([
+            'manager_username' => $manager,
+            'shift' => 'closing',
+            'cash' => (float) ($cc ?: 0),
+            'wallet' => (float) ($cw ?: 0),
+            'bank' => (float) ($cb ?: 0),
+            'submitted_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $created[] = 'closing';
+    }
+
+    // APEPO
+    if ($request->filled(['audit']) || $request->filled(['people']) || $request->filled(['equipment']) || $request->filled(['product']) || $request->filled(['others']) || $request->filled(['notes'])) {
+        DB::table('apepo_reports')->insert([
+            'manager_username' => $manager,
+            'audit' => (string) $request->input('audit', ''),
+            'people' => (string) $request->input('people', ''),
+            'equipment' => (string) $request->input('equipment', ''),
+            'product' => (string) $request->input('product', ''),
+            'others' => (string) $request->input('others', ''),
+            'notes' => (string) $request->input('notes', ''),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $created[] = 'apepo';
+    }
+
+    // Manager Fund
+    if ($request->filled('fund_amount') || $request->hasFile('fund_image')) {
+        $path = null;
+        if ($request->hasFile('fund_image')) {
+            try {
+                $file = $request->file('fund_image');
+                if ($file && $file->isValid()) {
+                    $ext = $file->getClientOriginalExtension() ?: 'jpg';
+                    $name = (string) (\Illuminate\Support\Str::uuid()).'.'.$ext;
+                    $path = 'funds/'.date('Y/m/d').'/'.$name;
+                    \Illuminate\Support\Facades\Storage::disk('public')->putFileAs(dirname($path), $file, basename($path));
+                }
+            } catch (\Throwable $e) {
+                // ignore file errors for now
+            }
+        }
+        DB::table('manager_funds')->insert([
+            'manager_username' => $manager,
+            'amount' => (float) $request->input('fund_amount', 0),
+            'fund_image_path' => $path,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $created[] = 'fund';
+    }
+
+    // Expenses
+    if ($request->filled('expense_amount') || $request->filled('expense_note')) {
+        DB::table('expenses')->insert([
+            'manager_username' => $manager,
+            'amount' => (float) $request->input('expense_amount', 0),
+            'note' => (string) $request->input('expense_note', ''),
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $created[] = 'expense';
+    }
+
+    $msg = empty($created) ? 'Nothing to submit' : ('Submitted: '.implode(', ', $created));
+    return redirect()->route('manager.home')->with('status', $msg);
+})->name('manager.reports.unified');
+
 // Owner: Employees CRUD
 Route::post('/owner/employee', function (Request $request) {
     if ($request->session()->get('role') !== 'owner') return redirect()->route('login');
@@ -820,86 +922,7 @@ Route::get('/manager/totals', function (Request $request) {
     ]);
 })->name('manager.totals');
 
-Route::post('/manager/report', function (Request $request) {
-    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
-        'shift' => 'required|in:opening,closing',
-        'cash' => 'required|numeric',
-        'wallet' => 'required|numeric',
-        'bank' => 'required|numeric',
-    ]);
-    $now = now();
-    $manager = (string) $request->session()->get('username');
-    $id = DB::table('manager_reports')->insertGetId([
-        'manager_username' => $manager,
-        'shift' => $data['shift'],
-        'cash' => $data['cash'],
-        'wallet' => $data['wallet'],
-        'bank' => $data['bank'],
-        'submitted_at' => $now,
-        'created_at' => $now,
-        'updated_at' => $now,
-    ]);
-    if ($request->ajax()) {
-        return response()->json([
-            'ok' => true,
-            'report' => [
-                'id' => $id,
-                'manager_username' => $manager,
-                'shift' => (string) $data['shift'],
-                'cash' => (float) $data['cash'],
-                'wallet' => (float) $data['wallet'],
-                'bank' => (float) $data['bank'],
-                'created_at' => (string) $now,
-            ],
-        ]);
-    }
-    return redirect()->route('manager.home')->with('status', 'Report submitted');
-})->name('manager.report');
-
-Route::post('/manager/fund', function (Request $request) {
-    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
-        'amount' => 'required|numeric',
-    ]);
-    DB::table('manager_funds')->insert([
-        'manager_username' => (string) $request->session()->get('username'),
-        'amount' => $data['amount'],
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-    return redirect()->route('manager.home')->with('status', 'Fund updated');
-})->name('manager.fund');
-
-Route::post('/manager/expense', function (Request $request) {
-    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
-        'amount' => 'required|numeric|min:0',
-        'note' => 'required|string',
-    ]);
-    $now = now();
-    $manager = (string) $request->session()->get('username');
-    $id = DB::table('expenses')->insertGetId([
-        'manager_username' => $manager,
-        'amount' => $data['amount'],
-        'note' => $data['note'],
-        'created_at' => $now,
-        'updated_at' => $now,
-    ]);
-    if ($request->ajax()) {
-        return response()->json([
-            'ok' => true,
-            'expense' => [
-                'id' => $id,
-                'manager_username' => $manager,
-                'amount' => (float) $data['amount'],
-                'note' => $data['note'],
-                'created_at' => (string) $now,
-            ],
-        ]);
-    }
-    return redirect()->route('manager.home')->with('status', 'Expense added');
-})->name('manager.expense');
+ 
 
 Route::post('/manager/request', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');

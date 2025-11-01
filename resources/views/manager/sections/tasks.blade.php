@@ -30,25 +30,14 @@
     @csrf
     <div style="display:grid;gap:10px">
       <div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Task Name</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Task Title</div>
         <input name="title" placeholder="e.g., Clean coffee machine" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
       </div>
-      <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
-        <div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Station</div>
-          <select name="station" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px">
-            <option>Kitchen</option>
-            <option>Coffee Bar</option>
-            <option>Customer Service</option>
-            <option>Maintenance</option>
-            <option>Administration</option>
-          </select>
-        </div>
-        <div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Assign To</div>
-          <input name="employee_username" placeholder="Select/enter employee username" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-        </div>
+      <div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Task Description</div>
+        <input name="description" placeholder="Add details or instructions (optional)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
       </div>
+      
       <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
         <div>
           <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Category</div>
@@ -70,32 +59,10 @@
           </select>
         </div>
       </div>
-      <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
-        <div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Due Date & Time</div>
-          <input name="due_at" type="datetime-local" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-        </div>
-        <div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">QR Location (optional)</div>
-          <input name="location_qr" placeholder="Scan or paste QR code" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <label style="display:flex;align-items:center;gap:8px">
-          <input type="checkbox" name="urgent" value="1" />
-          <span>Mark as urgent</span>
-        </label>
-      </div>
+      
+      
 
-      <div style="background:#f9fafb;border:1px dashed #e3e3e0;border-radius:8px;padding:10px">
-        <div style="font-size:12px;color:#6b7280;margin-bottom:6px">Task Template (optional, uses existing task definitions)</div>
-        <select name="task_id" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px">
-          <option value="">— Select a template —</option>
-          @foreach(($tasks ?? []) as $t)
-            <option value="{{ $t->id }}">{{ $t->title }} ({{ $t->type }})</option>
-          @endforeach
-        </select>
-      </div>
+      
 
       <div style="display:flex;justify-content:flex-end;gap:8px">
         <button type="button" onclick="this.form.reset()" style="padding:10px 14px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Clear</button>
