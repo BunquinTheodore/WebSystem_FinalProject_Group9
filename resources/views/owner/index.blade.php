@@ -45,6 +45,7 @@
     align-items: center;
     gap: 20px;
   }
+  
   .owner-topbar-icon {
     width: 40px;
     height: 40px;
@@ -157,6 +158,14 @@
       <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon" style="height:48px;width:auto;object-fit:contain">
     </div>
     <div class="owner-topbar-right">
+      <a href="#" class="owner-topbar-icon" title="Add User" onclick="event.preventDefault(); document.getElementById('owner-register-modal').style.display='flex'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M17 11v6"/>
+          <path d="M14 14h6"/>
+          <path d="M3 21v-1a6 6 0 0 1 12 0v1"/>
+        </svg>
+      </a>
       <a href="{{ url('/owner/manage-tasks') }}" class="owner-topbar-icon" title="Manage Tasks">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -257,7 +266,58 @@
 
     @include('owner.sections.inventory')
 
-    @include('owner.sections.employees')>
+    @include('owner.sections.employees')
+  </div>
+  
+  <!-- Owner: Register New User Modal -->
+  <div id="owner-register-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000">
+    <div style="background:#fff;border-radius:12px;padding:20px;min-width:360px;max-width:92vw;border:1px solid #e5e7eb">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700;color:#0f172a">Add New User</div>
+        <button onclick="document.getElementById('owner-register-modal').style.display='none'" style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;color:#111827">✕</button>
+      </div>
+      <form method="POST" action="{{ url('/register') }}">
+        @csrf
+        <div style="display:grid;gap:10px">
+          <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
+            <div>
+              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Full name (optional)</div>
+              <input name="name" placeholder="Full name" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+            </div>
+            <div>
+              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Username</div>
+              <input name="username" required placeholder="Username" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Email</div>
+            <input name="email" required type="email" placeholder="Email" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+          </div>
+          <div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Role</div>
+            <select name="role" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px">
+              <option value="manager">Manager</option>
+              <option value="employee" selected>Employee</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+          <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
+            <div>
+              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Password</div>
+              <input name="password" required type="password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+            </div>
+            <div>
+              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Confirm Password</div>
+              <input name="password_confirmation" required type="password" placeholder="Confirm password" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+            <button type="button" onclick="document.getElementById('owner-register-modal').style.display='none'" style="padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827">Cancel</button>
+            <button style="padding:10px 14px;background:#0891b2;color:#fff;border-radius:8px">Create User</button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
   <script>
     function backToMain() {

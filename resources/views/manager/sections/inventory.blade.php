@@ -22,7 +22,8 @@
             <td style="padding:8px 12px">{{ $it->sealed ?? $it->sealed_qty ?? 0 }}</td>
             <td style="padding:8px 12px">{{ $it->loose ?? $it->loose_qty ?? 0 }}</td>
             <td style="padding:8px 12px">{{ $it->delivered ?? $it->delivered_qty ?? 0 }}</td>
-            <td style="padding:8px 12px">{{ optional($it->date_delivered ?? $it->delivered_at ?? null) ? \Carbon\Carbon::parse($it->date_delivered ?? $it->delivered_at)->format('m/d/Y') : '-' }}</td>
+            @php($__mgrDateDelivered = data_get($it,'date_delivered') ?? data_get($it,'delivered_at'))
+            <td style="padding:8px 12px">{{ $__mgrDateDelivered ? \Carbon\Carbon::parse($__mgrDateDelivered)->format('m/d/Y') : '-' }}</td>
             <td style="padding:8px 12px">{{ optional($it->updated_at ?? null) ? \Carbon\Carbon::parse($it->updated_at)->format('m/d/Y') : '-' }}</td>
           </tr>
         @empty
