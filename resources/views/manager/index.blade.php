@@ -56,7 +56,7 @@
       <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon" style="height:48px;width:auto;object-fit:contain">
     </div>
     <div class="manager-topbar-right">
-      <a href="#" class="manager-topbar-icon" title="Logout" onclick="event.preventDefault(); document.getElementById('logout-form-mgr').submit();">
+      <a href="#" class="manager-topbar-icon" title="Logout" data-logout-confirm data-form="#logout-form-mgr">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10 17l-5-5 5-5"/>
           <path d="M15 12H5"/>
@@ -70,7 +70,7 @@
           <div class="manager-topbar-role">Manager</div>
         </div>
       </div>
-      <form id="logout-form-mgr" action="{{ url('/logout') }}" method="POST" style="display:none">@csrf</form>
+  <form id="logout-form-mgr" action="{{ url('/logout') }}" method="POST" style="display:none">@csrf</form>
     </div>
   </div>
 

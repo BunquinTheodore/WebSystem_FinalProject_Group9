@@ -74,7 +74,7 @@
     <div style="display:flex;align-items:center;gap:10px">
       @if(session()->has('role'))
         <span style="font-size:12px;color:#706f6c">{{ ucfirst(session('role')) }}: {{ session('username') }}</span>
-        <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn">Logout</button></form>
+  <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn" data-confirm="Log out from this session?" data-confirm-title="Confirm Logout" data-confirm-ok="Logout" data-confirm-type="danger">Logout</button></form>
       @elseif(!View::hasSection('hide-auth-button') && !(request()->routeIs('login') || request()->is('/')))
         <a class="btn" href="{{ route('login') }}">Login</a>
       @endif
@@ -174,6 +174,62 @@
       })();
     </script>
     <script>
+      // Global modal-confirm fallback: any form that contains a [data-confirm] submit will use modal.
+      // Manager has a richer handler for .mgr-del-form; skip those here to avoid double prompts.
+      (function(){
+        document.addEventListener('submit', async function(e){
+          try{
+            if(e.defaultPrevented) return;
+            var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
+            if(!form || form.classList && form.classList.contains('mgr-del-form')) return;
+            if(form.dataset && form.dataset.modalConfirmed === '1') return; // already confirmed
+            var confirmEl = form.querySelector('[data-confirm]');
+            if(!confirmEl) return; // nothing to confirm
+            e.preventDefault();
+            var msg = confirmEl.getAttribute('data-confirm') || 'Are you sure?';
+            var title = confirmEl.getAttribute('data-confirm-title') || 'Please confirm';
+            var okText = confirmEl.getAttribute('data-confirm-ok') || 'Confirm';
+            var type = confirmEl.getAttribute('data-confirm-type') || 'danger';
+            var ok = true;
+            if(window.modalConfirm){
+              try { ok = await window.modalConfirm(msg, { type:type, confirmText:okText, title:title }); } catch(_){ ok = false; }
+            } else {
+              ok = window.confirm(msg);
+            }
+            if(!ok) return;
+            if(form.dataset) form.dataset.modalConfirmed = '1';
+            form.submit();
+          }catch(_){ /* ignore */ }
+        }, true);
+      })();
+    </script>
+    <script>
+      // Logout confirmation for custom triggers (icons/avatars) that submit hidden logout forms
+      (function(){
+        document.addEventListener('click', async function(e){
+          try{
+            var el = e.target && e.target.closest ? e.target.closest('[data-logout-confirm]') : null;
+            if(!el) return;
+            e.preventDefault();
+            var formSel = el.getAttribute('data-form');
+            var form = null;
+            if(formSel){ try { form = document.querySelector(formSel); } catch(_) { form = null; } }
+            if(!form){ form = document.getElementById('logout-form-mgr') || document.getElementById('logout-form') || document.querySelector('form[action$="/logout"]'); }
+            var msg = el.getAttribute('data-msg') || 'Log out from this session?';
+            var title = el.getAttribute('data-title') || 'Confirm Logout';
+            var okText = el.getAttribute('data-ok') || 'Logout';
+            var ok = true;
+            if(window.modalConfirm){
+              try { ok = await window.modalConfirm(msg, { type:'danger', confirmText: okText, title: title }); } catch(_){ ok = false; }
+            } else {
+              ok = window.confirm('Logout?');
+            }
+            if(ok && form) form.submit();
+          }catch(_){ /* ignore */ }
+        }, true);
+      })();
+    </script>
+    <script>
       (function(){
         var wrap = document.getElementById('toast-wrap');
         if(!wrap) return;
@@ -214,6 +270,36 @@
             var isPost = (method||'GET').toUpperCase() !== 'GET';
             var meta = { label: isPost ? 'Saving…' : 'Loading…', emoji: isPost ? '💾' : '⏳', accent: '#0891b2' };
             var set = function(label, emoji, accent, sub){ meta.label=label; meta.emoji=emoji; meta.accent=accent; if(sub) meta.sub=sub; };
+            // Specific POST endpoints and flags
+            if(isPost){
+              try{
+                if(/^\/login(\/|$)/.test(p)) { set('Signing you in…','🔐','#3b82f6'); return meta; }
+                if(/^\/logout(\/|$)/.test(p)) { set('Signing out…','🚪','#ef4444'); return meta; }
+                if(/^\/register(\/|$)/.test(p)) { set('Creating user…','➕','#10b981'); return meta; }
+                if(/^\/manager\/employees(\/|$)?/.test(p)) {
+                  try { sessionStorage.setItem('justAddedEmployee','manager'); } catch(_){}
+                  set('Adding employee…','👥','#10b981');
+                  return meta;
+                }
+                if(/^\/owner\/employees(\/|$)?/.test(p)) {
+                  try { sessionStorage.setItem('justAddedEmployee','owner'); } catch(_){}
+                  set('Adding employee…','👥','#10b981');
+                  return meta;
+                }
+              }catch(_){ /* ignore */ }
+              // Default POST retains generic 'Saving…'
+              return meta;
+            }
+            // If we've just added an employee, tune the subsequent GET label once
+            try{
+              var flag = sessionStorage.getItem('justAddedEmployee');
+              if(flag){
+                if(flag === 'manager' && /^\/manager(\/|$)/.test(p)) { set('Employee added! Opening Manager Panel…','👥','#10b981'); }
+                if(flag === 'owner' && /^\/owner(\/|$)/.test(p)) { set('Employee added! Opening Owner Dashboard…','👥','#10b981'); }
+                sessionStorage.removeItem('justAddedEmployee');
+                return meta;
+              }
+            }catch(_){ /* ignore */ }
             if(/^\/owner(\/|$)/.test(p)){
               if(/^\/owner\/manage-tasks/.test(p)) set('Opening Manage Tasks…','🗂️','#06b6d4');
               else set('Opening Owner Dashboard…','👑','#0891b2');
@@ -222,11 +308,11 @@
             } else if(/^\/employee(\/|$)/.test(p)){
               set('Opening Employee Portal…','👤','#10b981');
             } else if(/^\/login(\/|$)/.test(p)){
-              set(isPost ? 'Signing you in…' : 'Opening Login…','🔐','#3b82f6');
+              set('Opening Login…','🔐','#3b82f6');
             } else if(/^\/logout(\/|$)/.test(p)){
               set('Signing out…','🚪','#ef4444');
             } else if(/^\/register(\/|$)/.test(p)){
-              set(isPost ? 'Creating user…' : 'Opening Registration…','➕','#10b981');
+              set('Opening Registration…','➕','#10b981');
             }
             return meta;
           }catch(_){

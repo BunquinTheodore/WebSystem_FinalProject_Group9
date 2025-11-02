@@ -194,7 +194,7 @@
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
       </a>
-      <a href="#" class="owner-topbar-icon" title="Logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+      <a href="#" class="owner-topbar-icon" title="Logout" data-logout-confirm data-form="#logout-form">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10 17l-5-5 5-5"/>
           <path d="M15 12H5"/>

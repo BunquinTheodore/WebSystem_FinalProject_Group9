@@ -184,7 +184,7 @@
         <line x1="9" y1="15" x2="15" y2="15"/>
       </svg>
     </a>
-    <div class="owner-topbar-user" onclick="document.getElementById('logout-form').submit();">
+    <div class="owner-topbar-user" data-logout-confirm data-form="#logout-form">
       <div class="owner-topbar-avatar">{{ strtoupper(substr(session('username', 'O'), 0, 1)) }}</div>
       <div class="owner-topbar-info">
         <div class="owner-topbar-name">{{ session('username', 'Owner') }}</div>

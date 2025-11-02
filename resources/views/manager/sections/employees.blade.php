@@ -39,9 +39,9 @@
  <td style="padding:8px">
    <div style="display:flex;gap:8px;align-items:center">
      <button type="button" onclick="document.getElementById('edit-emp-{{ $emp->id }}').style.display = (document.getElementById('edit-emp-{{ $emp->id }}').style.display==='none' || document.getElementById('edit-emp-{{ $emp->id }}').style.display==='') ? 'table-row' : 'none'" style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#0f172a">✎</button>
-     <form method="POST" action="{{ route('manager.employees.delete', ['id'=>$emp->id]) }}" onsubmit="return confirm('Delete this employee?')" style="margin:0">
+     <form class="mgr-del-form" method="POST" action="{{ route('manager.employees.delete', ['id'=>$emp->id]) }}" style="margin:0">
        @csrf
-       <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c">🗑</button>
+       <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c" data-confirm="Delete this employee?">🗑</button>
      </form>
    </div>
  </td>
