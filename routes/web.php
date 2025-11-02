@@ -141,7 +141,7 @@ Route::post('/login', function (Request $request) {
         $request->session()->put('role', $user->role);
         return match ($user->role) {
             'owner' => redirect()->route('owner.home'),
-            'manager' => redirect()->route('manager.home'),
+            'manager' => redirect()->to(route('manager.home').'?fresh=1'),
             default => redirect(url('/employee/tasks/opening')),
         };
     }
@@ -157,7 +157,7 @@ Route::post('/login', function (Request $request) {
         $request->session()->put('role', $demo[$login]['role']);
         return match ($demo[$login]['role']) {
             'owner' => redirect()->route('owner.home'),
-            'manager' => redirect()->route('manager.home'),
+            'manager' => redirect()->to(route('manager.home').'?fresh=1'),
             default => redirect(url('/employee/tasks/opening')),
         };
     }
@@ -175,7 +175,13 @@ Route::get('/dashboard', function (Request $request) {
     if (!$request->session()->has('role')) {
         return redirect()->route('login');
     }
-    return view('dashboard');
+    $role = (string) $request->session()->get('role');
+    return match ($role) {
+        'owner' => redirect()->route('owner.home'),
+        'manager' => redirect()->route('manager.home'),
+        'employee' => redirect(url('/employee/tasks/opening')),
+        default => redirect()->route('login'),
+    };
 })->name('dashboard');
 
 Route::get('/owner', function (Request $request) {
@@ -611,7 +617,7 @@ Route::post('/manager/employees', function (Request $request) {
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee added');
+    return redirect()->route('manager.home')->with('status','Employee added');
 })->name('manager.employees.store');
 
 // Manager: update employee (limited fields)
@@ -642,7 +648,7 @@ Route::post('/manager/employees/{id}/update', function (Request $request, int $i
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee updated');
+    return redirect()->route('manager.home')->with('status','Employee updated');
 })->name('manager.employees.update');
 
 // Manager: delete employee
@@ -652,7 +658,7 @@ Route::post('/manager/employees/{id}/delete', function (Request $request, int $i
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee removed');
+    return redirect()->route('manager.home')->with('status','Employee removed');
 })->name('manager.employees.delete');
 
 // Inventory: create item

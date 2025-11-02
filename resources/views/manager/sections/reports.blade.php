@@ -8,25 +8,25 @@
       <div style="border:1px solid #e3e3e0;border-radius:8px;padding:12px;background:#f0f9ff">
         <div style="font-weight:600;color:#0f172a;margin-bottom:8px">Opening Shift</div>
         <div style="display:grid;gap:8px">
-          <input name="opening_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_image" type="file" accept="image/*" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
+          <input name="opening_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="opening_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
         </div>
       </div>
       <div style="border:1px solid #e3e3e0;border-radius:8px;padding:12px;background:#fff7ed">
         <div style="font-weight:600;color:#0f172a;margin-bottom:8px">Closing Shift</div>
         <div style="display:grid;gap:8px">
-          <input name="closing_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_image" type="file" accept="image/*" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
+          <input name="closing_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+          <input name="closing_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
         </div>
       </div>
     </div>
@@ -73,12 +73,12 @@
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">APEPO Report</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Audit, People, Equipment, Product, Others</div>
   <div style="display:grid;gap:10px">
-    <input name="audit" placeholder="A - Audit: findings and observations..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="people" placeholder="P - People: employee/role notes..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="equipment" placeholder="E - Equipment: status and maintenance..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="product" placeholder="P - Product: quality and inventory notes..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="others" placeholder="O - Others: additional observations..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="notes" placeholder="Notes (optional)" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    <input name="audit" placeholder="A - Audit: findings and observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+    <input name="people" placeholder="P - People: employee/role notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+    <input name="equipment" placeholder="E - Equipment: status and maintenance..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+    <input name="product" placeholder="P - Product: quality and inventory notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+    <input name="others" placeholder="O - Others: additional observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+    <input name="notes" placeholder="Notes (optional)" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
   </div>
 
   <div id="mgr-apepo-list" style="margin-top:12px;display:grid;gap:10px">
@@ -128,7 +128,7 @@
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Manager Fund</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Daily manager fund tracking</div>
   <div style="display:grid;gap:10px">
-    <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
     <div style="display:flex;gap:8px;align-items:center">
       <input name="fund_image" type="file" accept="image/*" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:8px;background:#fff" />
     </div>
@@ -139,8 +139,8 @@
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Expenses</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Record daily expenses</div>
   <div style="display:grid;gap:10px">
-    <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-    <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px"></textarea>
+    <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px"></textarea>
   </div>
 </div>
 

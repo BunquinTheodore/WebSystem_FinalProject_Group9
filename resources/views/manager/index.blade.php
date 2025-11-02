@@ -4,111 +4,218 @@
 
 @section('content')
   <style>
-    /* Match Owner dashboard background */
+    /* Match Owner dashboard background and layout */
     body {
       background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%) !important;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
     }
     body::before { display: none !important; }
+    .app-header { display: none !important; }
+    .app-shell { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+
+    /* Manager Topbar (mirrors Owner style) */
+    .manager-topbar { background:#fff; padding:12px 32px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    .manager-topbar-logo { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:600; color:#0891b2; }
+    .manager-topbar-right { display:flex; align-items:center; gap:20px; }
+    .manager-topbar-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#f0f9ff; color:#0891b2; cursor:pointer; transition:all .2s ease; text-decoration:none; }
+    .manager-topbar-icon:hover { background:#0891b2; color:#fff; transform: scale(1.05); }
+    .manager-topbar-user { display:flex; align-items:center; gap:10px; cursor:default; padding:6px 12px; border-radius:999px; transition: background .2s ease; }
+    .manager-topbar-user:hover { background:#f0f9ff; }
+    .manager-topbar-avatar { width:36px; height:36px; border-radius:50%; background:#0891b2; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; }
+    .manager-topbar-name { font-weight:600; color:#0f172a; font-size:14px; }
+    .manager-topbar-role { font-size:12px; color:#64748b; }
+
+    /* Dashboard cards (mirrors Owner) */
+    .manager-dashboard-card { background:#fff; border-radius:16px; padding:32px 24px; text-align:center; cursor:pointer; transition: all .3s cubic-bezier(0.4,0,0.2,1); box-shadow:0 1px 3px rgba(0,0,0,.05); text-decoration:none; display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .manager-dashboard-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+    .manager-dashboard-card:active { transform: translateY(-2px); transition: all .1s ease; }
+    .manager-dashboard-icon { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; transition: transform .3s ease; }
+    .manager-dashboard-card:hover .manager-dashboard-icon { transform: scale(1.1) rotate(5deg); }
+
+  /* Match Owner card typography */
+  .owner-dashboard-title { font-weight: 600; font-size: 16px; color: #0f172a; margin: 0; }
+  .owner-dashboard-subtitle { font-size: 13px; color: #64748b; margin: 0; }
+
+    /* Section action affordances */
+    .manager-section button,
+    .manager-section a { transition: box-shadow .15s ease, filter .15s ease, background-color .15s ease, color .15s ease; }
+    .manager-section button:hover,
+    .manager-section a:hover { box-shadow: 0 6px 14px rgba(0,0,0,.08); filter: brightness(0.98); }
+    .manager-section button:active,
+    .manager-section a:active { filter: brightness(0.96); }
+    .manager-section button:focus-visible,
+    .manager-section a:focus-visible,
+    .manager-topbar-icon:focus-visible { outline:3px solid #38bdf8; outline-offset:2px; }
   </style>
-  <div style="max-width:880px;margin:0 auto;display:grid;gap:16px">
-    <style>
-      .mgr-tabs { position:relative; display:flex; gap:0; background:#e6f9fd; border:1px solid #c8eef7; padding:6px; border-radius:999px; align-items:center; overflow:hidden; }
-      .mgr-tab { position:relative; z-index:1; padding:8px 16px; border:none; background:transparent; border-radius:999px; cursor:pointer; font-weight:600; color:#0f172a; display:flex; align-items:center; gap:8px; flex:1 1 0%; justify-content:center; }
-      .mgr-tab.is-active { color:#0f172a; }
-      .mgr-tabs-indicator { position:absolute; top:6px; left:6px; height:calc(100% - 12px); width:0; background:#bdeff9; border-radius:999px; transition: all .25s cubic-bezier(0.4,0,0.2,1); box-shadow: inset 0 0 0 1px #a7e5f3; }
-      .mgr-section { display:none; }
-      .mgr-section.is-active { display:block; }
-      @media (max-width: 640px){
-        .mgr-tabs { overflow:auto; white-space:nowrap; }
-        .mgr-tab { flex:0 0 auto; min-width: 120px; }
-      }
-    </style>
-    <div id="mgr-tabs" class="mgr-tabs" role="tablist" aria-label="Manager sections">
-      <div id="mgr-tabs-indicator" class="mgr-tabs-indicator" aria-hidden="true"></div>
-      <button class="mgr-tab is-active" data-tab="tasks" role="tab" aria-selected="true"><span aria-hidden="true">📋</span><span>Tasks</span></button>
-      <button class="mgr-tab" data-tab="reports" role="tab" aria-selected="false"><span aria-hidden="true">📊</span><span>Reports</span></button>
-      <button class="mgr-tab" data-tab="inventory" role="tab" aria-selected="false"><span aria-hidden="true">📦</span><span>Inventory</span></button>
-      <button class="mgr-tab" data-tab="requests" role="tab" aria-selected="false"><span aria-hidden="true">📝</span><span>Requests</span></button>
-      <button class="mgr-tab" data-tab="payroll" role="tab" aria-selected="false"><span aria-hidden="true">💰</span><span>Payroll</span></button>
-      <button class="mgr-tab" data-tab="employees" role="tab" aria-selected="false"><span aria-hidden="true">👥</span><span>Employees</span></button>
+
+  <!-- Top Navigation Bar (Manager) -->
+  <div class="manager-topbar">
+    <div class="manager-topbar-logo">
+      <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon" style="height:48px;width:auto;object-fit:contain">
     </div>
-    <script>
-      (function(){
-        const tabs = document.getElementById('mgr-tabs');
-        const ind = document.getElementById('mgr-tabs-indicator');
-        function activate(tabKey){
-          document.querySelectorAll('.mgr-tab').forEach(b=>{
-            const active = b.getAttribute('data-tab')===tabKey;
-            b.classList.toggle('is-active', active);
-            b.setAttribute('aria-selected', active?'true':'false');
-          });
-          document.querySelectorAll('.mgr-section').forEach(s=>{
-            s.classList.toggle('is-active', s.getAttribute('data-section')===tabKey);
-          });
-          // move indicator
-          const btn = document.querySelector('.mgr-tab.is-active');
-          if(btn && ind){
-            ind.style.width = btn.offsetWidth + 'px';
-            ind.style.left = (btn.offsetLeft + 6) + 'px';
-          }
-          // persist in hash
-          if(location.hash.replace('#','')!==tabKey){
-            history.replaceState(null,'', '#'+tabKey);
-          }
-        }
-        if(tabs){
-          tabs.addEventListener('click', function(ev){
-            const b = ev.target.closest('.mgr-tab');
-            if(!b) return;
-            ev.preventDefault();
-            activate(b.getAttribute('data-tab'));
-          });
-          window.addEventListener('resize', function(){ const act = document.querySelector('.mgr-tab.is-active'); if(act){ activate(act.getAttribute('data-tab')); }});
-          function getParam(name){ try { const url=new URL(window.location.href); return url.searchParams.get(name); } catch(e){ return null; } }
-          let initial = (location.hash||'').replace('#','');
-          if(!initial){
-            const qp = (getParam('tab')||'').trim();
-            if(qp){ initial = qp; }
-          }
-          if(!initial){ initial = 'tasks'; }
-          function runInitial(){ activate(initial); }
-          if(document.readyState === 'loading'){
-            document.addEventListener('DOMContentLoaded', runInitial);
-          } else {
-            // In case this script runs before sections, defer one tick
-            setTimeout(runInitial, 0);
-          }
-          window.addEventListener('hashchange', function(){ const h=(location.hash||'').replace('#',''); if(h){ activate(h); }});
-        }
-      })();
-    </script>
-
-      <div class="mgr-section" data-section="reports">
-        @include('manager.sections.reports')
+    <div class="manager-topbar-right">
+      <a href="#" class="manager-topbar-icon" title="Logout" onclick="event.preventDefault(); document.getElementById('logout-form-mgr').submit();">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 17l-5-5 5-5"/>
+          <path d="M15 12H5"/>
+          <path d="M19 21V3a2 2 0 0 0-2-2H9"/>
+        </svg>
+      </a>
+      <div class="manager-topbar-user">
+        <div class="manager-topbar-avatar">{{ strtoupper(substr(session('username', 'M'), 0, 1)) }}</div>
+        <div>
+          <div class="manager-topbar-name">{{ session('username', 'Manager') }}</div>
+          <div class="manager-topbar-role">Manager</div>
+        </div>
       </div>
+      <form id="logout-form-mgr" action="{{ url('/logout') }}" method="POST" style="display:none">@csrf</form>
+    </div>
+  </div>
 
+  <div style="max-width:1100px;margin:0 auto;padding:40px 20px">
+    <div id="manager-welcome" style="text-align:center;padding:20px 12px 40px">
+      <h1 style="margin:0 0 8px;font-size:32px;color:#0f172a;font-weight:400">Welcome back, {{ session('username', 'manager') }}!</h1>
+      <div style="color:#64748b;font-size:15px">Choose a section to view details</div>
+    </div>
 
+    <div id="mgr-nav" style="display:grid;gap:24px;grid-template-columns:repeat(3,minmax(0,1fr));max-width:920px;margin:0 auto">
+      <a href="#tasks" data-target="tasks" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#dbeafe"><span>📋</span></div>
+        <div><div class="owner-dashboard-title">Tasks</div><div class="owner-dashboard-subtitle">Your daily tasks</div></div>
+      </a>
+      <a href="#reports" data-target="reports" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#fde68a"><span>📊</span></div>
+        <div><div class="owner-dashboard-title">Reports</div><div class="owner-dashboard-subtitle">Financial reporting</div></div>
+      </a>
+      <a href="#inventory" data-target="inventory" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#e9d5ff"><span>📦</span></div>
+        <div><div class="owner-dashboard-title">Inventory</div><div class="owner-dashboard-subtitle">Stock levels</div></div>
+      </a>
+      <a href="#requests" data-target="requests" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#fed7aa"><span>📝</span></div>
+        <div><div class="owner-dashboard-title">Requests</div><div class="owner-dashboard-subtitle">Shop needs</div></div>
+      </a>
+      <a href="#payroll" data-target="payroll" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#d1fae5"><span>💰</span></div>
+        <div><div class="owner-dashboard-title">Payroll</div><div class="owner-dashboard-subtitle">Wages & notes</div></div>
+      </a>
+      <a href="#employees" data-target="employees" class="manager-dashboard-card">
+        <div class="manager-dashboard-icon" style="background:#ddd6fe"><span>👥</span></div>
+        <div><div class="owner-dashboard-title">Employees</div><div class="owner-dashboard-subtitle">Team directory</div></div>
+      </a>
+    </div>
 
-    <div class="mgr-section" data-section="payroll">
+    <!-- Manager Sections (mirroring Owner pattern) -->
+    <div class="manager-section" data-section="tasks" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Tasks</h3>
+      </div>
+      @include('manager.sections.tasks')
+    </div>
+
+    <div class="manager-section" data-section="reports" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Reports</h3>
+      </div>
+      @include('manager.sections.reports')
+    </div>
+
+    <div class="manager-section" data-section="inventory" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Inventory</h3>
+      </div>
+      @include('manager.sections.inventory')
+    </div>
+
+    <div class="manager-section" data-section="requests" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Requests</h3>
+      </div>
+      @include('manager.sections.requests')
+    </div>
+
+    <div class="manager-section" data-section="payroll" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Payroll</h3>
+      </div>
       @include('manager.sections.payroll')
     </div>
 
-
-    <div class="mgr-section" data-section="requests">
-    @include('manager.sections.requests')
-    </div>
-
-    <div class="mgr-section is-active" data-section="tasks">
-    @include('manager.sections.tasks')
-    </div>
-    <div class="mgr-section" data-section="inventory">
-    @include('manager.sections.inventory')
-    </div>
-
-    <div class="mgr-section" data-section="employees">
+    <div class="manager-section" data-section="employees" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <button data-manager-back onclick="backToMainMgr()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all .2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <h3 class="section-title" style="margin:0">Employees</h3>
+      </div>
       @include('manager.sections.employees')
     </div>
+  </div>
+
+  <script>
+    // Manager dashboard navigation (mirrors Owner behavior)
+    function backToMainMgr(){
+      document.querySelectorAll('.manager-section').forEach(function(section){ section.style.display = 'none'; });
+      var w = document.getElementById('manager-welcome'); if(w) w.style.display = 'block';
+      var n = document.getElementById('mgr-nav'); if(n) n.style.display = 'grid';
+      history.replaceState(null, '', location.pathname);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    (function(){
+      var nav = document.getElementById('mgr-nav');
+      var welcome = document.getElementById('manager-welcome');
+      function showSection(key){
+        document.querySelectorAll('.manager-section').forEach(function(el){ el.style.display = (el.getAttribute('data-section') === key) ? '' : 'none'; });
+        if(nav) nav.style.display = 'none';
+        if(welcome) welcome.style.display = 'none';
+        var targetFirst = document.querySelector('.manager-section[data-section="'+key+'"]');
+        if(targetFirst){ targetFirst.scrollIntoView({ behavior:'smooth', block:'start' }); }
+      }
+      if(nav){
+        nav.addEventListener('click', function(ev){
+          var a = ev.target.closest('a[data-target]');
+          if(!a) return;
+          ev.preventDefault();
+          var key = a.getAttribute('data-target');
+          location.hash = key; // triggers hashchange
+        });
+      }
+      document.addEventListener('click', function(ev){
+        var backEl = ev.target.closest('[data-manager-back]');
+        if(!backEl) return;
+        ev.preventDefault();
+        backToMainMgr();
+      });
+      window.addEventListener('hashchange', function(){
+        var h = (location.hash||'').replace('#','');
+        if(h){ showSection(h); } else { backToMainMgr(); }
+      });
+      if(location.hash){
+        var h = (location.hash||'').replace('#','');
+        if(h){ showSection(h); }
+      }
+      // If arriving from /login or with ?fresh=1, force clean dashboard (no hash)
+      try {
+        var ref = document.referrer || '';
+        var url = new URL(window.location.href);
+        var fresh = url.searchParams.get('fresh');
+        if(/\/login(\b|$)/.test(ref) || (fresh && fresh !== '0')){
+          if(location.hash){ history.replaceState(null, '', location.pathname + url.search.replace(/([?&])fresh=[^&]*(&|$)/,'$1').replace(/[?&]$/,'')); }
+          backToMainMgr();
+          // Clean up the fresh param from the URL
+          try {
+            url.searchParams.delete('fresh');
+            history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+          } catch(_){ /* ignore */ }
+        }
+      } catch(_) { /* ignore */ }
+    })();
+  </script>
     <script>
       (function(){
         const CSRF_TOKEN = '{{ csrf_token() }}';

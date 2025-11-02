@@ -177,23 +177,7 @@
     outline-offset: 2px;
   }
 
-  /* Add New User modal: hover/focus interactions */
-  #owner-register-modal button {
-    transition: box-shadow .15s ease, filter .15s ease, background-color .15s ease, color .15s ease, transform .15s ease;
-    cursor: pointer;
-  }
-  #owner-register-modal button:hover { box-shadow: 0 8px 18px rgba(0,0,0,.08); filter: brightness(1.02); }
-  #owner-register-modal button:active { transform: translateY(1px); filter: brightness(0.98); }
-  #owner-register-modal button:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
-
-  #owner-register-modal input,
-  #owner-register-modal select {
-    transition: border-color .15s ease, box-shadow .15s ease, filter .15s ease;
-  }
-  #owner-register-modal input:hover,
-  #owner-register-modal select:hover { filter: brightness(1.01); }
-  #owner-register-modal input:focus,
-  #owner-register-modal select:focus { outline: none; border-color: #0891b2 !important; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
+  
 </style>
 
   <!-- Top Navigation Bar -->
@@ -202,14 +186,6 @@
       <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon" style="height:48px;width:auto;object-fit:contain">
     </div>
     <div class="owner-topbar-right">
-      <a href="#" class="owner-topbar-icon" title="Add User" onclick="event.preventDefault(); document.getElementById('owner-register-modal').style.display='flex'">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M17 11v6"/>
-          <path d="M14 14h6"/>
-          <path d="M3 21v-1a6 6 0 0 1 12 0v1"/>
-        </svg>
-      </a>
       <a href="{{ url('/owner/manage-tasks') }}" class="owner-topbar-icon" title="Manage Tasks">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -313,56 +289,7 @@
     @include('owner.sections.employees')
   </div>
   
-  <!-- Owner: Register New User Modal -->
-  <div id="owner-register-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;padding:16px">
-    <div style="background:#fff;border-radius:12px;padding:24px;min-width:360px;max-width:92vw;border:1px solid #e5e7eb">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9">
-        <div style="font-weight:700;color:#0f172a">Add New User</div>
-        <button onclick="document.getElementById('owner-register-modal').style.display='none'" style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;color:#111827">✕</button>
-      </div>
-      <form method="POST" action="{{ url('/register') }}">
-        @csrf
-        <div style="display:grid;gap:12px;padding:4px 2px">
-          <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
-            <div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Full name (optional)</div>
-              <input name="name" placeholder="Full name" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
-            </div>
-            <div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Username</div>
-              <input name="username" required placeholder="Username" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
-            </div>
-          </div>
-          <div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Email</div>
-            <input name="email" required type="email" placeholder="Email" style="width:95%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
-          </div>
-          <div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Role</div>
-            <select name="role" required style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px">
-              <option value="manager">Manager</option>
-              <option value="employee" selected>Employee</option>
-              <option value="owner">Owner</option>
-            </select>
-          </div>
-          <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
-            <div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Password</div>
-              <input name="password" required type="password" placeholder="Password" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
-            </div>
-            <div>
-              <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Confirm Password</div>
-              <input name="password_confirmation" required type="password" placeholder="Confirm password" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9">
-            <button type="button" onclick="document.getElementById('owner-register-modal').style.display='none'" style="padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827">Cancel</button>
-            <button style="padding:10px 14px;background:#0891b2;color:#fff;border-radius:8px">Create User</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+  
   <script>
     function backToMain() {
       document.querySelectorAll('.owner-section').forEach(function(section) {
