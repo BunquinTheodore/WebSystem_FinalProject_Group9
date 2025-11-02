@@ -148,11 +148,11 @@
         <button class="btn btn-primary">Sign In</button>
       </form>
       <div style="margin-top:12px;color:#64748b;font-size:12px;text-align:center">
-        Registration is managed by the Owner.
+        Registration is managed by the Owner and the Manager.
       </div>
     </div>
   </div>
   <script>
-    // No tabs logic required; register is handled in the Owner dashboard.
+    // No tabs logic required; register is handled in the Owner and Manager dashboards.
   </script>
 @endsection
