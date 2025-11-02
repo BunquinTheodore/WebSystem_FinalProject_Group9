@@ -150,6 +150,50 @@
     color: #64748b;
     margin: 0;
   }
+  
+  /* Universal hover reactions for functional controls on Owner dashboard */
+  .owner-topbar-icon { transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
+  .owner-topbar-icon:hover { box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+  .owner-topbar-icon:active { transform: scale(0.98); }
+
+  /* Buttons and clickable links inside sections */
+  .owner-section button,
+  .owner-section a {
+    transition: box-shadow .15s ease, filter .15s ease, background-color .15s ease, color .15s ease;
+  }
+  .owner-section button:hover,
+  .owner-section a:hover {
+    box-shadow: 0 6px 14px rgba(0,0,0,.08);
+    filter: brightness(0.98);
+  }
+  .owner-section button:active,
+  .owner-section a:active { filter: brightness(0.96); }
+
+  /* Keyboard focus visibility for accessibility */
+  .owner-section button:focus-visible,
+  .owner-section a:focus-visible,
+  .owner-topbar-icon:focus-visible {
+    outline: 3px solid #38bdf8;
+    outline-offset: 2px;
+  }
+
+  /* Add New User modal: hover/focus interactions */
+  #owner-register-modal button {
+    transition: box-shadow .15s ease, filter .15s ease, background-color .15s ease, color .15s ease, transform .15s ease;
+    cursor: pointer;
+  }
+  #owner-register-modal button:hover { box-shadow: 0 8px 18px rgba(0,0,0,.08); filter: brightness(1.02); }
+  #owner-register-modal button:active { transform: translateY(1px); filter: brightness(0.98); }
+  #owner-register-modal button:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
+
+  #owner-register-modal input,
+  #owner-register-modal select {
+    transition: border-color .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  #owner-register-modal input:hover,
+  #owner-register-modal select:hover { filter: brightness(1.01); }
+  #owner-register-modal input:focus,
+  #owner-register-modal select:focus { outline: none; border-color: #0891b2 !important; box-shadow: 0 0 0 3px rgba(8,145,178,0.15); }
 </style>
 
   <!-- Top Navigation Bar -->
@@ -270,32 +314,32 @@
   </div>
   
   <!-- Owner: Register New User Modal -->
-  <div id="owner-register-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000">
-    <div style="background:#fff;border-radius:12px;padding:20px;min-width:360px;max-width:92vw;border:1px solid #e5e7eb">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+  <div id="owner-register-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;padding:16px">
+    <div style="background:#fff;border-radius:12px;padding:24px;min-width:360px;max-width:92vw;border:1px solid #e5e7eb">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9">
         <div style="font-weight:700;color:#0f172a">Add New User</div>
         <button onclick="document.getElementById('owner-register-modal').style.display='none'" style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;color:#111827">✕</button>
       </div>
       <form method="POST" action="{{ url('/register') }}">
         @csrf
-        <div style="display:grid;gap:10px">
+        <div style="display:grid;gap:12px;padding:4px 2px">
           <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
             <div>
               <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Full name (optional)</div>
-              <input name="name" placeholder="Full name" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+              <input name="name" placeholder="Full name" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
             </div>
             <div>
               <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Username</div>
-              <input name="username" required placeholder="Username" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+              <input name="username" required placeholder="Username" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
             </div>
           </div>
           <div>
             <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Email</div>
-            <input name="email" required type="email" placeholder="Email" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+            <input name="email" required type="email" placeholder="Email" style="width:95%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
           </div>
           <div>
             <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Role</div>
-            <select name="role" required style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px">
+            <select name="role" required style="width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:8px">
               <option value="manager">Manager</option>
               <option value="employee" selected>Employee</option>
               <option value="owner">Owner</option>
@@ -304,14 +348,14 @@
           <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
             <div>
               <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Password</div>
-              <input name="password" required type="password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+              <input name="password" required type="password" placeholder="Password" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
             </div>
             <div>
               <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Confirm Password</div>
-              <input name="password_confirmation" required type="password" placeholder="Confirm password" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px" />
+              <input name="password_confirmation" required type="password" placeholder="Confirm password" style="width:90%;padding:12px;border:1px solid #e5e7eb;border-radius:8px" />
             </div>
           </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9">
             <button type="button" onclick="document.getElementById('owner-register-modal').style.display='none'" style="padding:10px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827">Cancel</button>
             <button style="padding:10px 14px;background:#0891b2;color:#fff;border-radius:8px">Create User</button>
           </div>
@@ -383,6 +427,13 @@
           location.hash = key; // keep deep-link; hashchange handler will call showSection
         });
       }
+      // Ensure any element marked as owner-back triggers main view
+      document.addEventListener('click', function(ev){
+        var backEl = ev.target.closest('[data-owner-back]');
+        if(!backEl) return;
+        ev.preventDefault();
+        backToMain();
+      });
       window.addEventListener('hashchange', function(){
         var h = (location.hash||'').replace('#','');
         if(h){ showSection(h); } else { backToMain(); }

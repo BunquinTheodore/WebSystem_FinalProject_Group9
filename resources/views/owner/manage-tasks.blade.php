@@ -197,7 +197,7 @@
 
 <div style="max-width:800px;margin:0 auto;padding:40px 20px">
   <div style="margin-bottom:32px;display:flex;align-items:center;gap:16px">
-    <a href="{{ url('/owner/home') }}" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#f0f9ff;color:#0891b2;text-decoration:none;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+    <a id="owner-back-btn" href="{{ route('owner.home') }}" style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:#f0f9ff;color:#0891b2;text-decoration:none;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'" title="Back">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M19 12H5M12 19l-7-7 7-7"/>
       </svg>
@@ -282,4 +282,19 @@
     </div>
   </div>
 </div>
+<script>
+  (function(){
+    var b = document.getElementById('owner-back-btn');
+    if(!b) return;
+    b.addEventListener('click', function(ev){
+      try{
+        var ref = document.referrer || '';
+        if (ref && ref.indexOf(location.origin) === 0) {
+          ev.preventDefault();
+          history.back();
+        }
+      } catch(_){}
+    });
+  })();
+</script>
 @endsection

@@ -34,14 +34,14 @@
   .section-title::before{content:"";display:inline-block;width:6px;height:20px;background:#0891b2;border-radius:4px;box-shadow:0 0 0 2px rgba(8,145,178,.06)}
     /* Toasts */
     .toast-wrap { position: fixed; right: 16px; bottom: 16px; z-index: 9999; display: grid; gap: 10px; width: min(360px, calc(100vw - 32px)); }
-    .toast { display:flex; align-items:flex-start; gap:10px; background:#1b1b18; color:#fff; border-radius:10px; padding:12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08); opacity:0; transform: translateY(8px); transition: all .25s ease; }
+  .toast { display:flex; align-items:flex-start; gap:10px; background: rgba(17,24,39,.6); color:#fff; border-radius:12px; padding:12px 14px; box-shadow: 0 12px 30px rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.18); opacity:0; transform: translateY(8px); transition: all .25s ease; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast-title { font-weight:700; font-size:14px; }
     .toast-msg { font-size:13px; line-height:1.4; }
     .toast-close { margin-left:auto; background:transparent; color:#fff; border:none; cursor:pointer; font-size:16px; line-height:1; opacity:.8; }
-    .toast--success { background:#14532d; border-color:#16a34a40; }
-    .toast--error { background:#7f1d1d; border-color:#ef444440; }
-    .toast--info { background:#0c4a6e; border-color:#0891b240; }
+  .toast--success { background: rgba(5,150,105,.55); border-color: rgba(16,185,129,.35); }
+  .toast--error { background: rgba(185,28,28,.55); border-color: rgba(239,68,68,.35); }
+  .toast--info { background: rgba(8,145,178,.55); border-color: rgba(8,145,178,.35); }
     /* Modal */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9998}
     .modal-overlay.show{display:flex}
@@ -51,12 +51,14 @@
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #f0f0ef}
     .btn-danger{background:#b91c1c;color:#fff;border-color:#991b1b}
 
-    /* Loading overlay */
-    .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:10000}
+  /* Loading overlay */
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:10000;--accent:#0891b2}
     .loading-overlay.show{display:flex}
-    .loading-box{display:grid;justify-items:center;gap:12px;padding:24px 28px;border-radius:14px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.12)}
-    .loading-spinner{width:56px;height:56px;border:5px solid #e5e7eb;border-top-color:#0891b2;border-radius:50%;animation:spin 1s linear infinite}
-    .loading-text{font-weight:700;color:#1b1b18}
+  .loading-box{display:grid;justify-items:center;gap:10px;padding:22px 26px;border-radius:14px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+  .loading-emoji{font-size:22px;line-height:1}
+  .loading-spinner{width:52px;height:52px;border:5px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+  .loading-text{font-weight:800;color:#1b1b18;font-size:14px}
+  .loading-sub{font-size:12px;color:#6b7280}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -89,8 +91,10 @@
   ></div>
   <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-hidden="true">
     <div class="loading-box" aria-label="Loading">
+      <div class="loading-emoji" id="loading-emoji" aria-hidden="true">⏳</div>
       <div class="loading-spinner" aria-hidden="true"></div>
-      <div class="loading-text">Loading…</div>
+      <div class="loading-text" id="loading-text">Loading…</div>
+      <div class="loading-sub" id="loading-sub" style="display:none"></div>
     </div>
   </div>
   <div id="app-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true">
@@ -180,21 +184,60 @@
       })();
     </script>
     <script>
-      // Global loading overlay for navigation and form submissions
+      // Global loading overlay for navigation and form submissions (context-aware)
       (function(){
         var overlay = document.getElementById('loading-overlay');
+        var textEl = document.getElementById('loading-text');
+        var emojiEl = document.getElementById('loading-emoji');
+        var subEl = document.getElementById('loading-sub');
         if(!overlay) return;
-        function show(){ overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
+        var lastMeta = null;
+        function setMeta(meta){
+          lastMeta = meta || null;
+          if(!meta) return;
+          if(textEl) textEl.textContent = meta.label || 'Loading…';
+          if(emojiEl) emojiEl.textContent = meta.emoji || '⏳';
+          if(subEl){ if(meta.sub){ subEl.textContent = meta.sub; subEl.style.display='block'; } else { subEl.textContent=''; subEl.style.display='none'; } }
+          overlay.style.setProperty('--accent', meta.accent || '#0891b2');
+        }
+        function show(meta){ if(meta) setMeta(meta); overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false'); }
         function hide(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
 
         // Ensure hidden on load
         document.addEventListener('DOMContentLoaded', hide);
         window.addEventListener('pageshow', hide);
 
+        function deriveMetaFromUrl(raw, method){
+          try{
+            var url = new URL(raw, window.location.origin);
+            var p = url.pathname || '/';
+            var isPost = (method||'GET').toUpperCase() !== 'GET';
+            var meta = { label: isPost ? 'Saving…' : 'Loading…', emoji: isPost ? '💾' : '⏳', accent: '#0891b2' };
+            var set = function(label, emoji, accent, sub){ meta.label=label; meta.emoji=emoji; meta.accent=accent; if(sub) meta.sub=sub; };
+            if(/^\/owner(\/|$)/.test(p)){
+              if(/^\/owner\/manage-tasks/.test(p)) set('Opening Manage Tasks…','🗂️','#06b6d4');
+              else set('Opening Owner Dashboard…','👑','#0891b2');
+            } else if(/^\/manager(\/|$)/.test(p)){
+              set('Opening Manager Panel…','🧑‍💼','#9333ea');
+            } else if(/^\/employee(\/|$)/.test(p)){
+              set('Opening Employee Portal…','👤','#10b981');
+            } else if(/^\/login(\/|$)/.test(p)){
+              set(isPost ? 'Signing you in…' : 'Opening Login…','🔐','#3b82f6');
+            } else if(/^\/logout(\/|$)/.test(p)){
+              set('Signing out…','🚪','#ef4444');
+            } else if(/^\/register(\/|$)/.test(p)){
+              set(isPost ? 'Creating user…' : 'Opening Registration…','➕','#10b981');
+            }
+            return meta;
+          }catch(_){
+            return { label: 'Loading…', emoji: '⏳', accent: '#0891b2' };
+          }
+        }
+
         // Show when navigating away
         window.addEventListener('beforeunload', function(){
           // Some browsers limit DOM changes here, but toggling a class usually works
-          show();
+          show(lastMeta || { label:'Loading…', emoji:'⏳', accent:'#0891b2' });
         });
 
         // Show immediately on in-page navigation triggers
@@ -208,12 +251,18 @@
           if (a.target && a.target !== '_self') return;
           if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
           if (e.defaultPrevented) return;
-          show();
+          // Only apply for same-origin navigations
+          try{ var u = new URL(href, location.origin); if(u.origin !== location.origin) return; }catch(_){ return; }
+          show(deriveMetaFromUrl(href, 'GET'));
         }, true);
 
         document.addEventListener('submit', function(e){
           if (e.defaultPrevented) return;
-          show();
+          var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
+          if(!form) { show(); return; }
+          var action = form.getAttribute('action') || window.location.href;
+          var method = (form.getAttribute('method') || 'GET').toUpperCase();
+          show(deriveMetaFromUrl(action, method));
         }, true);
       })();
     </script>
