@@ -35,6 +35,11 @@
         </div>
       </div>
 
+      <style>
+        .emp-type{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px}
+        .emp-type.full{color:#2563eb;background:#eef2ff;border:1px solid #bfdbfe}
+        .emp-type.part{color:#06b6d4;background:#ecfeff;border:1px solid #a5f3fc}
+      </style>
       <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div>
@@ -70,7 +75,7 @@
                 @endphp
                 <tr>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $name }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $badgeClr[0] }};background:{{ $badgeClr[1] }};border:1px solid {{ $badgeClr[2] }};font-size:12px">{{ $isPart ? 'Part-time' : 'Full-time' }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span class="emp-type {{ $isPart ? 'part' : 'full' }}">{{ $isPart ? 'Part-time' : 'Full-time' }}</span></td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ (int)$days }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">₱{{ number_format((float)$rate, 0) }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5;color:#047857">₱{{ number_format((float)$total, 0) }}</td>

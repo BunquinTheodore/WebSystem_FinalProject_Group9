@@ -253,6 +253,12 @@
     </form>
   </div>
 
+  <style>
+    .prio-badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;color:#fff}
+    .prio-low{background:#64748b}
+    .prio-medium{background:#f59e0b}
+    .prio-high{background:#dc2626}
+  </style>
   <div style="margin-top:40px">
     <h2 style="font-size:20px;color:#0f172a;font-weight:600;margin-bottom:16px">Recent Tasks</h2>
     <div style="display:grid;gap:12px">
@@ -260,10 +266,8 @@
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
             <h3 style="margin:0;font-size:16px;font-weight:600;color:#0f172a">{{ $task->title }}</h3>
-            @php
-              $priorityColor = $task->priority === 'high' ? '#dc2626' : ($task->priority === 'medium' ? '#f59e0b' : '#64748b');
-            @endphp
-            <span style="background:{{ $priorityColor }};color:#fff;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600">
+            @php($prioClass = $task->priority === 'high' ? 'prio-high' : ($task->priority === 'medium' ? 'prio-medium' : 'prio-low'))
+            <span class="prio-badge {{ $prioClass }}">
               {{ strtoupper($task->priority) }}
             </span>
           </div>

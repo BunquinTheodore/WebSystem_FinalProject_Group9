@@ -53,17 +53,26 @@
         </div>
       </div>
 
+      <style>
+        .req-card{border-radius:14px;padding:20px;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.05);background:#fff}
+        .req-low{border:2px solid #7dd3fc}
+        .req-medium{border:2px solid #fcd34d}
+        .req-high{border:2px solid #fca5a5}
+        .req-badge{display:inline-block;padding:6px 14px;border-radius:8px;color:#fff;font-size:13px;font-weight:700;letter-spacing:.5px}
+        .req-badge.low{background:#06b6d4}
+        .req-badge.medium{background:#f59e0b}
+        .req-badge.high{background:#dc2626}
+      </style>
       <div style="display:grid;gap:16px">
         @forelse($requests as $q)
           @php
-            $badgeText = strtoupper($q->priority);
-            $badgeBg = $q->priority==='high' ? '#dc2626' : ($q->priority==='medium' ? '#f59e0b' : '#06b6d4');
-            $cardBorder = $q->priority==='high' ? '#fca5a5' : ($q->priority==='medium' ? '#fcd34d' : '#7dd3fc');
-            $cardBg = '#fff';
+            $p = $q->priority;
+            $cardClass = $p==='high' ? 'req-high' : ($p==='medium' ? 'req-medium' : 'req-low');
+            $badgeText = strtoupper($p);
           @endphp
-          <div style="background:{{ $cardBg }};border:2px solid {{ $cardBorder }};border-radius:14px;padding:20px;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div class="req-card {{ $cardClass }}">
             <div style="position:absolute;right:20px;top:20px">
-              <span style="display:inline-block;padding:6px 14px;border-radius:8px;color:#fff;background:{{ $badgeBg }};font-size:13px;font-weight:700;letter-spacing:0.5px">{{ $badgeText }}</span>
+              <span class="req-badge {{ $p }}">{{ $badgeText }}</span>
             </div>
             <div style="font-weight:700;font-size:18px;color:#0f172a;margin-right:100px;margin-bottom:6px">{{ $q->item }}</div>
             <div style="font-size:13px;color:#6b7280;margin-bottom:16px">By {{ $q->manager_username }} • {{ \Carbon\Carbon::parse($q->created_at)->format('M d, Y - g:i A') }}</div>

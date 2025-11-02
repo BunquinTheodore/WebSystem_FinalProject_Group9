@@ -266,5 +266,7 @@
         }, true);
       })();
     </script>
+    {{-- Render any view-pushed scripts (e.g., @push('scripts')) --}}
+    @stack('scripts')
 </body>
 </html>

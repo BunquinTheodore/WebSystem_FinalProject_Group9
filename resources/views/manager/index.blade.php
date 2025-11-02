@@ -3,6 +3,14 @@
 @section('title', 'Manager')
 
 @section('content')
+  <style>
+    /* Match Owner dashboard background */
+    body {
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%) !important;
+      min-height: 100vh;
+    }
+    body::before { display: none !important; }
+  </style>
   <div style="max-width:880px;margin:0 auto;display:grid;gap:16px">
     <style>
       .mgr-tabs { position:relative; display:flex; gap:0; background:#e6f9fd; border:1px solid #c8eef7; padding:6px; border-radius:999px; align-items:center; overflow:hidden; }

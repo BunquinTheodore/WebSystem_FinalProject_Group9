@@ -35,6 +35,11 @@
         </div>
       </div>
 
+      <style>
+        .emp-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid transparent}
+        .emp-status.full{color:#2563eb;background:#eef2ff;border-color:#bfdbfe}
+        .emp-status.part{color:#06b6d4;background:#ecfeff;border-color:#a5f3fc}
+      </style>
       <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div>
@@ -62,11 +67,13 @@
             </thead>
             <tbody>
               @forelse(($employees ?? []) as $emp)
-                @php($nm = trim((string)($emp->name ?? '')))
-                @php($ini = strtoupper(collect(explode(' ', $nm))->map(fn($p)=>substr($p,0,1))->take(2)->implode('')))
-                @php($et = strtolower($emp->employment_type ?? ''))
-                @php($isFull = $et === 'fulltime')
-                @php($join = $emp->join_date ?? null)
+                @php
+                  $nm = trim((string)($emp->name ?? ''));
+                  $ini = strtoupper(collect(explode(' ', $nm))->map(fn($p)=>substr($p,0,1))->take(2)->implode(''));
+                  $et = strtolower($emp->employment_type ?? '');
+                  $isFull = $et === 'fulltime';
+                  $join = $emp->join_date ?? null;
+                @endphp
                 <tr>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">
                     <div style="display:flex;align-items:center;gap:10px">
@@ -75,7 +82,7 @@
                     </div>
                   </td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <span style="display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;{{ $isFull ? 'color:#2563eb;background:#eef2ff;border:1px solid #bfdbfe' : 'color:#06b6d4;background:#ecfeff;border:1px solid #a5f3fc' }}">{{ $isFull ? 'Full-time' : 'Part-time' }}</span>
+                    <span class="emp-status {{ $isFull ? 'full' : 'part' }}">{{ $isFull ? 'Full-time' : 'Part-time' }}</span>
                   </td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $emp->position ?? '-' }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('M d, Y') : '-' }}</td>

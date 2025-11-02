@@ -34,6 +34,17 @@
       </div>
 
       <!-- All Products Section -->
+      <style>
+        .inv-row{transition:background .2s ease}
+        .inv-row.crit{background:#fef2f2}
+        .inv-row.low{background:#fffbeb}
+        .inv-row.good{background:#fff}
+        .inv-row:hover{background:#f3f4f6}
+        .inv-badge{display:inline-block;padding:6px 12px;border-radius:8px;color:#fff;font-size:13px;font-weight:600}
+        .inv-badge.crit{background:#dc2626}
+        .inv-badge.low{background:#f59e0b}
+        .inv-badge.good{background:#16a34a}
+      </style>
       <div style="background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
         <div style="margin-bottom:20px">
           <div style="font-size:18px;font-weight:700;color:#0f172a;margin-bottom:4px">All Products</div>
@@ -58,11 +69,11 @@
                 @php
                   $isCritical = $it->status === 'Critical';
                   $isLowStock = $it->status === 'Low Stock';
-                  $rowBg = $isCritical ? '#fef2f2' : ($isLowStock ? '#fffbeb' : '#fff');
-                  $badgeBg = $isCritical ? '#dc2626' : ($isLowStock ? '#f59e0b' : '#16a34a');
                   $badgeText = $isCritical ? 'Critical' : ($isLowStock ? 'Low Stock' : 'Good');
+                  $rowClass = $isCritical ? 'crit' : ($isLowStock ? 'low' : 'good');
+                  $badgeClass = $rowClass;
                 @endphp
-                <tr style="background:{{ $rowBg }};transition:background 0.2s ease" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='{{ $rowBg }}'">
+                <tr class="inv-row {{ $rowClass }}">
                   <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb">
                     <div style="display:flex;align-items:center;gap:8px">
                       @if($isCritical || $isLowStock)
@@ -76,7 +87,7 @@
                   <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:14px">{{ (int)($it->loose ?? 0) }}</td>
                   <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#374151;font-size:14px">{{ (int)($it->delivered_total ?? 0) }}</td>
                   <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb">
-                    <span style="display:inline-block;padding:6px 12px;border-radius:8px;color:#fff;background:{{ $badgeBg }};font-size:13px;font-weight:600">{{ $badgeText }}</span>
+                    <span class="inv-badge {{ $badgeClass }}">{{ $badgeText }}</span>
                   </td>
                   <td style="padding:14px 16px;border-bottom:1px solid #e5e7eb;color:#6b7280;font-size:14px">{{ \Carbon\Carbon::parse($it->updated_at ?? now())->format('M d') }}</td>
                 </tr>
