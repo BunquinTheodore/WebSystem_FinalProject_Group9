@@ -51,14 +51,14 @@
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid #f0f0ef}
     .btn-danger{background:#b91c1c;color:#fff;border-color:#991b1b}
 
-  /* Loading overlay */
-  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:10000;--accent:#0891b2}
+  /* Loading overlay (minimal) */
+  .loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.75);backdrop-filter:blur(1px);display:none;align-items:center;justify-content:center;z-index:10000;--accent:#0891b2}
     .loading-overlay.show{display:flex}
-  .loading-box{display:grid;justify-items:center;gap:10px;padding:22px 26px;border-radius:14px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(0,0,0,.12)}
-  .loading-emoji{font-size:22px;line-height:1}
-  .loading-spinner{width:52px;height:52px;border:5px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
-  .loading-text{font-weight:800;color:#1b1b18;font-size:14px}
-  .loading-sub{font-size:12px;color:#6b7280}
+  .loading-box{display:grid;justify-items:center;gap:6px;padding:14px 16px;border-radius:10px;background:#fff;border:1px solid #eef2f7;box-shadow:none}
+  .loading-emoji{display:none}
+  .loading-spinner{width:30px;height:30px;border:2px solid transparent;border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
+  .loading-text{font-weight:600;color:#1b1b18;font-size:13px}
+  .loading-sub{font-size:11px;color:#6b7280}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
