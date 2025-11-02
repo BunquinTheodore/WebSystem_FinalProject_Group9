@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\TaskAssignment;
@@ -27,10 +28,35 @@ Route::get('/', function (Request $request) {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     }
+
+    // First-run bootstrap: ensure a default owner exists and auto-login once
+    try {
+        $hasOwner = User::where('role', 'owner')->exists();
+        if (!$hasOwner) {
+            $owner = User::firstOrCreate(
+                ['username' => 'owner'],
+                [
+                    'name' => 'Owner',
+                    'email' => 'owner@example.com',
+                    'role' => 'owner',
+                    'password' => 'owner1234', // will be hashed by cast
+                ]
+            );
+            $request->session()->put('username', $owner->username);
+            $request->session()->put('role', 'owner');
+            return redirect()->route('owner.home');
+        }
+    } catch (\Throwable $e) {
+        // fail open to login page if DB not ready yet
+    }
     return view('auth.login');
 });
 
 Route::post('/register', function (Request $request) {
+    // Only owners can create users from now on
+    if ($request->session()->get('role') !== 'owner') {
+        return redirect()->route('login');
+    }
     $data = $request->validate([
         'username' => 'required|string|max:255|unique:users,username',
         'email' => 'required|email|max:255|unique:users,email',
@@ -47,15 +73,9 @@ Route::post('/register', function (Request $request) {
         'password' => $data['password'],
     ]);
 
-    $request->session()->put('username', $user->username);
-    $request->session()->put('role', $user->role);
-
-    // Redirect to role-specific home after signup
-    return match ($user->role) {
-        'owner' => redirect()->route('owner.home'),
-        'manager' => redirect()->route('manager.home'),
-        default => redirect(url('/employee/tasks/opening')),
-    };
+    // Owner-initiated registration: keep current session (owner) and show success toast
+    $request->session()->flash('status', "User '{$user->username}' ({$user->role}) created successfully.");
+    return redirect()->route('owner.home');
 })->name('register');
 
 Route::get('/login', function (Request $request) {
@@ -74,14 +94,35 @@ Route::get('/login', function (Request $request) {
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     }
+    // First-run bootstrap here as well (if someone navigates directly to /login)
+    try {
+        $hasOwner = User::where('role', 'owner')->exists();
+        if (!$hasOwner) {
+            $owner = User::firstOrCreate(
+                ['username' => 'owner'],
+                [
+                    'name' => 'Owner',
+                    'email' => 'owner@example.com',
+                    'role' => 'owner',
+                    'password' => 'owner1234',
+                ]
+            );
+            $request->session()->put('username', $owner->username);
+            $request->session()->put('role', 'owner');
+            return redirect()->route('owner.home');
+        }
+    } catch (\Throwable $e) {
+        // ignore if DB not migrated
+    }
     return view('auth.login');
 })->name('login');
 
 Route::get('/register', function (Request $request) {
-    if ($request->session()->has('role')) {
-        return redirect('/dashboard');
+    // Registration page is no longer public; redirect accordingly
+    if ($request->session()->get('role') === 'owner') {
+        return redirect()->route('owner.home');
     }
-    return view('auth.register');
+    return redirect()->route('login');
 })->name('register.show');
 
 Route::post('/login', function (Request $request) {
@@ -100,7 +141,7 @@ Route::post('/login', function (Request $request) {
         $request->session()->put('role', $user->role);
         return match ($user->role) {
             'owner' => redirect()->route('owner.home'),
-            'manager' => redirect()->route('manager.home'),
+            'manager' => redirect()->to(route('manager.home').'?fresh=1'),
             default => redirect(url('/employee/tasks/opening')),
         };
     }
@@ -116,7 +157,7 @@ Route::post('/login', function (Request $request) {
         $request->session()->put('role', $demo[$login]['role']);
         return match ($demo[$login]['role']) {
             'owner' => redirect()->route('owner.home'),
-            'manager' => redirect()->route('manager.home'),
+            'manager' => redirect()->to(route('manager.home').'?fresh=1'),
             default => redirect(url('/employee/tasks/opening')),
         };
     }
@@ -134,7 +175,13 @@ Route::get('/dashboard', function (Request $request) {
     if (!$request->session()->has('role')) {
         return redirect()->route('login');
     }
-    return view('dashboard');
+    $role = (string) $request->session()->get('role');
+    return match ($role) {
+        'owner' => redirect()->route('owner.home'),
+        'manager' => redirect()->route('manager.home'),
+        'employee' => redirect(url('/employee/tasks/opening')),
+        default => redirect()->route('login'),
+    };
 })->name('dashboard');
 
 Route::get('/owner', function (Request $request) {
@@ -563,14 +610,14 @@ Route::post('/manager/employees', function (Request $request) {
         'updated_at' => now(),
     ];
     // Only keep keys that exist on employees table
-    $cols = \Schema::hasTable('employees') ? \Schema::getColumnListing('employees') : [];
+    $cols = Schema::hasTable('employees') ? Schema::getColumnListing('employees') : [];
     $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
 
     DB::table('employees')->insert($payload);
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee added');
+    return redirect()->route('manager.home')->with('status','Employee added');
 })->name('manager.employees.store');
 
 // Manager: update employee (limited fields)
@@ -595,13 +642,13 @@ Route::post('/manager/employees/{id}/update', function (Request $request, int $i
         'contact' => $data['contact'] ?? null,
         'updated_at' => now(),
     ];
-    $cols = \Schema::hasTable('employees') ? \Schema::getColumnListing('employees') : [];
+    $cols = Schema::hasTable('employees') ? Schema::getColumnListing('employees') : [];
     $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
     DB::table('employees')->where('id', $id)->update($payload);
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee updated');
+    return redirect()->route('manager.home')->with('status','Employee updated');
 })->name('manager.employees.update');
 
 // Manager: delete employee
@@ -611,7 +658,7 @@ Route::post('/manager/employees/{id}/delete', function (Request $request, int $i
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->to(route('manager.home').'?tab=employees#employees')->with('status','Employee removed');
+    return redirect()->route('manager.home')->with('status','Employee removed');
 })->name('manager.employees.delete');
 
 // Inventory: create item
@@ -848,10 +895,10 @@ Route::post('/owner/employee', function (Request $request) {
         'updated_at' => now(),
     ];
     // Only include optional columns if they exist, to work before/after migration
-    if (\Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
-    if (\Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
-    if (\Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
-    if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
+    if (Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
+    if (Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
+    if (Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
+    if (Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
 
     DB::table('employees')->insert($payload);
     if ($request->ajax()) { return response()->json(['ok' => true]); }
@@ -880,10 +927,10 @@ Route::post('/owner/employee/{id}/update', function (Request $request, int $id) 
     // Only change role if provided
     if (array_key_exists('role', $data)) { $payload['role'] = $data['role']; }
 
-    if (\Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
-    if (\Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
-    if (\Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
-    if (\Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
+    if (Schema::hasColumn('employees','position')) { $payload['position'] = $data['position'] ?? null; }
+    if (Schema::hasColumn('employees','birthday')) { $payload['birthday'] = $data['birthday'] ?? null; }
+    if (Schema::hasColumn('employees','contact')) { $payload['contact'] = $data['contact'] ?? null; }
+    if (Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
 
     DB::table('employees')->where('id',$id)->update($payload);
     if ($request->ajax()) { return response()->json(['ok' => true]); }

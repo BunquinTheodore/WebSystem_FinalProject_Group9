@@ -1,6 +1,11 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Employee Management</div>
  <div style="font-size:12px;color:#6b7280;margin-bottom:10px">View and manage employee information</div>
+ <style>
+   .mgr-emp-badge{display:inline-block;padding:4px 8px;border-radius:9999px;font-size:12px}
+   .mgr-emp-badge-full{background:#e0f2fe;color:#0369a1}
+   .mgr-emp-badge-part{background:#f3e8ff;color:#6b21a8}
+ </style>
  <div style="overflow:auto">
  <table style="width:100%;border-collapse:collapse">
  <thead>
@@ -19,11 +24,13 @@
  <tr>
  <td style="padding:8px">{{ $emp->name ?? (($emp->first_name ?? '').' '.($emp->last_name ?? '')) }}</td>
  <td style="padding:8px">{{ $emp->role ?? $emp->position ?? '-' }}</td>
- <td style="padding:8px">{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('m/d/Y') : '-' }}</td>
+ <td style="padding:8px">{{ !empty($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('m/d/Y') : '-' }}</td>
  <td style="padding:8px">
- @php($et = strtolower($emp->employment_type ?? ''))
- @php($isFull = $et === 'fulltime')
- <span style="display:inline-block;padding:4px 8px;border-radius:9999px;font-size:12px;{{ $isFull ? 'background:#e0f2fe;color:#0369a1' : 'background:#f3e8ff;color:#6b21a8' }}">
+ @php
+   $et = strtolower($emp->employment_type ?? '');
+   $isFull = $et === 'fulltime';
+ @endphp
+ <span class="mgr-emp-badge {{ $isFull ? 'mgr-emp-badge-full' : 'mgr-emp-badge-part' }}">
    {{ $isFull ? 'Full-time' : ($et==='parttime' ? 'Part-time' : 'Unknown') }}
  </span>
  </td>
@@ -32,9 +39,9 @@
  <td style="padding:8px">
    <div style="display:flex;gap:8px;align-items:center">
      <button type="button" onclick="document.getElementById('edit-emp-{{ $emp->id }}').style.display = (document.getElementById('edit-emp-{{ $emp->id }}').style.display==='none' || document.getElementById('edit-emp-{{ $emp->id }}').style.display==='') ? 'table-row' : 'none'" style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#0f172a">✎</button>
-     <form method="POST" action="{{ route('manager.employees.delete', ['id'=>$emp->id]) }}" onsubmit="return confirm('Delete this employee?')" style="margin:0">
+     <form class="mgr-del-form" method="POST" action="{{ route('manager.employees.delete', ['id'=>$emp->id]) }}" style="margin:0">
        @csrf
-       <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c">🗑</button>
+       <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c" data-confirm="Delete this employee?">🗑</button>
      </form>
    </div>
  </td>
@@ -48,11 +55,13 @@
          <input name="role" value="{{ $emp->position ?? $emp->role ?? '' }}" placeholder="Role/Position" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
        </div>
        <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr">
-         <input name="birthday" type="date" value="{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('Y-m-d') : '' }}" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-         @php($et = strtolower($emp->employment_type ?? 'fulltime'))
+         <input name="birthday" type="date" value="{{ !empty($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('Y-m-d') : '' }}" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         @php
+           $editEt = strtolower($emp->employment_type ?? 'fulltime');
+         @endphp
          <select name="status" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px">
-           <option value="full-time" {{ $et==='fulltime' ? 'selected' : '' }}>Full-time</option>
-           <option value="part-time" {{ $et==='parttime' ? 'selected' : '' }}>Part-time</option>
+           <option value="full-time" {{ $editEt==='fulltime' ? 'selected' : '' }}>Full-time</option>
+           <option value="part-time" {{ $editEt==='parttime' ? 'selected' : '' }}>Part-time</option>
          </select>
          <input name="contact" value="{{ $emp->contact ?? '' }}" placeholder="Contact" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
        </div>
@@ -99,6 +108,4 @@
   </form>
 </div>
 
-<script>
-  (function(){ try{ if(location.hash !== '#employees'){ history.replaceState(null,'', location.pathname + location.search + '#employees'); } }catch(_){ /* noop */ } })();
-</script>
+<!-- Removed force-hash script to prevent sticky redirect to #employees on refresh -->

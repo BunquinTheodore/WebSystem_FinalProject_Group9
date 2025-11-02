@@ -31,11 +31,11 @@
     <div style="display:grid;gap:10px">
       <div>
         <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Task Title</div>
-        <input name="title" placeholder="e.g., Clean coffee machine" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+        <input name="title" placeholder="e.g., Clean coffee machine" style="width:98%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
       </div>
       <div>
         <div style="font-size:12px;color:#6b7280;margin-bottom:4px">Task Description</div>
-        <input name="description" placeholder="Add details or instructions (optional)" style="width:100%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+        <input name="description" placeholder="Add details or instructions (optional)" style="width:98%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
       </div>
       
       <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">

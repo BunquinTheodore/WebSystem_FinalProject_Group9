@@ -1,6 +1,6 @@
     <div id="employees" class="owner-section" data-section="employees" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+  <button data-owner-back onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -35,6 +35,11 @@
         </div>
       </div>
 
+      <style>
+        .emp-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid transparent}
+        .emp-status.full{color:#2563eb;background:#eef2ff;border-color:#bfdbfe}
+        .emp-status.part{color:#06b6d4;background:#ecfeff;border-color:#a5f3fc}
+      </style>
       <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div>
@@ -62,11 +67,13 @@
             </thead>
             <tbody>
               @forelse(($employees ?? []) as $emp)
-                @php($nm = trim((string)($emp->name ?? '')))
-                @php($ini = strtoupper(collect(explode(' ', $nm))->map(fn($p)=>substr($p,0,1))->take(2)->implode('')))
-                @php($et = strtolower($emp->employment_type ?? ''))
-                @php($isFull = $et === 'fulltime')
-                @php($join = $emp->join_date ?? null)
+                @php
+                  $nm = trim((string)($emp->name ?? ''));
+                  $ini = strtoupper(collect(explode(' ', $nm))->map(fn($p)=>substr($p,0,1))->take(2)->implode(''));
+                  $et = strtolower($emp->employment_type ?? '');
+                  $isFull = $et === 'fulltime';
+                  $join = $emp->join_date ?? null;
+                @endphp
                 <tr>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">
                     <div style="display:flex;align-items:center;gap:10px">
@@ -75,7 +82,7 @@
                     </div>
                   </td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">
-                    <span style="display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;{{ $isFull ? 'color:#2563eb;background:#eef2ff;border:1px solid #bfdbfe' : 'color:#06b6d4;background:#ecfeff;border:1px solid #a5f3fc' }}">{{ $isFull ? 'Full-time' : 'Part-time' }}</span>
+                    <span class="emp-status {{ $isFull ? 'full' : 'part' }}">{{ $isFull ? 'Full-time' : 'Part-time' }}</span>
                   </td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $emp->position ?? '-' }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ optional($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('M d, Y') : '-' }}</td>
@@ -85,9 +92,9 @@
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">
                     <div style="display:flex;gap:8px;align-items:center">
                       <button type="button" onclick="document.getElementById('owner-edit-emp-{{ $emp->id }}').style.display = (document.getElementById('owner-edit-emp-{{ $emp->id }}').style.display==='none' || document.getElementById('owner-edit-emp-{{ $emp->id }}').style.display==='') ? 'table-row' : 'none'" style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#0f172a">✎</button>
-                      <form method="POST" action="{{ route('owner.employee.delete', ['id'=>$emp->id]) }}" onsubmit="return confirm('Delete this employee?')" style="margin:0">
+                      <form method="POST" action="{{ route('owner.employee.delete', ['id'=>$emp->id]) }}" style="margin:0">
                         @csrf
-                        <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c">🗑</button>
+                        <button style="padding:6px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#b91c1c" data-confirm="Delete this employee?">🗑</button>
                       </form>
                     </div>
                   </td>

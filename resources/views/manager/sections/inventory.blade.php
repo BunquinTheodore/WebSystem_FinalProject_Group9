@@ -1,3 +1,7 @@
+<style>
+  .qty-cell{padding:8px}
+  .qty-cell.is-low{color:#b91c1c;font-weight:600}
+</style>
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Inventory Overview</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">View inventory updates from employees</div>
@@ -22,7 +26,8 @@
             <td style="padding:8px 12px">{{ $it->sealed ?? $it->sealed_qty ?? 0 }}</td>
             <td style="padding:8px 12px">{{ $it->loose ?? $it->loose_qty ?? 0 }}</td>
             <td style="padding:8px 12px">{{ $it->delivered ?? $it->delivered_qty ?? 0 }}</td>
-            <td style="padding:8px 12px">{{ optional($it->date_delivered ?? $it->delivered_at ?? null) ? \Carbon\Carbon::parse($it->date_delivered ?? $it->delivered_at)->format('m/d/Y') : '-' }}</td>
+            @php($__mgrDateDelivered = data_get($it,'date_delivered') ?? data_get($it,'delivered_at'))
+            <td style="padding:8px 12px">{{ $__mgrDateDelivered ? \Carbon\Carbon::parse($__mgrDateDelivered)->format('m/d/Y') : '-' }}</td>
             <td style="padding:8px 12px">{{ optional($it->updated_at ?? null) ? \Carbon\Carbon::parse($it->updated_at)->format('m/d/Y') : '-' }}</td>
           </tr>
         @empty
@@ -59,7 +64,7 @@
               <tr>
                 <td style="padding:8px">{{ $it->name }}</td>
                 <td style="padding:8px">{{ $it->unit }}</td>
-                <td style="padding:8px;{{ $low ? 'color:#b91c1c;font-weight:600' : '' }}">{{ $it->quantity ?? 0 }}</td>
+                <td class="qty-cell {{ $low ? 'is-low' : '' }}">{{ $it->quantity ?? 0 }}</td>
                 <td style="padding:8px">{{ $it->min_threshold ?? 0 }}</td>
                 <td style="padding:8px">{{ $it->supplier ?? '-' }}</td>
                 <td style="padding:8px">
@@ -107,7 +112,7 @@
               <tr>
                 <td style="padding:8px">{{ $it->name }}</td>
                 <td style="padding:8px">{{ $it->unit }}</td>
-                <td style="padding:8px;{{ $low ? 'color:#b91c1c;font-weight:600' : '' }}">{{ $it->quantity ?? 0 }}</td>
+                <td class="qty-cell {{ $low ? 'is-low' : '' }}">{{ $it->quantity ?? 0 }}</td>
                 <td style="padding:8px">{{ $it->min_threshold ?? 0 }}</td>
                 <td style="padding:8px">{{ $it->supplier ?? '-' }}</td>
                 <td style="padding:8px">

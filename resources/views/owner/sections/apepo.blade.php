@@ -1,6 +1,6 @@
     <div id="apepo" class="owner-section" data-section="apepo" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+  <button data-owner-back onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -35,6 +35,11 @@
         </div>
       </div>
 
+      <style>
+        .emp-type{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px}
+        .emp-type.full{color:#2563eb;background:#eef2ff;border:1px solid #bfdbfe}
+        .emp-type.part{color:#06b6d4;background:#ecfeff;border:1px solid #a5f3fc}
+      </style>
       <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:14px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div>
@@ -70,7 +75,7 @@
                 @endphp
                 <tr>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ $name }}</td>
-                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span style="display:inline-block;padding:4px 8px;border-radius:999px;color:{{ $badgeClr[0] }};background:{{ $badgeClr[1] }};border:1px solid {{ $badgeClr[2] }};font-size:12px">{{ $isPart ? 'Part-time' : 'Full-time' }}</span></td>
+                  <td style="padding:8px;border-bottom:1px solid #f6f6f5"><span class="emp-type {{ $isPart ? 'part' : 'full' }}">{{ $isPart ? 'Part-time' : 'Full-time' }}</span></td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">{{ (int)$days }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5">₱{{ number_format((float)$rate, 0) }}</td>
                   <td style="padding:8px;border-bottom:1px solid #f6f6f5;color:#047857">₱{{ number_format((float)$total, 0) }}</td>

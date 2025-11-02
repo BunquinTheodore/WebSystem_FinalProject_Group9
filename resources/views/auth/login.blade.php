@@ -52,30 +52,7 @@
       padding: 40px 35px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
-    .tabs {
-      display: flex;
-      background: #e0f7fa;
-      border-radius: 25px;
-      padding: 4px;
-      margin-bottom: 30px;
-    }
-    .tab {
-      flex: 1;
-      padding: 10px 20px;
-      border: none;
-      background: transparent;
-      border-radius: 25px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 14px;
-      color: #666;
-      transition: all 0.3s ease;
-    }
-    .tab.active {
-      background: white;
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
+    /* Removed tabs (register moved to Owner dashboard) */
     .form-title {
       font-size: 16px;
       color: #333;
@@ -157,86 +134,25 @@
       <img src="{{ asset('images/bluemoon-logo.png') }}" alt="Bluemoon">
     </div>
     <div class="card">
-      <div class="tabs">
-        <button class="tab" id="tab-login" type="button">Login</button>
-        <button class="tab" id="tab-register" type="button">Register</button>
-      </div>
-
-      @if($errors->any())
-        <div class="error-message">{{ $errors->first() }}</div>
-      @endif
-
-      <div id="panel-login">
-        <div class="form-title">Login to your account</div>
-        <form method="POST" action="{{ url('/login') }}">
-          @csrf
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-control" name="username" type="text" placeholder="Enter your email" value="{{ old('username') }}">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input class="form-control" name="password" type="password" placeholder="Enter your password">
-          </div>
-          <button class="btn btn-primary">Sign In</button>
-        </form>
-      </div>
-
-      <div id="panel-register" class="hidden">
-        <div class="form-title">Create your account</div>
-        <form method="POST" action="{{ url('/register') }}">
-          @csrf
-          <div class="form-group">
-            <label class="form-label">Username</label>
-            <input class="form-control" name="username" placeholder="Enter your username" value="{{ old('username') }}">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-control" name="email" type="email" placeholder="Enter your email" value="{{ old('email') }}">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Role</label>
-            <select class="form-control" name="role">
-              <option value="" disabled {{ old('role') ? '' : 'selected' }}>Select your role</option>
-              <option value="owner" {{ old('role')==='owner' ? 'selected' : '' }}>Owner</option>
-              <option value="manager" {{ old('role')==='manager' ? 'selected' : '' }}>Manager</option>
-              <option value="employee" {{ old('role')==='employee' ? 'selected' : '' }}>Employee</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input class="form-control" name="password" type="password" placeholder="Create a password">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Confirm Password</label>
-            <input class="form-control" name="password_confirmation" type="password" placeholder="Confirm your password">
-          </div>
-          <button class="btn btn-success">Sign Up</button>
-        </form>
+      <div class="form-title">Login to your account</div>
+      <form method="POST" action="{{ url('/login') }}">
+        @csrf
+        <div class="form-group">
+          <label class="form-label">Email or Username</label>
+          <input class="form-control" name="username" type="text" placeholder="Enter your email or username" value="{{ old('username') }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-control" name="password" type="password" placeholder="Enter your password">
+        </div>
+        <button class="btn btn-primary">Sign In</button>
+      </form>
+      <div style="margin-top:12px;color:#64748b;font-size:12px;text-align:center">
+        Registration is managed by the Owner and the Manager.
       </div>
     </div>
   </div>
   <script>
-    (function(){
-      function q(k){return new URLSearchParams(window.location.search).get(k)}
-      var current = (q('tab')||'login').toLowerCase();
-      var tabLogin = document.getElementById('tab-login');
-      var tabRegister = document.getElementById('tab-register');
-      var pLogin = document.getElementById('panel-login');
-      var pRegister = document.getElementById('panel-register');
-      function setTab(name){
-        var isLogin = name==='login';
-        tabLogin.classList.toggle('active', isLogin);
-        tabRegister.classList.toggle('active', !isLogin);
-        pLogin.classList.toggle('hidden', !isLogin);
-        pRegister.classList.toggle('hidden', isLogin);
-        var url = new URL(window.location);
-        url.searchParams.set('tab', name);
-        window.history.replaceState({}, '', url);
-      }
-      tabLogin.addEventListener('click', function(){ setTab('login'); });
-      tabRegister.addEventListener('click', function(){ setTab('register'); });
-      setTab(current==='register' ? 'register' : 'login');
-    })();
+    // No tabs logic required; register is handled in the Owner and Manager dashboards.
   </script>
 @endsection

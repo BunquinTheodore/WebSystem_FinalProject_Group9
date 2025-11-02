@@ -45,6 +45,7 @@
     align-items: center;
     gap: 20px;
   }
+  
   .owner-topbar-icon {
     width: 40px;
     height: 40px;
@@ -149,6 +150,34 @@
     color: #64748b;
     margin: 0;
   }
+  
+  /* Universal hover reactions for functional controls on Owner dashboard */
+  .owner-topbar-icon { transition: background-color .15s ease, color .15s ease, box-shadow .15s ease; }
+  .owner-topbar-icon:hover { box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+  .owner-topbar-icon:active { transform: scale(0.98); }
+
+  /* Buttons and clickable links inside sections */
+  .owner-section button,
+  .owner-section a {
+    transition: box-shadow .15s ease, filter .15s ease, background-color .15s ease, color .15s ease;
+  }
+  .owner-section button:hover,
+  .owner-section a:hover {
+    box-shadow: 0 6px 14px rgba(0,0,0,.08);
+    filter: brightness(0.98);
+  }
+  .owner-section button:active,
+  .owner-section a:active { filter: brightness(0.96); }
+
+  /* Keyboard focus visibility for accessibility */
+  .owner-section button:focus-visible,
+  .owner-section a:focus-visible,
+  .owner-topbar-icon:focus-visible {
+    outline: 3px solid #38bdf8;
+    outline-offset: 2px;
+  }
+
+  
 </style>
 
   <!-- Top Navigation Bar -->
@@ -165,7 +194,7 @@
           <line x1="9" y1="15" x2="15" y2="15"/>
         </svg>
       </a>
-      <a href="#" class="owner-topbar-icon" title="Logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+      <a href="#" class="owner-topbar-icon" title="Logout" data-logout-confirm data-form="#logout-form">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10 17l-5-5 5-5"/>
           <path d="M15 12H5"/>
@@ -257,8 +286,10 @@
 
     @include('owner.sections.inventory')
 
-    @include('owner.sections.employees')>
+    @include('owner.sections.employees')
   </div>
+  
+  
   <script>
     function backToMain() {
       document.querySelectorAll('.owner-section').forEach(function(section) {
@@ -323,6 +354,13 @@
           location.hash = key; // keep deep-link; hashchange handler will call showSection
         });
       }
+      // Ensure any element marked as owner-back triggers main view
+      document.addEventListener('click', function(ev){
+        var backEl = ev.target.closest('[data-owner-back]');
+        if(!backEl) return;
+        ev.preventDefault();
+        backToMain();
+      });
       window.addEventListener('hashchange', function(){
         var h = (location.hash||'').replace('#','');
         if(h){ showSection(h); } else { backToMain(); }

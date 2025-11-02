@@ -1,6 +1,6 @@
     <div id="store" class="owner-section" data-section="store" style="display:none;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:8px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <button onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
+  <button data-owner-back onclick="backToMain()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#f0f9ff;color:#0891b2;border:none;cursor:pointer;transition:all 0.2s ease" onmouseover="this.style.background='#0891b2'; this.style.color='#fff'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='#f0f9ff'; this.style.color='#0891b2'; this.style.transform='scale(1)'">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -35,10 +35,22 @@
                 {{ $openingTotal > 0 ? round(($openingCompleted / $openingTotal) * 100) : 0 }}% Complete
               </div>
             </div>
+            <script>
+              (function(){
+                var bars = document.querySelectorAll('.store-progress');
+                bars.forEach(function(el){
+                  var pct = parseFloat(el.getAttribute('data-pct')||'0');
+                  if(isFinite(pct)) el.style.width = pct + '%';
+                });
+              })();
+            </script>
             <div style="width:64px;height:64px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(16,185,129,0.4)">✅</div>
           </div>
+          @php
+            $openingPct = $openingTotal > 0 ? (($openingCompleted / $openingTotal) * 100) : 0;
+          @endphp
           <div style="margin-top:16px;height:8px;background:#d1fae5;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)">
-            <div style="height:100%;background:linear-gradient(90deg,#10b981 0%,#059669 100%);border-radius:999px;width:{{ $openingTotal > 0 ? (($openingCompleted / $openingTotal) * 100) : 0 }}%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
+            <div class="store-progress" data-pct="{{ $openingPct }}" style="height:100%;background:linear-gradient(90deg,#10b981 0%,#059669 100%);border-radius:999px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
           </div>
         </div>
 
@@ -58,8 +70,11 @@
             </div>
             <div style="width:64px;height:64px;background:linear-gradient(135deg,#f97316 0%,#ea580c 100%);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 10px 20px rgba(249,115,22,0.4)">⏱️</div>
           </div>
+          @php
+            $closingPct = $closingTotal > 0 ? (($closingCompleted / $closingTotal) * 100) : 0;
+          @endphp
           <div style="margin-top:16px;height:8px;background:#ffedd5;border-radius:999px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.1)">
-            <div style="height:100%;background:linear-gradient(90deg,#f97316 0%,#ea580c 100%);border-radius:999px;width:{{ $closingTotal > 0 ? (($closingCompleted / $closingTotal) * 100) : 0 }}%;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
+            <div class="store-progress" data-pct="{{ $closingPct }}" style="height:100%;background:linear-gradient(90deg,#f97316 0%,#ea580c 100%);border-radius:999px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1)"></div>
           </div>
         </div>
 
@@ -110,43 +125,17 @@
         }
       </style>
       <!-- Task List Container -->
+      <style>
+        .store-task{display:flex;justify-content:space-between;align-items:center;border:2px solid #e5e7eb;background:#ffffff;border-radius:14px;padding:18px 20px;transition:all .3s cubic-bezier(.4,0,.2,1);cursor:pointer}
+        .store-task.is-done{border-color:#86efac;background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)}
+        .loc-badge{padding:6px 14px;border-radius:12px;font-size:13px;font-weight:700;border:2px solid transparent}
+        .loc-kitchen{background:#eff6ff;border-color:#93c5fd;color:#1e40af}
+        .loc-coffee{background:#fefce8;border-color:#fcd34d;color:#92400e}
+        .loc-default{background:#f3f4f6;border-color:#d1d5db;color:#4b5563}
+        .task-badge-done{display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(16,185,129,0.3)}
+        .task-badge-pending{background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;border:2px solid #fcd34d}
+      </style>
       <div id="store-task-list" style="background:#ffffff;border:3px solid #e5e7eb;border-radius:20px;padding:32px;display:grid;gap:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06);max-width:1000px">
-          @php
-            $renderTask = function($t){
-              $isCompleted = $t['completed'];
-              $badge = $isCompleted
-                ? '<div style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;box-shadow:0 2px 4px rgba(16,185,129,0.3)"><span>✓</span><span>Done</span></div>' 
-                : '<div style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:12px;font-size:12px;font-weight:700;border:2px solid #fcd34d">⏳ Pending</div>';
-              
-              $loc = $t['location'] ?: 'Unassigned';
-              $time = $t['time'] ? \Carbon\Carbon::parse($t['time'])->format('g:i A') : '';
-              $emp = $t['employee'] ? ('By '. $t['employee']) : '';
-              $sub = trim(($emp.' '.($time?('at '.$time):'')));
-              
-              $bgColor = $isCompleted ? 'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)' : '#ffffff';
-              $borderColor = $isCompleted ? '#86efac' : '#e5e7eb';
-              
-              $locationColors = [
-                'kitchen' => ['bg' => '#eff6ff', 'border' => '#93c5fd', 'text' => '#1e40af'],
-                'coffee' => ['bg' => '#fefce8', 'border' => '#fcd34d', 'text' => '#92400e'],
-                'default' => ['bg' => '#f3f4f6', 'border' => '#d1d5db', 'text' => '#4b5563']
-              ];
-              
-              $locLower = strtolower($loc);
-              $locColor = $locationColors[$locLower] ?? $locationColors['default'];
-              
-              return '<div class="store-task" data-location="'.$locLower.'" style="display:flex;justify-content:space-between;align-items:center;border:2px solid '.$borderColor.';background:'.$bgColor.';border-radius:14px;padding:18px 20px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer" onmouseover="this.style.transform=\'translateX(8px)\'; this.style.boxShadow=\'0 10px 15px -3px rgba(0,0,0,0.1)\'" onmouseout="this.style.transform=\'translateX(0)\'; this.style.boxShadow=\'none\'">'
-                .'<div style="flex:1;min-width:0">'
-                  .'<div style="font-weight:800;color:#111827;font-size:16px;margin-bottom:6px;line-height:1.3">'.e($t['title']).'</div>'
-                  .'<div style="font-size:13px;color:#6b7280;font-weight:500">'.($sub ?: '<span style="color:#d1d5db">No details</span>').'</div>'
-                .'</div>'
-                .'<div style="display:flex;gap:12px;align-items:center;flex-shrink:0;margin-left:16px">'
-                  .'<div style="background:'.$locColor['bg'].';border:2px solid '.$locColor['border'].';padding:6px 14px;border-radius:12px;font-size:13px;font-weight:700;color:'.$locColor['text'].'">'.e($loc).'</div>'
-                  .$badge
-                .'</div>'
-              .'</div>';
-            };
-          @endphp
           <div class="store-list" data-type="opening" style="animation:fadeIn 0.4s ease-out">
             <div style="margin:0 0 24px;padding-bottom:20px;border-bottom:4px solid #f3f4f6">
               <div style="display:flex;justify-content:space-between;align-items:center">
@@ -157,7 +146,32 @@
               </div>
             </div>
             @foreach(($openingTaskList ?? []) as $t)
-              {!! $renderTask($t) !!}
+              @php
+                $isCompleted = !empty($t['completed']);
+                $loc = $t['location'] ?: 'Unassigned';
+                $time = !empty($t['time']) ? \Carbon\Carbon::parse($t['time'])->format('g:i A') : '';
+                $emp = !empty($t['employee']) ? ('By '.$t['employee']) : '';
+                $sub = trim(($emp.' '.($time?('at '.$time):'')));
+                $bgColor = $isCompleted ? 'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)' : '#ffffff';
+                $borderColor = $isCompleted ? '#86efac' : '#e5e7eb';
+                $locLower = strtolower($loc);
+                $locMap = ['kitchen'=>['#eff6ff','#93c5fd','#1e40af'], 'coffee'=>['#fefce8','#fcd34d','#92400e']];
+                $locColor = $locMap[$locLower] ?? ['#f3f4f6','#d1d5db','#4b5563'];
+              @endphp
+              <div class="store-task {{ $isCompleted ? 'is-done' : '' }}" data-location="{{ $locLower }}" onmouseover="this.style.transform='translateX(8px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:800;color:#111827;font-size:16px;margin-bottom:6px;line-height:1.3">{{ e($t['title']) }}</div>
+                  <div style="font-size:13px;color:#6b7280;font-weight:500">{!! $sub ?: '<span style="color:#d1d5db">No details</span>' !!}</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center;flex-shrink:0;margin-left:16px">
+                  <div class="loc-badge {{ 'loc-'.($locLower==='kitchen'?'kitchen':($locLower==='coffee'?'coffee':'default')) }}">{{ e($loc) }}</div>
+                  @if($isCompleted)
+                    <div class="task-badge-done"><span>✓</span><span>Done</span></div>
+                  @else
+                    <div class="task-badge-pending">⏳ Pending</div>
+                  @endif
+                </div>
+              </div>
             @endforeach
           </div>
           
@@ -171,7 +185,32 @@
               </div>
             </div>
             @foreach(($closingTaskList ?? []) as $t)
-              {!! $renderTask($t) !!}
+              @php
+                $isCompleted = !empty($t['completed']);
+                $loc = $t['location'] ?: 'Unassigned';
+                $time = !empty($t['time']) ? \Carbon\Carbon::parse($t['time'])->format('g:i A') : '';
+                $emp = !empty($t['employee']) ? ('By '.$t['employee']) : '';
+                $sub = trim(($emp.' '.($time?('at '.$time):'')));
+                $bgColor = $isCompleted ? 'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)' : '#ffffff';
+                $borderColor = $isCompleted ? '#86efac' : '#e5e7eb';
+                $locLower = strtolower($loc);
+                $locMap = ['kitchen'=>['#eff6ff','#93c5fd','#1e40af'], 'coffee'=>['#fefce8','#fcd34d','#92400e']];
+                $locColor = $locMap[$locLower] ?? ['#f3f4f6','#d1d5db','#4b5563'];
+              @endphp
+              <div class="store-task {{ $isCompleted ? 'is-done' : '' }}" data-location="{{ $locLower }}" onmouseover="this.style.transform='translateX(8px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:800;color:#111827;font-size:16px;margin-bottom:6px;line-height:1.3">{{ e($t['title']) }}</div>
+                  <div style="font-size:13px;color:#6b7280;font-weight:500">{!! $sub ?: '<span style="color:#d1d5db">No details</span>' !!}</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center;flex-shrink:0;margin-left:16px">
+                  <div class="loc-badge {{ 'loc-'.($locLower==='kitchen'?'kitchen':($locLower==='coffee'?'coffee':'default')) }}">{{ e($loc) }}</div>
+                  @if($isCompleted)
+                    <div class="task-badge-done"><span>✓</span><span>Done</span></div>
+                  @else
+                    <div class="task-badge-pending">⏳ Pending</div>
+                  @endif
+                </div>
+              </div>
             @endforeach
           </div>
         </div>

@@ -8,6 +8,7 @@ use App\Models\Location;
 use App\Models\Task;
 use App\Models\TaskChecklistItem;
 use App\Models\Recipe;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -16,6 +17,20 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        // Ensure a default owner exists for first-time setup
+        $defaultOwner = [
+            'name' => 'Owner',
+            'username' => 'owner',
+            'email' => 'owner@example.com',
+            'role' => 'owner',
+            // User model casts will hash this automatically
+            'password' => 'owner1234',
+        ];
+        User::firstOrCreate(
+            ['username' => $defaultOwner['username']],
+            $defaultOwner
+        );
+
         // Locations with QR payloads
         $locations = [
             ['name' => 'Restroom',  'slug' => 'restroom',  'qrcode_payload' => 'BLUEMOON:LOC:RESTROOM'],

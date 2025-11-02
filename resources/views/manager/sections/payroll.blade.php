@@ -14,21 +14,21 @@
             @endforeach
           </select>
         @else
-          <input name="employee" placeholder="Type employee name or username" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <input name="employee" placeholder="Type employee name or username" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         @endif
       </div>
       <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
         <div style="display:grid;gap:6px">
           <label style="font-size:12px;color:#0f172a">Days Worked</label>
-          <input name="days_worked" type="number" min="0" step="1" placeholder="e.g., 5" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <input name="days_worked" type="number" min="0" step="1" placeholder="e.g., 5" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         </div>
         <div style="display:grid;gap:6px">
           <label style="font-size:12px;color:#0f172a">Pay Rate (₱/day)</label>
-          <input name="pay_rate" type="number" min="0" step="0.01" placeholder="e.g., 600.00" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <input name="pay_rate" type="number" min="0" step="0.01" placeholder="e.g., 600.00" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         </div>
       </div>
-      <div>
-        <button style="width:100%;background:#d97706;color:#fff;border-radius:8px;padding:10px 14px">Submit Payroll Entry</button>
+      <div style="text-align:right">
+        <button style="background:#d97706;color:#fff;border-radius:8px;padding:10px 14px">Submit Payroll Entry</button>
       </div>
     </div>
   </form>
