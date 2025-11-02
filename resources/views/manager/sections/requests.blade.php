@@ -24,8 +24,8 @@
           </td>
         </tr>
         <tr>
-          <td colspan="2" style="padding:8px">
-            <button style="width:100%;background:#f97316;color:#fff;border-radius:6px;padding:10px 14px">Submit Request to Owner</button>
+          <td colspan="2" style="padding:8px; text-align:right">
+            <button style="background:#f97316;color:#fff;border-radius:6px;padding:10px 14px">Submit Request to Owner</button>
           </td>
         </tr>
       </tbody>
