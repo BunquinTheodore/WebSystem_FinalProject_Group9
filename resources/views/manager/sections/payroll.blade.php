@@ -1,7 +1,7 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Payroll Entry</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Submit employee payroll information</div>
-  <form id="mgr-payroll-form" method="POST" action="{{ url()->current() }}">
+  <form id="mgr-payroll-form" method="POST" action="{{ route('manager.payroll.store') }}">
     @csrf
     <div style="display:grid;gap:10px">
       <div style="display:grid;gap:6px">

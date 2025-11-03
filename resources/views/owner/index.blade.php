@@ -445,34 +445,36 @@
           const fd = new FormData(form);
           const res = await fetch(form.action, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } });
           if(!res.ok){ throw new Error('Request failed'); }
-          const tr = closestRow(form);
-          const statusCell = tr ? tr.querySelector('.req-status') : null;
-          const actionsCell = tr ? tr.querySelector('td:last-child') : null;
+          // Update the card UI (not table rows)
+          const card = form.closest('.req-card');
+          const statusEl = card ? card.querySelector('[data-req-status]') : null;
+          const actionsEl = card ? card.querySelector('[data-req-actions]') : null;
           const result = (form.getAttribute('data-result') || '').toLowerCase();
-          // Smoothly update status text
-          if(statusCell){
-            statusCell.style.transition = 'opacity 160ms ease';
-            statusCell.style.opacity = '0';
+          // Smoothly update status text within the badge
+          if(statusEl){
+            statusEl.style.transition = 'opacity 160ms ease';
+            statusEl.style.opacity = '0';
             setTimeout(function(){
-              statusCell.textContent = result ? (result.charAt(0).toUpperCase()+result.slice(1)) : 'Updated';
-              statusCell.style.opacity = '1';
+              const strong = statusEl.querySelector('strong');
+              if(strong){ strong.textContent = result ? (result.charAt(0).toUpperCase()+result.slice(1)) : 'Updated'; }
+              statusEl.style.opacity = '1';
             }, 160);
           }
-          // Fade out buttons, then replace with "No actions"
-          if(actionsCell){
-            actionsCell.style.transition = 'opacity 160ms ease';
-            actionsCell.style.opacity = '0';
+          // Fade out actions, then replace with "No actions available"
+          if(actionsEl){
+            actionsEl.style.transition = 'opacity 160ms ease';
+            actionsEl.style.opacity = '0';
             setTimeout(function(){
-              actionsCell.innerHTML = '<span style="color:#706f6c">No actions</span>';
-              actionsCell.style.opacity = '1';
+              actionsEl.innerHTML = '<span style="color:#6b7280;font-size:13px">No actions available</span>';
+              actionsEl.style.opacity = '1';
             }, 160);
           }
-          // Row highlight feedback
-          if(tr){
-            tr.style.transition = 'background-color 320ms ease, box-shadow 320ms ease';
-            tr.style.background = (result === 'approved') ? '#eaf7ee' : '#fdecea';
-            tr.style.boxShadow = 'inset 0 0 0 1px ' + ((result === 'approved') ? '#a7e1b2' : '#f5b5b5');
-            setTimeout(function(){ tr.style.background=''; tr.style.boxShadow=''; }, 900);
+          // Card highlight feedback
+          if(card){
+            card.style.transition = 'background-color 320ms ease, box-shadow 320ms ease';
+            card.style.background = (result === 'approved') ? '#eaf7ee' : '#fdecea';
+            card.style.boxShadow = 'inset 0 0 0 1px ' + ((result === 'approved') ? '#a7e1b2' : '#f5b5b5');
+            setTimeout(function(){ card.style.background=''; card.style.boxShadow=''; }, 900);
           }
           if(window.toast){ window.toast('Request '+(result||'updated')+'.','success'); }
         } catch(err){

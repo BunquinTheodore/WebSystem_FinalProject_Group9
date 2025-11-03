@@ -62,14 +62,24 @@
             <tbody>
               @forelse(($payrollRecords ?? []) as $row)
                 @php
-                  $name = $row->employee_name ?? ($row['employee_name'] ?? ($row->name ?? ($row['name'] ?? '—')));
-                  $etype = $row->employment_type ?? ($row['employment_type'] ?? ($row->status ?? ($row['status'] ?? '—')));
-                  $days = $row->days_worked ?? ($row['days_worked'] ?? ($row->days ?? ($row['days'] ?? 0)));
-                  $rate = $row->pay_rate ?? ($row['pay_rate'] ?? ($row->rate ?? ($row['rate'] ?? 0)));
-                  $total = $row->total_pay ?? ($row['total_pay'] ?? ($row->total ?? ($row['total'] ?? ($days * $rate))));
-                  $from = $row->period_from ?? ($row['period_from'] ?? null);
-                  $to = $row->period_to ?? ($row['period_to'] ?? null);
-                  $period = ($from && $to) ? (\Carbon\Carbon::parse($from)->format('M d') . '–' . \Carbon\Carbon::parse($to)->format('d, Y')) : ($row->period ?? ($row['period'] ?? '—'));
+                  $name = $row->employee_name ?? ($row->name ?? '—');
+                  $etype = $row->employment_type ?? ($row->status ?? '—');
+                  // Prefer day-based fields; fall back to hours/8 when missing
+                  $days = $row->days_worked ?? ($row->days ?? (isset($row->hours_worked) ? ((float)$row->hours_worked)/8 : 0));
+                  $rate = $row->pay_rate ?? ($row->rate ?? (isset($row->hourly_rate) ? ((float)$row->hourly_rate)*8 : 0));
+                  // Compute total from available columns
+                  if (isset($row->total_pay)) { $total = (float)$row->total_pay; }
+                  elseif (isset($row->total)) { $total = (float)$row->total; }
+                  elseif (isset($row->hours_worked) && isset($row->hourly_rate)) { $total = (float)$row->hours_worked * (float)$row->hourly_rate; }
+                  else { $total = (float)$days * (float)$rate; }
+                  // Period: prefer explicit from/to; else start/end; else string; else em-dash
+                  $from = $row->period_from ?? ($row->period_start ?? null);
+                  $to = $row->period_to ?? ($row->period_end ?? null);
+                  if ($from && $to) {
+                    $period = \Carbon\Carbon::parse($from)->format('M d') . '–' . \Carbon\Carbon::parse($to)->format('d, Y');
+                  } else {
+                    $period = $row->period ?? '—';
+                  }
                   $isPart = strtolower((string)$etype) === 'parttime' || strtolower((string)$etype) === 'part-time' || strtolower((string)$etype) === 'part time';
                   $badgeClr = $isPart ? ['#06b6d4','#ecfeff','#a5f3fc'] : ['#2563eb','#eef2ff','#bfdbfe'];
                 @endphp

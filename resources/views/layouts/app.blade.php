@@ -352,6 +352,11 @@
         document.addEventListener('submit', function(e){
           if (e.defaultPrevented) return;
           var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
+          if(form){
+            if(form.hasAttribute('data-no-loader') || (form.classList && (form.classList.contains('owner-req-form') || form.classList.contains('owner-ajax')))){
+              return; // let page scripts handle UX; don't show overlay
+            }
+          }
           if(!form) { show(); return; }
           var action = form.getAttribute('action') || window.location.href;
           var method = (form.getAttribute('method') || 'GET').toUpperCase();

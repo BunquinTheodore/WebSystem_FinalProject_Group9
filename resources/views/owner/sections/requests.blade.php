@@ -97,9 +97,9 @@
 
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
               <div>
-                <span style="display:inline-block;padding:8px 14px;border-radius:8px;border:2px solid #e5e7eb;background:#f9fafb;font-size:13px;color:#374151;font-weight:600">Status: <strong style="color:#0f172a">{{ ucfirst($q->status) }}</strong></span>
+                <span data-req-status style="display:inline-block;padding:8px 14px;border-radius:8px;border:2px solid #e5e7eb;background:#f9fafb;font-size:13px;color:#374151;font-weight:600">Status: <strong style="color:#0f172a">{{ ucfirst($q->status) }}</strong></span>
               </div>
-              <div style="display:flex;gap:8px">
+              <div data-req-actions style="display:flex;gap:8px">
                 @if($q->status === 'pending')
                   <form class="owner-req-form" data-result="approved" method="POST" action="{{ route('owner.request.approve', ['id' => $q->id]) }}" style="display:inline">@csrf<button style="padding:10px 18px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:10px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s ease;box-shadow:0 2px 6px rgba(22,163,74,0.3)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(22,163,74,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(22,163,74,0.3)'">✓ Approve</button></form>
                   <form class="owner-req-form" data-result="rejected" method="POST" action="{{ route('owner.request.deny', ['id' => $q->id]) }}" style="display:inline">@csrf<button style="padding:10px 18px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border-radius:10px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s ease;box-shadow:0 2px 6px rgba(220,38,38,0.3)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(220,38,38,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(220,38,38,0.3)'">✗ Deny</button></form>

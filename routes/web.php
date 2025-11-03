@@ -426,6 +426,9 @@ Route::post('/owner/requests/{id}/approve', function (Request $request, int $id)
         'status' => 'approved',
         'updated_at' => now(),
     ]);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'status' => 'approved']);
+    }
     return back()->with('status', 'Request approved');
 })->name('owner.request.approve');
 
@@ -435,6 +438,9 @@ Route::post('/owner/requests/{id}/deny', function (Request $request, int $id) {
         'status' => 'rejected',
         'updated_at' => now(),
     ]);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'status' => 'rejected']);
+    }
     return back()->with('status', 'Request rejected');
 })->name('owner.request.deny');
 
@@ -584,6 +590,82 @@ Route::get('/manager', function (Request $request) {
         'employees' => $employees,
     ]);
 })->name('manager.home');
+
+// Manager: Submit payroll entry
+Route::post('/manager/payroll', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'employee' => 'required|string|max:255',
+        'days_worked' => 'nullable|numeric|min:0',
+        'pay_rate' => 'nullable|numeric|min:0',
+        'period_from' => 'nullable|date',
+        'period_to' => 'nullable|date',
+    ]);
+
+    $empRaw = (string) $data['employee'];
+    $empId = null;
+    try {
+        $empQuery = DB::table('employees');
+        if (is_numeric($empRaw)) {
+            $empId = $empQuery->where('id', (int) $empRaw)->value('id');
+        }
+        if (!$empId) {
+            $empId = DB::table('employees')->where('username', $empRaw)->value('id');
+        }
+        if (!$empId) {
+            $empId = DB::table('employees')->where('name', $empRaw)->value('id');
+        }
+    } catch (\Throwable $e) { /* ignore */ }
+
+    $now = now();
+    $payload = [ 'created_at' => $now, 'updated_at' => $now ];
+    // Map employee reference
+    if (Schema::hasColumn('payroll','employee_id') && $empId) {
+        $payload['employee_id'] = $empId;
+    } elseif (Schema::hasColumn('payroll','employee')) {
+        $payload['employee'] = $empRaw;
+    }
+    // Map work and rate columns based on existing schema
+    $days = isset($data['days_worked']) ? (float) $data['days_worked'] : null;
+    $rate = isset($data['pay_rate']) ? (float) $data['pay_rate'] : null;
+    // Days/Hours
+    if ($days !== null) {
+        if (Schema::hasColumn('payroll','days_worked')) { $payload['days_worked'] = $days; }
+        if (Schema::hasColumn('payroll','days')) { $payload['days'] = $days; }
+        if (Schema::hasColumn('payroll','hours_worked')) { $payload['hours_worked'] = (float) ($days * 8); }
+    }
+    // Rate
+    if ($rate !== null) {
+        if (Schema::hasColumn('payroll','pay_rate')) { $payload['pay_rate'] = $rate; }
+        if (Schema::hasColumn('payroll','rate')) { $payload['rate'] = $rate; }
+        if (Schema::hasColumn('payroll','hourly_rate')) { $payload['hourly_rate'] = (float) ($rate / 8); }
+    }
+    // Total
+    if ($days !== null && $rate !== null) {
+        $total = (float) ($days * $rate);
+        if (Schema::hasColumn('payroll','total_pay')) { $payload['total_pay'] = $total; }
+        if (Schema::hasColumn('payroll','total')) { $payload['total'] = $total; }
+    }
+    // Period
+    $pf = $data['period_from'] ?? null; $pt = $data['period_to'] ?? null;
+    if (!$pf || !$pt) {
+        $pf = $now->copy()->startOfWeek();
+        $pt = $now->copy()->endOfWeek();
+    } else {
+        $pf = \Carbon\Carbon::parse($pf);
+        $pt = \Carbon\Carbon::parse($pt);
+    }
+    if (Schema::hasColumn('payroll','period_from')) { $payload['period_from'] = $pf; }
+    if (Schema::hasColumn('payroll','period_to')) { $payload['period_to'] = $pt; }
+    if (Schema::hasColumn('payroll','period_start')) { $payload['period_start'] = $pf->toDateString(); }
+    if (Schema::hasColumn('payroll','period_end')) { $payload['period_end'] = $pt->toDateString(); }
+    if (Schema::hasColumn('payroll','period') && !isset($payload['period_from']) && !isset($payload['period_to'])) {
+        $payload['period'] = $pf->format('Y-m-d') . ' - ' . $pt->format('Y-m-d');
+    }
+
+    DB::table('payroll')->insert($payload);
+    return redirect()->route('manager.home')->with('status', 'Payroll entry submitted');
+})->name('manager.payroll.store');
 
 Route::post('/manager/employees', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
