@@ -33,8 +33,8 @@
   <div class="card" style="max-width:1000px;margin:0 auto;padding:16px 16px 24px">
     <div class="tabs-wrap">
       <div class="tabs" role="tablist" aria-label="Task Type">
-        <a id="tab-opening" class="tab {{ $type==='opening' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='opening' ? 'true':'false' }}" href="{{ url('/employee/tasks/opening') }}">Opening Tasks</a>
-        <a id="tab-closing" class="tab {{ $type==='closing' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='closing' ? 'true':'false' }}" href="{{ url('/employee/tasks/closing') }}">Closing Tasks</a>
+        <a id="tab-opening" class="tab {{ $type==='opening' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='opening' ? 'true':'false' }}" href="{{ url('/employee/tasks/opening') }}" data-no-loader>Opening Tasks</a>
+        <a id="tab-closing" class="tab {{ $type==='closing' ? '' : 'inactive' }}" role="tab" aria-selected="{{ $type==='closing' ? 'true':'false' }}" href="{{ url('/employee/tasks/closing') }}" data-no-loader>Closing Tasks</a>
       </div>
     </div>
 

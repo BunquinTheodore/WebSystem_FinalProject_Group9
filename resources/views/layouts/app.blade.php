@@ -320,8 +320,11 @@
           }
         }
 
-        // Show when navigating away
+        // Suppress overlay for marked links
+        var suppressLoader = false;
+        window.addEventListener('pageshow', function(){ suppressLoader = false; });
         window.addEventListener('beforeunload', function(){
+          if (suppressLoader) return;
           // Some browsers limit DOM changes here, but toggling a class usually works
           show(lastMeta || { label:'Loading…', emoji:'⏳', accent:'#0891b2' });
         });
@@ -332,6 +335,10 @@
           if(!a) return;
           var href = a.getAttribute('href');
           if(!href) return;
+          if (a.hasAttribute('data-no-loader') || (a.classList && a.classList.contains('no-loader'))){
+            suppressLoader = true;
+            return;
+          }
           if (href.startsWith('#') || href.startsWith('javascript:')) return;
           if (a.hasAttribute('download')) return;
           if (a.target && a.target !== '_self') return;

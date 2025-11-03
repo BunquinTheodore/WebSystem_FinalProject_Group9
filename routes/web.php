@@ -993,15 +993,39 @@ Route::post('/manager/request', function (Request $request) {
 Route::post('/manager/assign', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
     $data = $request->validate([
-        'task_id' => 'required|exists:tasks,id',
-        'employee_username' => 'required|string',
+        // Either provide an existing task_id OR provide title/category to create a new task
+        'task_id' => 'nullable|integer|exists:tasks,id',
+        'title' => 'nullable|string|max:255',
+        'description' => 'nullable|string',
+        'category' => 'nullable|string|max:50',
+        'priority' => 'nullable|in:low,medium,high',
+        // No specific employee assignment; global for all employees
         'due_at' => 'nullable|date',
     ]);
+
+    // Determine the target Task ID
+    $taskId = (int) ($data['task_id'] ?? 0);
+    if (!$taskId) {
+        // Create a minimal Task entry so it can appear in employee task list
+        $rawCat = (string) ($data['category'] ?? 'Opening');
+        $type = (stripos($rawCat, 'closing') !== false) ? 'closing' : 'opening';
+        $title = (string) ($data['title'] ?? 'Task');
+        $task = Task::create([
+            'title' => $title,
+            'type' => $type,
+            'location_id' => null,
+            'active' => true,
+        ]);
+        $taskId = (int) $task->id;
+    }
+
+    // Use the shared employee account username (one account for all employees)
+    $sharedEmployee = \App\Models\User::where('role','employee')->orderBy('id')->value('username') ?? 'employee';
     TaskAssignment::create([
-        'task_id' => $data['task_id'],
-        'employee_username' => $data['employee_username'],
+        'task_id' => $taskId,
+        'employee_username' => $sharedEmployee,
         'manager_username' => (string) $request->session()->get('username'),
-        'due_at' => $data['due_at'] ? \Carbon\Carbon::parse($data['due_at']) : now()->endOfDay(),
+        'due_at' => !empty($data['due_at']) ? \Carbon\Carbon::parse($data['due_at']) : now()->endOfDay(),
         'status' => 'pending',
     ]);
     return redirect()->route('manager.home')->with('status', 'Task assigned');
@@ -1051,21 +1075,38 @@ Route::get('/employee/tasks/{type}', function (Request $request, string $type) {
         ->pluck('task_id')
         ->all();
 
+    // Tasks assigned by manager to this employee OR globally for today that are not yet completed
+    $assignedIds = TaskAssignment::whereIn('status', ['pending', 'in_progress'])
+        ->whereDate('due_at', now()->toDateString())
+        ->where(function($q) use ($employee){
+            $q->whereNull('employee_username')
+              ->orWhere('employee_username', $employee);
+        })
+        ->pluck('task_id')
+        ->all();
+
     $includeCompleted = (bool) $request->boolean('include_completed');
 
-    $tasks = Task::with(['checklistItems', 'location'])
+    $tasksQuery = Task::with(['checklistItems', 'location'])
         ->where('type', $type)
-        ->where('active', true)
-        ->when(!$includeCompleted && !empty($completedIds), function($q) use ($completedIds){
-            $q->whereNotIn('id', $completedIds);
-        })
-        ->orderBy('id')
-        ->get();
+        ->where('active', true);
+
+    // If there are assignments for today, only show those; otherwise show all active tasks of this type
+    if (!empty($assignedIds)) {
+        $tasksQuery->whereIn('id', $assignedIds);
+    }
+
+    if (!$includeCompleted && !empty($completedIds)) {
+        $tasksQuery->whereNotIn('id', $completedIds);
+    }
+
+    $tasks = $tasksQuery->orderBy('id')->get();
 
     return view('employee.tasks', [
         'type' => $type,
         'tasks' => $tasks,
         'completedIds' => $completedIds,
+        'assignedIds' => $assignedIds,
         'includeCompleted' => $includeCompleted,
     ]);
 });
@@ -1100,13 +1141,39 @@ Route::post('/employee/proof', function (Request $request) {
     Storage::disk('public')->put($path, $image);
 
     $employee = (string) $request->session()->get('username');
-    $assignment = TaskAssignment::create([
-        'task_id' => $data['task_id'],
-        'employee_username' => $employee,
-        'manager_username' => null,
-        'due_at' => now(),
-        'status' => 'completed',
-    ]);
+    // Try to complete an existing assignment for this employee and task (prefer today's pending/in_progress),
+    // otherwise claim a global assignment (employee_username null) for today, else create a new completed record.
+    $assignment = TaskAssignment::where('task_id', $data['task_id'])
+        ->whereIn('status', ['pending', 'in_progress'])
+        ->whereDate('due_at', now()->toDateString())
+        ->where('employee_username', $employee)
+        ->orderByDesc('id')
+        ->first();
+
+    if (!$assignment) {
+        $assignment = TaskAssignment::where('task_id', $data['task_id'])
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereDate('due_at', now()->toDateString())
+            ->whereNull('employee_username')
+            ->orderByDesc('id')
+            ->first();
+        if ($assignment) {
+            $assignment->employee_username = $employee; // claim the global assignment
+        }
+    }
+
+    if ($assignment) {
+        $assignment->status = 'completed';
+        $assignment->save();
+    } else {
+        $assignment = TaskAssignment::create([
+            'task_id' => $data['task_id'],
+            'employee_username' => $employee,
+            'manager_username' => null,
+            'due_at' => now(),
+            'status' => 'completed',
+        ]);
+    }
 
     TaskProof::create([
         'task_assignment_id' => $assignment->id,
