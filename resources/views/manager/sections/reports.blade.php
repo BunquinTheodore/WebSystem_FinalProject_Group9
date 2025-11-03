@@ -149,3 +149,117 @@
 </div>
 
 </form>
+
+<script>
+  (function(){
+    const form = document.getElementById('mgr-reports-unified');
+    if(!form) return;
+
+    function readFileAsDataURL(file){
+      return new Promise((resolve, reject)=>{
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function loadImage(url){
+      return new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    async function compressFile(file, targetBytes = 1.2 * 1024 * 1024){
+      try{
+        let dataUrl = await readFileAsDataURL(file);
+        let img = await loadImage(dataUrl);
+        let maxW = 1600, maxH = 1600, quality = 0.78;
+        for(let attempt=0; attempt<4; attempt++){
+          const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const blob = await new Promise(resolve=> canvas.toBlob(resolve, 'image/jpeg', quality));
+          if(!blob) break;
+          if (blob.size <= targetBytes) {
+            return new File([blob], (file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
+          }
+          // tighten constraints and try again
+          quality = Math.max(0.5, quality - 0.1);
+          maxW = Math.round(maxW * 0.85);
+          maxH = Math.round(maxH * 0.85);
+        }
+        // final output with last blob even if larger
+        const finalBlob = await new Promise(resolve=> {
+          const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(resolve, 'image/jpeg', quality);
+        });
+        if(finalBlob){
+          return new File([finalBlob], (file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
+        }
+        return file;
+      }catch(_){
+        return file;
+      }
+    }
+
+    async function maybeCompressInput(input){
+      const f = input && input.files ? input.files[0] : null;
+      if(!f) return;
+      // Skip small files (< 600KB)
+      if(f.size && f.size < 600 * 1024) return;
+      const compressed = await compressFile(f);
+      if(compressed && compressed.size < f.size){
+        // Replace the input's file with compressed one
+        const dt = new DataTransfer();
+        dt.items.add(compressed);
+        input.files = dt.files;
+      }
+    }
+
+    form.addEventListener('submit', async function(e){
+      try{
+        // only intercept if there are image files
+        const inputs = [
+          form.querySelector('input[name="opening_image"]'),
+          form.querySelector('input[name="closing_image"]'),
+          form.querySelector('input[name="fund_image"]'),
+        ].filter(Boolean);
+        const anyFile = inputs.some(i => i.files && i.files.length);
+        if(!anyFile) return; // proceed normally
+        e.preventDefault();
+        // Optional visual hint using global overlay if present
+        try{
+          const overlay = document.getElementById('loading-overlay');
+          const textEl = document.getElementById('loading-text');
+          if(overlay && textEl){ textEl.textContent = 'Optimizing photos…'; overlay.classList.add('show'); }
+        }catch(_){ }
+        for(const inp of inputs){ await maybeCompressInput(inp); }
+        // if still very large, warn and abort
+        const total = inputs.reduce((sum, i)=> sum + (i.files && i.files[0] ? i.files[0].size : 0), 0);
+        if(total > 5 * 1024 * 1024){
+          try{
+            if(window.toast) window.toast('Attached photos are too large even after optimization. Please choose smaller images.', 'error');
+          }catch(_){ alert('Attached photos are too large even after optimization. Please choose smaller images.'); }
+          const overlay = document.getElementById('loading-overlay'); if(overlay) overlay.classList.remove('show');
+          return; // do not submit
+        }
+        // submit after compression
+        this.submit();
+      }catch(_){ /* ignore and let submit proceed */ }
+    });
+  })();
+</script>
