@@ -261,8 +261,27 @@ Route::get('/owner', function (Request $request) {
         elseif ($min > 0 && $qty <= (int) ceil($min * 1.5)) { $status = 'Low Stock'; }
         return (object) array_merge((array) $it, [
             'status' => $status,
+            'sealed' => 0,
+            'loose' => 0,
+            'delivered_total' => 0,
         ]);
     });
+    // Add submitted manager inventory to owner view
+    $managerInvSubmitted = collect();
+    if (Schema::hasTable('manager_inventory')) {
+        $managerInvSubmitted = DB::table('manager_inventory')->where('submitted', true)->orderByDesc('submitted_at')->get();
+    }
+    foreach($managerInvSubmitted as $mInv){
+        $inventory->push((object)[
+            'name' => $mInv->product_name,
+            'unit' => $mInv->unit,
+            'sealed' => (int)$mInv->sealed,
+            'loose' => (int)$mInv->loose,
+            'delivered_total' => (int)$mInv->delivered,
+            'status' => 'Good',
+            'updated_at' => $mInv->updated_at,
+        ]);
+    }
     $invCriticalCount = $inventory->where('status','Critical')->count();
     $invLowCount = $inventory->where('status','Low Stock')->count();
 
@@ -576,6 +595,14 @@ Route::get('/manager', function (Request $request) {
     $apepo = DB::table('apepo_reports')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
     $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
     $employees = DB::table('employees')->orderBy('name')->get();
+    $managerInventory = collect();
+    if (Schema::hasTable('manager_inventory')) {
+        $managerInventory = DB::table('manager_inventory')
+            ->where('manager_username', $manager)
+            ->where('submitted', false)
+            ->orderByDesc('id')
+            ->get();
+    }
 
     return view('manager.index', [
         'reports' => $reports,
@@ -588,8 +615,75 @@ Route::get('/manager', function (Request $request) {
         'apepo' => $apepo,
         'inventory' => $inventory,
         'employees' => $employees,
+        'managerInventory' => $managerInventory,
     ]);
 })->name('manager.home');
+
+// Manager: Add inventory item
+Route::post('/manager/inventory/add', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'product_name' => 'required|string|max:255',
+        'unit' => 'required|string|max:50',
+        'sealed' => 'nullable|integer|min:0',
+        'loose' => 'nullable|integer|min:0',
+    ]);
+    $manager = (string) $request->session()->get('username');
+    DB::table('manager_inventory')->insert([
+        'manager_username' => $manager,
+        'product_name' => $data['product_name'],
+        'unit' => $data['unit'],
+        'sealed' => (int)($data['sealed'] ?? 0),
+        'loose' => (int)($data['loose'] ?? 0),
+        'delivered' => 0,
+        'submitted' => false,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    return back()->with('status', 'Product added');
+})->name('manager.inventory.add');
+
+// Manager: Update inventory quantity
+Route::post('/manager/inventory/update', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'id' => 'required|integer',
+        'field' => 'required|in:sealed,loose,delivered',
+        'value' => 'required|integer|min:0',
+    ]);
+    $manager = (string) $request->session()->get('username');
+    DB::table('manager_inventory')
+        ->where('id', $data['id'])
+        ->where('manager_username', $manager)
+        ->update([
+            $data['field'] => $data['value'],
+            'updated_at' => now(),
+        ]);
+    return response()->json(['ok' => true]);
+})->name('manager.inventory.update');
+
+// Manager: Delete inventory item
+Route::delete('/manager/inventory/{id}', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    DB::table('manager_inventory')->where('id', $id)->where('manager_username', $manager)->delete();
+    return response()->json(['ok' => true]);
+});
+
+// Manager: Submit inventory to Owner
+Route::post('/manager/inventory/submit', function (Request $request) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $manager = (string) $request->session()->get('username');
+    DB::table('manager_inventory')
+        ->where('manager_username', $manager)
+        ->where('submitted', false)
+        ->update([
+            'submitted' => true,
+            'submitted_at' => now(),
+            'updated_at' => now(),
+        ]);
+    return response()->json(['ok' => true]);
+})->name('manager.inventory.submit');
 
 // Manager: Submit payroll entry
 Route::post('/manager/payroll', function (Request $request) {

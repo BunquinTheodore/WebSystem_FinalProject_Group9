@@ -1,137 +1,167 @@
 <style>
-  .qty-cell{padding:8px}
-  .qty-cell.is-low{color:#b91c1c;font-weight:600}
+  .inv-mgr-card{background:#fff;border:1px solid #e3e3e0;border-radius:8px;padding:18px}
+  .inv-mgr-title{font-weight:700;font-size:18px;color:#0f172a;margin-bottom:4px}
+  .inv-mgr-sub{font-size:12px;color:#6b7280;margin-bottom:14px}
+  .inv-add-form{display:grid;grid-template-columns:1fr auto auto auto auto;gap:12px;align-items:center;margin-bottom:18px}
+  .inv-add-input{padding:10px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;outline:none}
+  .inv-add-input:focus{border-color:#0891b2;box-shadow:0 0 0 2px rgba(8,145,178,0.1)}
+  .inv-add-btn{padding:10px 24px;background:#0891b2;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:all 0.2s}
+  .inv-add-btn:hover{background:#0e7490;transform:translateY(-1px);box-shadow:0 4px 12px rgba(8,145,178,0.25)}
+  .inv-table{width:100%;border-collapse:collapse}
+  .inv-table thead th{text-align:left;border-bottom:2px solid #e5e7eb;padding:10px 8px;font-size:13px;font-weight:600;color:#374151}
+  .inv-table tbody tr{border-bottom:1px solid #f3f4f6}
+  .inv-table tbody td{padding:10px 8px}
+  .qty-ctrl{display:inline-flex;align-items:center;gap:8px}
+  .qty-btn{width:28px;height:28px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+  .qty-btn:hover{background:#f9fafb;border-color:#9ca3af}
+  .qty-val{min-width:36px;text-align:center;font-weight:600;font-size:14px}
+  .submit-inv-btn{width:100%;padding:14px;background:#0891b2;color:#fff;border:none;border-radius:6px;font-weight:700;font-size:15px;cursor:pointer;margin-top:16px;transition:all 0.2s}
+  .submit-inv-btn:hover{background:#0e7490;box-shadow:0 4px 16px rgba(8,145,178,0.3)}
+  .del-btn{color:#dc2626;cursor:pointer;font-size:18px;padding:4px 8px;transition:all 0.15s}
+  .del-btn:hover{color:#b91c1c;transform:scale(1.15)}
 </style>
-<div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
-  <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Inventory Overview</div>
-  <div style="font-size:12px;color:#6b7280;margin-bottom:10px">View inventory updates from employees</div>
+<div class="inv-mgr-card">
+  <div class="inv-mgr-title">Inventory Management</div>
+  <div class="inv-mgr-sub">Track and update stock levels</div>
+
+  <form id="inv-add-form" class="inv-add-form" method="POST" action="{{ route('manager.inventory.add') }}">
+    @csrf
+    <input class="inv-add-input" name="product_name" placeholder="Product name" required />
+    <input class="inv-add-input" name="sealed" type="number" min="0" placeholder="Sealed qty" style="width:110px" />
+    <input class="inv-add-input" name="loose" type="number" min="0" placeholder="Loose qty" style="width:110px" />
+    <select class="inv-add-input" name="unit" style="width:100px">
+      <option value="kg">kg</option>
+      <option value="pcs">pcs</option>
+      <option value="no. of package">no. of package</option>
+      <option value="bottle">bottle</option>
+      <option value="L">L</option>
+    </select>
+    <button type="submit" class="inv-add-btn">+</button>
+  </form>
+
   <div style="overflow:auto">
-    <table style="width:100%;border-collapse:separate;border-spacing:0 6px">
+    <table class="inv-table">
       <thead>
-        <tr style="text-align:left;color:#0f172a">
-          <th style="padding:8px 12px">Product Name</th>
-          <th style="padding:8px 12px">Unit</th>
-          <th style="padding:8px 12px">Sealed</th>
-          <th style="padding:8px 12px">Loose</th>
-          <th style="padding:8px 12px">Delivered</th>
-          <th style="padding:8px 12px">Date Delivered</th>
-          <th style="padding:8px 12px">Last Updated</th>
+        <tr>
+          <th>Product Name</th>
+          <th>Unit</th>
+          <th>Sealed</th>
+          <th>Loose</th>
+          <th>Delivered</th>
+          <th>Last Updated</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        @forelse(($inventory ?? []) as $it)
-          <tr style="background:#fafafa;border:1px solid #ececea">
-            <td style="padding:8px 12px;white-space:nowrap">{{ $it->name }}</td>
-            <td style="padding:8px 12px">{{ $it->unit }}</td>
-            <td style="padding:8px 12px">{{ $it->sealed ?? $it->sealed_qty ?? 0 }}</td>
-            <td style="padding:8px 12px">{{ $it->loose ?? $it->loose_qty ?? 0 }}</td>
-            <td style="padding:8px 12px">{{ $it->delivered ?? $it->delivered_qty ?? 0 }}</td>
-            @php($__mgrDateDelivered = data_get($it,'date_delivered') ?? data_get($it,'delivered_at'))
-            <td style="padding:8px 12px">{{ $__mgrDateDelivered ? \Carbon\Carbon::parse($__mgrDateDelivered)->format('m/d/Y') : '-' }}</td>
-            <td style="padding:8px 12px">{{ optional($it->updated_at ?? null) ? \Carbon\Carbon::parse($it->updated_at)->format('m/d/Y') : '-' }}</td>
+      <tbody id="inv-tbody">
+        @forelse(($managerInventory ?? []) as $item)
+          <tr data-id="{{ $item->id }}">
+            <td>{{ $item->product_name }}</td>
+            <td>{{ $item->unit }}</td>
+            <td>
+              <div class="qty-ctrl">
+                <button type="button" class="qty-btn" data-action="sealed" data-dir="-1">-</button>
+                <span class="qty-val" data-field="sealed">{{ $item->sealed }}</span>
+                <button type="button" class="qty-btn" data-action="sealed" data-dir="1">+</button>
+              </div>
+            </td>
+            <td>
+              <div class="qty-ctrl">
+                <button type="button" class="qty-btn" data-action="loose" data-dir="-1">-</button>
+                <span class="qty-val" data-field="loose">{{ $item->loose }}</span>
+                <button type="button" class="qty-btn" data-action="loose" data-dir="1">+</button>
+              </div>
+            </td>
+            <td>
+              <div class="qty-ctrl">
+                <button type="button" class="qty-btn" data-action="delivered" data-dir="-1">-</button>
+                <span class="qty-val" data-field="delivered">{{ $item->delivered }}</span>
+                <button type="button" class="qty-btn" data-action="delivered" data-dir="1">+</button>
+              </div>
+            </td>
+            <td>{{ optional($item->updated_at)->format('m/d/Y') ?? '-' }}</td>
+            <td>
+              <button type="button" class="del-btn" data-delete="{{ $item->id }}" title="Delete">🗑</button>
+            </td>
           </tr>
         @empty
-          <tr><td colspan="7" style="padding:8px 12px;color:#706f6c">No inventory yet.</td></tr>
+          <tr id="empty-row"><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px">No products yet. Add one above!</td></tr>
         @endforelse
       </tbody>
     </table>
   </div>
+
+  <button type="button" id="submit-inv-btn" class="submit-inv-btn">Submit Inventory to Owner</button>
 </div>
 
-<div style="display:grid;gap:12px;margin-top:12px">
-  <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
-    <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Kitchen Section</div>
-    <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Food ingredients, cooking supplies, disposables</div>
-    <div style="overflow:auto">
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Item</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Unit</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Qty</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Min</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Supplier</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @php($hasKitchen=false)
-          @foreach(($inventory ?? []) as $it)
-            @php($isKitchen = str_contains(strtolower($it->category ?? ''), 'kitchen'))
-            @if($isKitchen)
-              @php($hasKitchen=true)
-              @php($low = (int)($it->quantity ?? 0) <= (int)($it->min_threshold ?? 0))
-              <tr>
-                <td style="padding:8px">{{ $it->name }}</td>
-                <td style="padding:8px">{{ $it->unit }}</td>
-                <td class="qty-cell {{ $low ? 'is-low' : '' }}">{{ $it->quantity ?? 0 }}</td>
-                <td style="padding:8px">{{ $it->min_threshold ?? 0 }}</td>
-                <td style="padding:8px">{{ $it->supplier ?? '-' }}</td>
-                <td style="padding:8px">
-                  <form method="POST" action="{{ route('manager.request') }}" style="margin:0">
-                    @csrf
-                    <input type="hidden" name="item" value="{{ $it->name }}" />
-                    <input type="hidden" name="quantity" value="{{ max( (int)($it->min_threshold ?? 0) - (int)($it->quantity ?? 0), 1 ) }}" />
-                    <input type="hidden" name="priority" value="{{ $low ? 'high' : 'medium' }}" />
-                    <button style="padding:6px 10px;border-radius:6px;background:#0ea5e9;color:#fff">Request</button>
-                  </form>
-                </td>
-              </tr>
-            @endif
-          @endforeach
-          @if(!$hasKitchen)
-            <tr><td colspan="6" style="padding:8px;color:#706f6c">No kitchen items.</td></tr>
-          @endif
-        </tbody>
-      </table>
-    </div>
-  </div>
+<script>
+(function(){
+  const CSRF = '{{ csrf_token() }}';
+  const tbody = document.getElementById('inv-tbody');
+  const emptyRow = document.getElementById('empty-row');
 
-  <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
-    <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Coffee Bar Section</div>
-    <div style="font-size:12px;color:#6b7280;margin-bottom:8px">Beans, milk, syrups, cups, lids, stirrers</div>
-    <div style="overflow:auto">
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Item</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Unit</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Qty</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Min</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Supplier</th>
-            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @php($hasCoffee=false)
-          @foreach(($inventory ?? []) as $it)
-            @php($isCoffee = str_contains(strtolower($it->category ?? ''), 'coffee'))
-            @if($isCoffee)
-              @php($hasCoffee=true)
-              @php($low = (int)($it->quantity ?? 0) <= (int)($it->min_threshold ?? 0))
-              <tr>
-                <td style="padding:8px">{{ $it->name }}</td>
-                <td style="padding:8px">{{ $it->unit }}</td>
-                <td class="qty-cell {{ $low ? 'is-low' : '' }}">{{ $it->quantity ?? 0 }}</td>
-                <td style="padding:8px">{{ $it->min_threshold ?? 0 }}</td>
-                <td style="padding:8px">{{ $it->supplier ?? '-' }}</td>
-                <td style="padding:8px">
-                  <form method="POST" action="{{ route('manager.request') }}" style="margin:0">
-                    @csrf
-                    <input type="hidden" name="item" value="{{ $it->name }}" />
-                    <input type="hidden" name="quantity" value="{{ max( (int)($it->min_threshold ?? 0) - (int)($it->quantity ?? 0), 1 ) }}" />
-                    <input type="hidden" name="priority" value="{{ $low ? 'high' : 'medium' }}" />
-                    <button style="padding:6px 10px;border-radius:6px;background:#0ea5e9;color:#fff">Request</button>
-                  </form>
-                </td>
-              </tr>
-            @endif
-          @endforeach
-          @if(!$hasCoffee)
-            <tr><td colspan="6" style="padding:8px;color:#706f6c">No coffee bar items.</td></tr>
-          @endif
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
+  // Quantity controls
+  tbody.addEventListener('click', async function(e){
+    const btn = e.target.closest('.qty-btn');
+    if(!btn) return;
+    const tr = btn.closest('tr');
+    if(!tr) return;
+    const id = tr.getAttribute('data-id');
+    const field = btn.getAttribute('data-action');
+    const dir = parseInt(btn.getAttribute('data-dir') || '0');
+    const span = tr.querySelector('.qty-val[data-field="'+field+'"]');
+    if(!span) return;
+    let val = parseInt(span.textContent || '0');
+    val = Math.max(0, val + dir);
+    span.textContent = val;
+    // Update backend
+    try{
+      await fetch('{{ route('manager.inventory.update') }}', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF,'X-Requested-With':'XMLHttpRequest'},
+        body: JSON.stringify({ id:id, field:field, value:val })
+      });
+    }catch(_){}
+  });
+
+  // Delete
+  tbody.addEventListener('click', async function(e){
+    const delBtn = e.target.closest('.del-btn');
+    if(!delBtn) return;
+    const id = delBtn.getAttribute('data-delete');
+    if(!id) return;
+    if(!confirm('Delete this product?')) return;
+    try{
+      const res = await fetch('{{ url('/manager/inventory') }}/'+id, {
+        method:'DELETE',
+        headers:{'X-CSRF-TOKEN':CSRF,'X-Requested-With':'XMLHttpRequest'}
+      });
+      if(!res.ok) throw new Error();
+      const tr = delBtn.closest('tr');
+      if(tr) tr.remove();
+      if(tbody.querySelectorAll('tr[data-id]').length === 0){
+        if(emptyRow) emptyRow.style.display='';
+      }
+      if(window.toast) window.toast('Product deleted','success');
+    }catch(_){
+      if(window.toast) window.toast('Failed to delete','error');
+    }
+  });
+
+  // Submit to Owner
+  document.getElementById('submit-inv-btn').addEventListener('click', async function(){
+    if(!confirm('Submit current inventory to Owner?')) return;
+    try{
+      const res = await fetch('{{ route('manager.inventory.submit') }}', {
+        method:'POST',
+        headers:{'X-CSRF-TOKEN':CSRF,'X-Requested-With':'XMLHttpRequest'}
+      });
+      if(!res.ok) throw new Error();
+      if(window.toast) window.toast('Inventory submitted to Owner!','success');
+      else alert('Inventory submitted!');
+    }catch(_){
+      if(window.toast) window.toast('Failed to submit','error');
+      else alert('Submit failed');
+    }
+  });
+})();
+</script>
