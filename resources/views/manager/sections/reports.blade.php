@@ -2,7 +2,8 @@
  <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Financial Report</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:12px">Opening and closing shift financial details</div>
-  <form id="mgr-reports-unified" method="POST" action="{{ route('manager.reports.unified') }}" enctype="multipart/form-data">
+  <!-- Financial Report Form -->
+  <form id="mgr-report-form" method="POST" action="{{ route('manager.reports.unified') }}" enctype="multipart/form-data" data-no-loader>
     @csrf
     <div style="display:grid;gap:12px;grid-template-columns:1fr 1fr">
       <div style="border:1px solid #e3e3e0;border-radius:8px;padding:12px;background:#f0f9ff">
@@ -30,6 +31,10 @@
         </div>
       </div>
     </div>
+    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn-primary" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:10px 16px">Submit Financial</button>
+    </div>
+  </form>
     
     
 
@@ -52,7 +57,10 @@
               <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
               <td style="padding:8px">
                 @if(session('username') === ($r->manager_username ?? null))
-                  <button type="button" class="mgr-del-btn" data-action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
+                  <form class="mgr-del-form" method="POST" action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="margin:0">
+                    @csrf
+                    <button data-confirm-title="Please confirm" data-confirm-ok="Delete" data-confirm-type="danger" data-confirm="Remove this report?" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px">Delete</button>
+                  </form>
                 @else
                   <span style="color:#706f6c">—</span>
                 @endif
@@ -69,14 +77,20 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">APEPO Report</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Audit, People, Equipment, Product, Others</div>
-  <div style="display:grid;gap:10px">
-    <input name="audit" placeholder="A - Audit: findings and observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="people" placeholder="P - People: employee/role notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="equipment" placeholder="E - Equipment: status and maintenance..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="product" placeholder="P - Product: quality and inventory notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="others" placeholder="O - Others: additional observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="notes" placeholder="Notes (optional)" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-  </div>
+  <form id="mgr-apepo-form" method="POST" action="{{ route('manager.reports.unified') }}" data-no-loader>
+    @csrf
+    <div style="display:grid;gap:10px">
+      <input name="audit" placeholder="A - Audit: findings and observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+      <input name="people" placeholder="P - People: employee/role notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+      <input name="equipment" placeholder="E - Equipment: status and maintenance..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+      <input name="product" placeholder="P - Product: quality and inventory notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+      <input name="others" placeholder="O - Others: additional observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
+      <input name="notes" placeholder="Notes (optional)" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn-primary" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:10px 16px">Submit APEPO</button>
+    </div>
+  </form>
 
   <div id="mgr-apepo-list" style="margin-top:12px;display:grid;gap:10px">
     @forelse($apepo as $p)
@@ -97,7 +111,10 @@
               <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
               <td style="padding:8px" rowspan="5">
                 @if(session('username') === ($p->manager_username ?? null))
-                  <button type="button" class="mgr-del-btn" data-action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
+                  <form class="mgr-del-form" method="POST" action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="margin:0">
+                    @csrf
+                    <button data-confirm-title="Please confirm" data-confirm-ok="Delete" data-confirm-type="danger" data-confirm="Remove this APEPO report?" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px">Delete</button>
+                  </form>
                 @else
                   <span style="color:#706f6c">—</span>
                 @endif
@@ -121,62 +138,68 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Manager Fund</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Daily manager fund tracking</div>
-  <div style="display:grid;gap:10px">
-    <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-    <div style="display:flex;gap:8px;align-items:center">
-      <input name="fund_image" type="file" accept="image/*" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:8px;background:#fff" />
+  <form id="mgr-fund-form" method="POST" action="{{ route('manager.reports.unified') }}" enctype="multipart/form-data" data-no-loader>
+    @csrf
+    <div style="display:grid;gap:10px">
+      <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+      <div style="display:flex;gap:8px;align-items:center">
+        <input name="fund_image" type="file" accept="image/*" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:8px;background:#fff" />
+      </div>
     </div>
-  </div>
+    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn-primary" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:10px 16px">Submit Fund</button>
+    </div>
+  </form>
 </div>
 
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Expenses</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Record daily expenses</div>
-  <div style="display:grid;gap:10px">
-    <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-    <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px"></textarea>
-  </div>
+  <form id="mgr-expense-form" method="POST" action="{{ route('manager.reports.unified') }}" data-no-loader>
+    @csrf
+    <div style="display:grid;gap:10px">
+      <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+      <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px"></textarea>
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn-primary" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:10px 16px">Submit Expense</button>
+    </div>
+  </form>
 </div>
 
-<div style="margin-top:12px">
-  <button id="mgr-submit-all" type="submit" style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
-</div>
-
-</form>
 
 <script>
   (function(){
-    const form = document.getElementById('mgr-reports-unified');
-    if(!form) return;
+    // Utility: attach image compression to a form and input names
+    function attachCompression(form, inputNames){
+      if(!form) return;
+      form.addEventListener('submit', async function(e){
+        try{
+          const inputs = inputNames.map(n=> form.querySelector('input[name="'+n+'"]')).filter(Boolean);
+          const anyFile = inputs.some(i => i.files && i.files.length);
+          if(!anyFile) return; // proceed normally
+          e.preventDefault();
+          // no loading overlay
+          for(const inp of inputs){ await maybeCompressInput(inp); }
+          const total = inputs.reduce((sum, i)=> sum + (i.files && i.files[0] ? i.files[0].size : 0), 0);
+          if(total > 5 * 1024 * 1024){
+            try{ if(window.toast) window.toast('Attached photos are too large even after optimization. Please choose smaller images.', 'error'); }catch(_){ alert('Attached photos are too large even after optimization. Please choose smaller images.'); }
+            const overlay = document.getElementById('loading-overlay'); if(overlay) overlay.classList.remove('show');
+            return;
+          }
+          this.submit();
+        }catch(_){ /* ignore */ }
+      });
+    }
+
+    // Attach compression to relevant forms
+    attachCompression(document.getElementById('mgr-report-form'), ['opening_image','closing_image']);
+    attachCompression(document.getElementById('mgr-fund-form'), ['fund_image']);
     const submitBtn = document.getElementById('mgr-submit-all');
     if(submitBtn){ submitBtn.addEventListener('click', function(e){ e.stopPropagation(); }, true); }
 
-    // Handle inline delete buttons without nesting forms (limit to lists to avoid submit interference)
-    (function(){
-      const csrfInput = form.querySelector('input[name="_token"]');
-      const csrf = csrfInput ? csrfInput.value : '';
-      const lists = [ document.getElementById('mgr-report-list'), document.getElementById('mgr-apepo-list') ].filter(Boolean);
-      for (const host of lists) {
-        host.addEventListener('click', async function(ev){
-          const btn = ev.target.closest('.mgr-del-btn');
-          if(!btn || !host.contains(btn)) return;
-          ev.preventDefault(); ev.stopPropagation();
-          try{
-            const msg = btn.getAttribute('data-confirm') || 'Delete?';
-            if(!confirm(msg)) return;
-            const url = btn.getAttribute('data-action');
-            const resp = await fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With':'XMLHttpRequest' } });
-            if(resp.ok){
-              // stay on #reports after reload
-              if(location.hash !== '#reports') { location.hash = 'reports'; }
-              location.reload();
-            } else {
-              alert('Failed to delete.');
-            }
-          }catch(_){ alert('Failed to delete.'); }
-        });
-      }
-    })();
+    // Inline delete now handled by normal forms with global modal confirm
+    (function(){ /* no-op */ })();
 
     function readFileAsDataURL(file){
       return new Promise((resolve, reject)=>{
@@ -195,13 +218,12 @@
         img.src = url;
       });
     }
-
     async function compressFile(file, targetBytes = 1.2 * 1024 * 1024){
       try{
         let dataUrl = await readFileAsDataURL(file);
         let img = await loadImage(dataUrl);
-        let maxW = 1600, maxH = 1600, quality = 0.78;
-        for(let attempt=0; attempt<4; attempt++){
+        let maxW = 1400, maxH = 1400, quality = 0.75;
+        for(let attempt=0; attempt<2; attempt++){
           const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
           const w = Math.round(img.width * ratio);
           const h = Math.round(img.height * ratio);
@@ -215,25 +237,11 @@
             return new File([blob], (file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
           }
           // tighten constraints and try again
-          quality = Math.max(0.5, quality - 0.1);
-          maxW = Math.round(maxW * 0.85);
-          maxH = Math.round(maxH * 0.85);
+          quality = Math.max(0.6, quality - 0.1);
+          maxW = Math.round(maxW * 0.9);
+          maxH = Math.round(maxH * 0.9);
         }
-        // final output with last blob even if larger
-        const finalBlob = await new Promise(resolve=> {
-          const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
-          const w = Math.round(img.width * ratio);
-          const h = Math.round(img.height * ratio);
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          canvas.toBlob(resolve, 'image/jpeg', quality);
-        });
-        if(finalBlob){
-          return new File([finalBlob], (file.name || 'image').replace(/\.[^.]+$/, '') + '.jpg', { type:'image/jpeg' });
-        }
-        return file;
+        return file; // fall back to original if still large
       }catch(_){
         return file;
       }
@@ -242,11 +250,10 @@
     async function maybeCompressInput(input){
       const f = input && input.files ? input.files[0] : null;
       if(!f) return;
-      // Skip small files (< 600KB)
-      if(f.size && f.size < 600 * 1024) return;
+      // Skip files smaller than 1.2MB to keep submits snappy
+      if(f.size && f.size < 1.2 * 1024 * 1024) return;
       const compressed = await compressFile(f);
       if(compressed && compressed.size < f.size){
-        // Replace the input's file with compressed one
         const dt = new DataTransfer();
         dt.items.add(compressed);
         input.files = dt.files;

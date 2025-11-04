@@ -248,7 +248,7 @@
         var textEl = document.getElementById('loading-text');
         var emojiEl = document.getElementById('loading-emoji');
         var subEl = document.getElementById('loading-sub');
-        if(!overlay) return;
+        /* global loader disabled */ return;
         var lastMeta = null;
         function setMeta(meta){
           lastMeta = meta || null;
