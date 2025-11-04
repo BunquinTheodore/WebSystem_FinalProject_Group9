@@ -1095,7 +1095,20 @@ Route::post('/manager/reports/unified', function (Request $request) {
         $created[] = 'expense';
     }
 
-    $msg = empty($created) ? 'Nothing to submit' : ('Submitted: '.implode(', ', $created));
+    // Build a clearer, formal success message
+    if (empty($created)) {
+        $msg = 'Nothing to submit';
+    } else {
+        $labels = [];
+        foreach ($created as $c) {
+            if ($c === 'opening') $labels[] = 'Opening financial report submitted.';
+            elseif ($c === 'closing') $labels[] = 'Closing financial report submitted.';
+            elseif ($c === 'apepo') $labels[] = 'APEPO report submitted.';
+            elseif ($c === 'fund') $labels[] = 'Manager fund recorded.';
+            elseif ($c === 'expense') $labels[] = 'Expense recorded.';
+        }
+        $msg = implode(' ', $labels);
+    }
     if ($request->ajax()) {
         return response()->json(['ok' => true, 'message' => $msg]);
     }

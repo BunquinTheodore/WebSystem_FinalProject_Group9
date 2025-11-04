@@ -436,7 +436,14 @@
             } else {
               highlightTotals({ avail:true });
             }
-            if(window.toast){ window.toast('Saved. Totals updated.','success'); }
+            if(window.toast){
+              let msg = 'Saved.';
+              if(form.id === 'mgr-fund-form') msg = 'Manager fund recorded.';
+              else if(form.id === 'mgr-expense-form') msg = 'Expense recorded.';
+              else if(form.id === 'mgr-report-form') msg = 'Financial report submitted.';
+              else if(form.id === 'mgr-apepo-form') msg = 'APEPO report submitted.';
+              window.toast(msg, 'success');
+            }
           } catch(err){
             // Fallback to normal submit if AJAX fails
             form.submit();
