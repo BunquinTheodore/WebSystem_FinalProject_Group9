@@ -5,7 +5,11 @@
   <div style="display:grid;gap:8px">
     @forelse($mgrTasks as $mt)
       <div style="display:flex;align-items:center;gap:10px;border:1px solid #e3e3e0;border-radius:8px;padding:10px;background:#fff">
-        <input type="checkbox" @if(!empty($mt['done'])) checked @endif disabled>
+        <form method="POST" action="{{ route('manager.tasks.status', ['id' => $mt['id'] ?? 0]) }}" style="display:flex;align-items:center;gap:10px;margin:0;padding:0">
+          @csrf
+          <input type="hidden" name="done" value="{{ !empty($mt['done']) ? 1 : 0 }}">
+          <input type="checkbox" @if(!empty($mt['done'])) checked @endif onchange="this.previousElementSibling.value = this.checked ? 1 : 0; this.form.submit();">
+        </form>
         <div style="flex:1">
           <div style="color:#0f172a">{{ $mt['title'] ?? 'Untitled task' }}</div>
         </div>

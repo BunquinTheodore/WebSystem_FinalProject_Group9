@@ -604,6 +604,31 @@ Route::get('/manager', function (Request $request) {
             ->get();
     }
 
+    // Manager tasks (assigned to this manager or unassigned)
+    $managerId = DB::table('users')->where('username', $manager)->value('id');
+    $managerTasks = collect();
+    if (Schema::hasTable('manager_tasks')) {
+        $rows = DB::table('manager_tasks')
+            ->leftJoin('users', 'manager_tasks.manager_id', '=', 'users.id')
+            ->when($managerId, function($q) use ($managerId) {
+                $q->where(function($w) use ($managerId) {
+                    $w->where('manager_tasks.manager_id', $managerId)
+                      ->orWhereNull('manager_tasks.manager_id');
+                });
+            })
+            ->orderByDesc('manager_tasks.created_at')
+            ->limit(20)
+            ->get(['manager_tasks.id','manager_tasks.title','manager_tasks.description','manager_tasks.priority','manager_tasks.status','manager_tasks.due_date','users.username as manager_username']);
+        $managerTasks = $rows->map(function($t){
+            return [
+                'id' => $t->id,
+                'title' => $t->title,
+                'done' => ($t->status === 'completed'),
+                'status' => $t->status,
+            ];
+        });
+    }
+
     return view('manager.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
@@ -616,8 +641,29 @@ Route::get('/manager', function (Request $request) {
         'inventory' => $inventory,
         'employees' => $employees,
         'managerInventory' => $managerInventory,
+        'managerTasks' => $managerTasks,
     ]);
 })->name('manager.home');
+
+// Manager: update task status (claim and complete)
+Route::post('/manager/tasks/{id}/status', function (Request $request, int $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $data = $request->validate([
+        'done' => 'required|boolean',
+    ]);
+    $username = (string) $request->session()->get('username');
+    $managerId = DB::table('users')->where('username', $username)->value('id');
+    $status = $data['done'] ? 'completed' : 'pending';
+    $payload = [ 'status' => $status, 'updated_at' => now() ];
+    if ($managerId) {
+        $payload['manager_id'] = $managerId; // claim task to this manager
+    }
+    DB::table('manager_tasks')->where('id', $id)->update($payload);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'status' => $status]);
+    }
+    return back()->with('status', 'Task updated');
+})->name('manager.tasks.status');
 
 // Manager: Add inventory item
 Route::post('/manager/inventory/add', function (Request $request) {
