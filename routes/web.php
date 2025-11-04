@@ -677,7 +677,7 @@ Route::post('/manager/inventory/add', function (Request $request) {
         'loose' => 'nullable|integer|min:0',
     ]);
     $manager = (string) $request->session()->get('username');
-    DB::table('manager_inventory')->insert([
+    $id = DB::table('manager_inventory')->insertGetId([
         'manager_username' => $manager,
         'product_name' => $data['product_name'],
         'unit' => $data['unit'],
@@ -688,7 +688,10 @@ Route::post('/manager/inventory/add', function (Request $request) {
         'created_at' => now(),
         'updated_at' => now(),
     ]);
-    return back()->with('status', 'Product added');
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'id' => $id]);
+    }
+    return redirect()->to(route('manager.home') . '#inventory')->with('status', 'Product added');
 })->name('manager.inventory.add');
 
 // Manager: Update inventory quantity
