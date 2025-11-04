@@ -603,6 +603,7 @@ Route::get('/manager', function (Request $request) {
             ->orderByDesc('id')
             ->get();
     }
+    $funds = DB::table('manager_funds')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
 
     // Manager tasks (assigned to this manager or unassigned)
     $managerId = DB::table('users')->where('username', $manager)->value('id');
@@ -642,6 +643,7 @@ Route::get('/manager', function (Request $request) {
         'employees' => $employees,
         'managerInventory' => $managerInventory,
         'managerTasks' => $managerTasks,
+        'funds' => $funds,
     ]);
 })->name('manager.home');
 
@@ -1091,7 +1093,10 @@ Route::post('/manager/reports/unified', function (Request $request) {
     }
 
     $msg = empty($created) ? 'Nothing to submit' : ('Submitted: '.implode(', ', $created));
-    return redirect()->route('manager.home')->with('status', $msg);
+    if ($request->ajax()) {
+        return response()->json(['ok' => true, 'message' => $msg]);
+    }
+    return redirect()->to(route('manager.home') . '#reports')->with('status', $msg);
 })->name('manager.reports.unified');
 
 // Owner: Employees CRUD
@@ -1261,7 +1266,7 @@ Route::post('/manager/report/{id}/delete', function (Request $request, int $id) 
     if ($request->ajax()) {
         return response()->json(['ok' => (bool) $deleted]);
     }
-    return redirect()->route('manager.home')->with('status', 'Report removed');
+    return redirect()->to(route('manager.home') . '#reports')->with('status', 'Report removed');
 })->name('manager.report.delete');
 
 Route::post('/manager/expense/{id}/delete', function (Request $request, int $id) {
@@ -1271,7 +1276,7 @@ Route::post('/manager/expense/{id}/delete', function (Request $request, int $id)
     if ($request->ajax()) {
         return response()->json(['ok' => (bool) $deleted]);
     }
-    return redirect()->route('manager.home')->with('status', 'Expense removed');
+    return redirect()->to(route('manager.home') . '#reports')->with('status', 'Expense removed');
 })->name('manager.expense.delete');
 
 Route::post('/manager/request/{id}/delete', function (Request $request, int $id) {

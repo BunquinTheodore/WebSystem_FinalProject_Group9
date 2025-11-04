@@ -52,10 +52,7 @@
               <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
               <td style="padding:8px">
                 @if(session('username') === ($r->manager_username ?? null))
-                  <form class="mgr-del-form" method="POST" action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="margin:0">
-                    @csrf
-                    <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
-                  </form>
+                  <button type="button" class="mgr-del-btn" data-action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
                 @else
                   <span style="color:#706f6c">—</span>
                 @endif
@@ -100,10 +97,7 @@
               <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
               <td style="padding:8px" rowspan="5">
                 @if(session('username') === ($p->manager_username ?? null))
-                  <form class="mgr-del-form" method="POST" action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="margin:0">
-                    @csrf
-                    <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
-                  </form>
+                  <button type="button" class="mgr-del-btn" data-action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
                 @else
                   <span style="color:#706f6c">—</span>
                 @endif
@@ -145,7 +139,7 @@
 </div>
 
 <div style="margin-top:12px">
-  <button style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
+  <button id="mgr-submit-all" type="submit" style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
 </div>
 
 </form>
@@ -154,6 +148,35 @@
   (function(){
     const form = document.getElementById('mgr-reports-unified');
     if(!form) return;
+    const submitBtn = document.getElementById('mgr-submit-all');
+    if(submitBtn){ submitBtn.addEventListener('click', function(e){ e.stopPropagation(); }, true); }
+
+    // Handle inline delete buttons without nesting forms (limit to lists to avoid submit interference)
+    (function(){
+      const csrfInput = form.querySelector('input[name="_token"]');
+      const csrf = csrfInput ? csrfInput.value : '';
+      const lists = [ document.getElementById('mgr-report-list'), document.getElementById('mgr-apepo-list') ].filter(Boolean);
+      for (const host of lists) {
+        host.addEventListener('click', async function(ev){
+          const btn = ev.target.closest('.mgr-del-btn');
+          if(!btn || !host.contains(btn)) return;
+          ev.preventDefault(); ev.stopPropagation();
+          try{
+            const msg = btn.getAttribute('data-confirm') || 'Delete?';
+            if(!confirm(msg)) return;
+            const url = btn.getAttribute('data-action');
+            const resp = await fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With':'XMLHttpRequest' } });
+            if(resp.ok){
+              // stay on #reports after reload
+              if(location.hash !== '#reports') { location.hash = 'reports'; }
+              location.reload();
+            } else {
+              alert('Failed to delete.');
+            }
+          }catch(_){ alert('Failed to delete.'); }
+        });
+      }
+    })();
 
     function readFileAsDataURL(file){
       return new Promise((resolve, reject)=>{
@@ -231,6 +254,7 @@
     }
 
     form.addEventListener('submit', async function(e){
+      e.stopPropagation();
       try{
         // only intercept if there are image files
         const inputs = [

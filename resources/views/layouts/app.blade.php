@@ -181,10 +181,12 @@
           try{
             if(e.defaultPrevented) return;
             var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
-            if(!form || form.classList && form.classList.contains('mgr-del-form')) return;
+            if(!form || (form.classList && form.classList.contains('mgr-del-form'))) return;
             if(form.dataset && form.dataset.modalConfirmed === '1') return; // already confirmed
-            var confirmEl = form.querySelector('[data-confirm]');
-            if(!confirmEl) return; // nothing to confirm
+            // Only confirm if the actual clicked submit button has data-confirm
+            var submitter = e.submitter || null;
+            if(!submitter || !submitter.hasAttribute('data-confirm')) return;
+            var confirmEl = submitter;
             e.preventDefault();
             var msg = confirmEl.getAttribute('data-confirm') || 'Are you sure?';
             var title = confirmEl.getAttribute('data-confirm-title') || 'Please confirm';

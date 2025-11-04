@@ -75,6 +75,49 @@
         </div>
       </div>
 
+      <!-- Manager Fund & Expenses Summary -->
+      <div style="display:grid;gap:16px;grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+        <div style="background:#ecfeff;border:2px solid #67e8f9;border-radius:14px;padding:16px">
+          <div style="font-weight:700;color:#0e7490;margin-bottom:6px">Manager Fund Balance</div>
+          <div style="font-size:22px;font-weight:800;color:#0c4a6e">₱{{ number_format(($fundBalance ?? 0), 2) }}</div>
+        </div>
+        <div style="background:#fff7ed;border:2px solid #fdba74;border-radius:14px;padding:16px">
+          <div style="font-weight:700;color:#9a3412;margin-bottom:6px">Total Expenses</div>
+          <div style="font-size:22px;font-weight:800;color:#7c2d12">₱{{ number_format(($expensesTotal ?? 0), 2) }}</div>
+        </div>
+        <div style="background:#f0f9ff;border:2px solid #bae6fd;border-radius:14px;padding:16px">
+          <div style="font-weight:700;color:#075985;margin-bottom:6px">Available Balance</div>
+          <div style="font-size:22px;font-weight:800;color:#0c4a6e">₱{{ number_format(($availableBalance ?? 0), 2) }}</div>
+        </div>
+      </div>
+
+      <!-- Recent Expenses -->
+      @if(isset($expenses) && count($expenses))
+      <div style="background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-bottom:20px">
+        <div style="font-weight:700;color:#0f172a;margin-bottom:12px">Recent Expenses</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr>
+              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amount</th>
+              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Note</th>
+              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Manager</th>
+              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach($expenses as $ex)
+              <tr>
+                <td style="padding:8px">₱{{ number_format(($ex->amount ?? 0), 2) }}</td>
+                <td style="padding:8px">{{ $ex->note ?? '' }}</td>
+                <td style="padding:8px">{{ $ex->manager_username ?? '' }}</td>
+                <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($ex->created_at)->format('M d, Y H:i') }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+      @endif
+
       <!-- APEPO Report -->
       @if(isset($latestApepo) && $latestApepo)
       <div style="background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-top:24px">
