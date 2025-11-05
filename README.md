@@ -140,3 +140,9 @@ powershell -ExecutionPolicy Bypass -File dev.ps1
   # or
   ./dev.ps1 -Port 8001
   ```
+
+| Name | GitHub |
+|------|--------|
+| 👨‍🎓 Bunquin, Theodore Von Joshua | [BunquinTheodore](https://github.com/BunquinTheodore) |
+| 👩‍🎓 Rectine, Marielle | [onlymarkive](https://github.com/onlymarkive) |
+| 👨‍🎓 Cantilleps, Kurt Matthew | [KurtMMC](https://github.com/KurtMMC) |
