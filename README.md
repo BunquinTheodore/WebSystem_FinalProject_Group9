@@ -143,6 +143,6 @@ powershell -ExecutionPolicy Bypass -File dev.ps1
 
 | Name | GitHub |
 |------|--------|
-| 👨‍🎓 Bunquin, Theodore Von Joshua | [BunquinTheodore](https://github.com/BunquinTheodore) |
+| 👨‍🎓 Bunquin, Theodore Von Joshua M.  | [BunquinTheodore](https://github.com/BunquinTheodore) |
 | 👩‍🎓 Rectine, Marielle | [onlymarkive](https://github.com/onlymarkive) |
 | 👨‍🎓 Cantilleps, Kurt Matthew | [KurtMMC](https://github.com/KurtMMC) |
