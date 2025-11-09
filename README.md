@@ -61,7 +61,7 @@ It provides real-time tracking of employee tasks, photo verification, and built-
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/BunquinTheodore/WebSys-Coffee-Shop.git
-cd WebSys-Coffee-Shop
+cd WebSys-Coffee-Shop ni Theo
 ```
 
 ### 2️⃣ Install PHP Dependencies
