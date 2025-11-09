@@ -16,7 +16,7 @@
 ## 🌟 Overview
 **Bluemoon Coffee Shop Management System** (also known as **WebSys**) is a business management platform that enables **owners**, **managers**, and **employees** to coordinate daily operations efficiently.
 
-It provides real-time tracking of employee tasks, photo verification, and built-in reporting tools — all through a clean, role-based dashboard interface inspired by modern productivity apps.
+It provides real-time tracking of employee tasks, photo verification, and built-in reporting tools — all through a clean, role-based dashboard interface inspired by modern productivity apps. hihi
 
 ---
 
