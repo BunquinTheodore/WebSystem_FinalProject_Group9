@@ -151,6 +151,10 @@
               <input name="contact" placeholder="Contact" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
               <input name="join_date" type="date" placeholder="Join date" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
             </div>
+            <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr">
+              <input name="username" placeholder="Username (optional)" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+              <input name="password" type="password" placeholder="Password (min 6, optional)" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+            </div>
             <div style="display:grid;gap:6px;grid-template-columns:1fr">
               <select name="role" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
                 <option value="employee">Employee</option>

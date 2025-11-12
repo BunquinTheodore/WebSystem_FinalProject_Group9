@@ -168,7 +168,7 @@ Route::post('/login', function (Request $request) {
 Route::post('/logout', function (Request $request) {
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect('/');
+    return redirect()->route('login');
 })->name('logout');
 
 Route::get('/dashboard', function (Request $request) {
@@ -595,13 +595,17 @@ Route::get('/manager', function (Request $request) {
     $apepo = DB::table('apepo_reports')->where('manager_username', $manager)->orderByDesc('id')->limit(10)->get();
     $inventory = DB::table('inventory_items')->orderBy('category')->orderBy('name')->get();
     $employees = DB::table('employees')->orderBy('name')->get();
+    // Manager inventory: show both pending and submitted (with a flag)
     $managerInventory = collect();
     if (Schema::hasTable('manager_inventory')) {
         $managerInventory = DB::table('manager_inventory')
             ->where('manager_username', $manager)
-            ->where('submitted', false)
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->map(function($row){
+                $row->is_submitted = (bool)$row->submitted;
+                return $row;
+            });
     }
 
     return view('manager.index', [
@@ -629,7 +633,8 @@ Route::post('/manager/inventory/add', function (Request $request) {
         'loose' => 'nullable|integer|min:0',
     ]);
     $manager = (string) $request->session()->get('username');
-    DB::table('manager_inventory')->insert([
+    $now = now();
+    $payload = [
         'manager_username' => $manager,
         'product_name' => $data['product_name'],
         'unit' => $data['unit'],
@@ -637,29 +642,81 @@ Route::post('/manager/inventory/add', function (Request $request) {
         'loose' => (int)($data['loose'] ?? 0),
         'delivered' => 0,
         'submitted' => false,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+        'created_at' => $now,
+        'updated_at' => $now,
+    ];
+    $id = 0;
+    try {
+        $id = (int) DB::table('manager_inventory')->insertGetId($payload);
+    } catch (\Throwable $e) {
+        // fallback for drivers that do not support insertGetId
+        DB::table('manager_inventory')->insert($payload);
+        $id = (int) DB::getPdo()->lastInsertId();
+    }
+    if ($request->ajax() || $request->wantsJson() || $request->expectsJson()) {
+        return response()->json([
+            'ok' => true,
+            'id' => $id,
+            'item' => [
+                'id' => $id,
+                'product_name' => $data['product_name'],
+                'unit' => $data['unit'],
+                'sealed' => (int)($data['sealed'] ?? 0),
+                'loose' => (int)($data['loose'] ?? 0),
+                'delivered' => 0,
+                'updated_at' => $now->toDateString(),
+            ],
+        ]);
+    }
     return back()->with('status', 'Product added');
 })->name('manager.inventory.add');
 
-// Manager: Update inventory quantity
+// Manager: Update inventory fields (quantity and basic info)
 Route::post('/manager/inventory/update', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
     $data = $request->validate([
         'id' => 'required|integer',
-        'field' => 'required|in:sealed,loose,delivered',
-        'value' => 'required|integer|min:0',
+        'field' => 'required|in:sealed,loose,delivered,product_name,unit',
+        'value' => 'required',
     ]);
     $manager = (string) $request->session()->get('username');
-    DB::table('manager_inventory')
+    // Allow modifications regardless of submitted state
+    $query = DB::table('manager_inventory')
         ->where('id', $data['id'])
-        ->where('manager_username', $manager)
-        ->update([
-            $data['field'] => $data['value'],
-            'updated_at' => now(),
-        ]);
-    return response()->json(['ok' => true]);
+        ->where('manager_username', $manager);
+
+    $field = (string) $data['field'];
+    $value = $data['value'];
+    // Validate and cast based on field type
+    if (in_array($field, ['sealed','loose','delivered'], true)) {
+        $value = (int) $value;
+        if ($value < 0) { $value = 0; }
+    } elseif ($field === 'product_name') {
+        $value = (string) $value;
+        $value = trim($value);
+        if ($value === '') {
+            return response()->json(['ok'=>false,'message'=>'Product name is required'], 422);
+        }
+        if (mb_strlen($value) > 255) {
+            $value = mb_substr($value, 0, 255);
+        }
+    } elseif ($field === 'unit') {
+        $value = (string) $value;
+        $value = trim($value);
+        if ($value === '') {
+            return response()->json(['ok'=>false,'message'=>'Unit is required'], 422);
+        }
+        if (mb_strlen($value) > 50) {
+            $value = mb_substr($value, 0, 50);
+        }
+    }
+
+    $now = now();
+    $query->update([
+        $field => $value,
+        'updated_at' => $now,
+    ]);
+    return response()->json(['ok' => true, 'updated_at' => $now->format('m/d/Y')]);
 })->name('manager.inventory.update');
 
 // Manager: Delete inventory item
@@ -770,6 +827,7 @@ Route::post('/manager/employees', function (Request $request) {
         'status' => 'nullable|in:full-time,part-time,fulltime,parttime',
         'email' => 'nullable|email|max:255',
         'contact' => 'nullable|string|max:255',
+        'join_date' => 'nullable|date',
     ]);
     $employment = (string) ($data['status'] ?? 'full-time');
     $employment_type = (str_replace('-', '', strtolower($employment)) === 'parttime') ? 'parttime' : 'fulltime';
@@ -785,6 +843,7 @@ Route::post('/manager/employees', function (Request $request) {
         'created_at' => now(),
         'updated_at' => now(),
     ];
+    if (Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
     // Only keep keys that exist on employees table
     $cols = Schema::hasTable('employees') ? Schema::getColumnListing('employees') : [];
     $payload = array_filter($payload, function($k) use ($cols){ return in_array($k, $cols, true); }, ARRAY_FILTER_USE_KEY);
@@ -1061,6 +1120,9 @@ Route::post('/owner/employee', function (Request $request) {
         'birthday' => 'nullable|date',
         'contact' => 'nullable|string|max:255',
         'join_date' => 'nullable|date',
+        // Credentials (optional for immediate login accounts)
+        'username' => 'nullable|string|max:255|unique:users,username',
+        'password' => 'nullable|string|min:6',
     ]);
     $payload = [
         'name' => $data['name'],
@@ -1077,6 +1139,20 @@ Route::post('/owner/employee', function (Request $request) {
     if (Schema::hasColumn('employees','join_date')) { $payload['join_date'] = $data['join_date'] ?? null; }
 
     DB::table('employees')->insert($payload);
+    // If username + password provided, also create a matching user account
+    if (!empty($data['username']) && !empty($data['password'])) {
+        try {
+            User::create([
+                'name' => $data['name'],
+                'username' => $data['username'],
+                'email' => $data['email'] ?? ($data['username'].'@example.com'),
+                'role' => $data['role'],
+                'password' => $data['password'], // cast will hash
+            ]);
+        } catch (\Throwable $e) {
+            // swallow errors so employee creation still succeeds
+        }
+    }
     if ($request->ajax()) { return response()->json(['ok' => true]); }
     return redirect()->to(route('owner.home') . '#employees')->with('status','Employee added');
 })->name('owner.employee.create');

@@ -248,7 +248,6 @@
 
       <div style="display:flex;gap:12px">
         <button type="submit" class="btn-primary">Create Task</button>
-        <a href="{{ url('/owner/home') }}" class="btn-secondary">Cancel</a>
       </div>
     </form>
   </div>

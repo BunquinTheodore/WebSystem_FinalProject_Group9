@@ -1,6 +1,43 @@
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
- <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Employee Management</div>
- <div style="font-size:12px;color:#6b7280;margin-bottom:10px">View and manage employee information</div>
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+   <div>
+     <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Employee Management</div>
+     <div style="font-size:12px;color:#6b7280">View and manage employee information</div>
+   </div>
+   <button type="button" onclick="toggleMgrAddEmp()" style="display:inline-flex;align-items:center;gap:8px;background:#0ea5e9;color:#fff;border-radius:8px;padding:8px 12px;border:1px solid #7dd3fc">
+     <span aria-hidden="true">＋</span>
+     <span>Add Employee</span>
+   </button>
+ </div>
+ <div style="display:grid;gap:12px;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px">
+   @php
+     $empCollection = collect($employees ?? []);
+     $empTotal = $empCollection->count();
+     $empFull = $empCollection->filter(fn($e)=>strtolower($e->employment_type ?? '')==='fulltime')->count();
+     $empPart = $empCollection->filter(fn($e)=>strtolower($e->employment_type ?? '')==='parttime')->count();
+   @endphp
+   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+     <div>
+       <div style="font-size:12px;color:#0f172a;margin-bottom:4px">Total Employees</div>
+       <div style="font-size:26px;font-weight:800;color:#0f172a">{{ (int)$empTotal }}</div>
+     </div>
+     <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#4338ca;border:1px solid #dbe2ff">👥</div>
+   </div>
+   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+     <div>
+       <div style="font-size:12px;color:#065f46;margin-bottom:4px">Full-Time</div>
+       <div style="font-size:26px;font-weight:800;color:#065f46">{{ (int)$empFull }}</div>
+     </div>
+     <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#ecfdf5;color:#047857;border:1px solid #bbf7d0">👤</div>
+   </div>
+   <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+     <div>
+       <div style="font-size:12px;color:#9a3412;margin-bottom:4px">Part-Time</div>
+       <div style="font-size:26px;font-weight:800;color:#9a3412">{{ (int)$empPart }}</div>
+     </div>
+     <div aria-hidden="true" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fffbeb;color:#b45309;border:1px solid #fed7aa">👥</div>
+   </div>
+ </div>
  <style>
    .mgr-emp-badge{display:inline-block;padding:4px 8px;border-radius:9999px;font-size:12px}
    .mgr-emp-badge-full{background:#e0f2fe;color:#0369a1}
@@ -82,24 +119,28 @@
   <div style="margin-top:12px"></div>
 </div>
 
-<div id="mgr-add-emp" class="card" style="display:block;margin-top:12px;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
+<div id="mgr-add-emp" class="card" style="display:none;margin-top:12px;background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Add New Employee</div>
   <form id="mgr-add-emp-form" method="POST" action="{{ route('manager.employees.store') }}">
     @csrf
     <div style="display:grid;gap:10px">
-      <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr">
+      <!-- Row 1: Name, Employment Type, Position (match owner layout proportions) -->
+      <div style="display:grid;gap:6px;grid-template-columns:1.2fr 1fr 1fr">
         <input name="name" placeholder="Full name" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-        <input name="role" placeholder="Role/Position" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-      </div>
-      <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr 1fr">
-        <input name="birthday" type="date" placeholder="Birthday" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <!-- Manager expects 'status' values 'full-time'|'part-time' → map to owner-style Employment Type label -->
         <select name="status" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
           <option value="full-time">Full-time</option>
           <option value="part-time">Part-time</option>
         </select>
-        <input name="contact" placeholder="Contact" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <input name="role" placeholder="Position" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
-      <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+      <!-- Row 2: Birthday, Email, Contact, Join Date (owner-style grid) -->
+      <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr 1fr 1fr">
+        <input name="birthday" type="date" placeholder="Birthday" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <input name="contact" placeholder="Contact" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <input name="join_date" type="date" placeholder="Join date" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+      </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button type="button" onclick="document.getElementById('mgr-add-emp').style.display='none'" style="padding:10px 14px;border:1px solid #e3e3e0;border-radius:8px;background:#fff;color:#1b1b18">Cancel</button>
         <button style="padding:10px 14px;background:#16a34a;color:#fff;border-radius:8px">Add Employee</button>
@@ -108,4 +149,11 @@
   </form>
 </div>
 
+<script>
+  function toggleMgrAddEmp(){
+    var el = document.getElementById('mgr-add-emp');
+    if(!el) return;
+    el.style.display = (el.style.display==='none' || el.style.display==='') ? 'block' : 'none';
+  }
+</script>
 <!-- Removed force-hash script to prevent sticky redirect to #employees on refresh -->

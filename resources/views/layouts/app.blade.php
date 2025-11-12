@@ -174,14 +174,15 @@
       })();
     </script>
     <script>
-      // Global modal-confirm fallback: any form that contains a [data-confirm] submit will use modal.
-      // Manager has a richer handler for .mgr-del-form; skip those here to avoid double prompts.
+      // Global modal-confirm: any form that contains a [data-confirm] element will use the modal.
+      // If a feature provides a richer handler, it should set data-modal-confirmed="1" on the form
+      // to prevent double prompts; programmatic form.submit() won't retrigger this listener.
       (function(){
         document.addEventListener('submit', async function(e){
           try{
             if(e.defaultPrevented) return;
             var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
-            if(!form || form.classList && form.classList.contains('mgr-del-form')) return;
+            if(!form) return;
             if(form.dataset && form.dataset.modalConfirmed === '1') return; // already confirmed
             var confirmEl = form.querySelector('[data-confirm]');
             if(!confirmEl) return; // nothing to confirm

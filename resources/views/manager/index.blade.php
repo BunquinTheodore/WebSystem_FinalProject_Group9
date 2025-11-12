@@ -581,6 +581,7 @@
         document.addEventListener('submit', async function(ev){
           const form = ev.target.closest('form.mgr-del-form');
           if(form){
+            if(form.dataset && form.dataset.modalConfirmed === '1') return; // already handled by global
             const btn = form.querySelector('button');
             const msg = (btn && btn.getAttribute('data-confirm')) || 'Remove this item?';
             ev.preventDefault();
@@ -591,6 +592,8 @@
               ok = window.confirm(msg);
             }
             if(!ok) return;
+            // mark to avoid double prompts from global handler
+            try{ form.dataset.modalConfirmed = '1'; }catch(_){}
             handleDelete(form);
           }
         });

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Tasks - '.ucfirst($type))
+@section('hide-back-button')@endsection
 
 @section('content')
   <style>
