@@ -3,7 +3,7 @@
 <div align="center">
     <img width="360" height="77" alt="Image" src="https://github.com/user-attachments/assets/71c5eb77-ee79-4484-af39-fdcf10b5b028" />
   <h1>☕ Bluemoon Coffee Shop Management System</h1>
-  <p><strong>A modern, role-based web app for managing and monitoring daily coffee shop operations.</strong></p>
+  <p><strong>A modern, role-based web app for managing and monitoring daily coffee shop operations. App is still for double checking</strong></p>
 
   ![Laravel](https://img.shields.io/badge/Built%20with-Laravel-red?style=flat-square&logo=laravel)
   ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=flat-square&logo=postgresql)
