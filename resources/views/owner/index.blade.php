@@ -335,6 +335,9 @@
         });
         if(nav){ nav.style.display = 'none'; }
         if(welcome){ welcome.style.display = 'none'; }
+        if(key === 'store'){
+          setTimeout(function(){ if(typeof applyToggleStyles === 'function') applyToggleStyles(); }, 0);
+        }
         var targetFirst = document.querySelector('.owner-section[data-section="'+key+'"]');
         if(targetFirst){ targetFirst.scrollIntoView({ behavior:'smooth', block:'start' }); }
       }
@@ -382,12 +385,17 @@
         var closingBtn = btns[1];
         var active = tabs.querySelector('.tab-btn.is-active') || openingBtn;
         var isOpen = active.getAttribute('data-tab') === 'opening';
-        // Indicator sizing/position
         if(ind){
-          ind.style.width = openingBtn.offsetWidth + 'px';
-          ind.style.left = isOpen ? '2px' : (openingBtn.offsetWidth + 4) + 'px';
+          var w = openingBtn.offsetWidth;
+          if(w && w > 0){
+            ind.style.width = w + 'px';
+            ind.style.left = isOpen ? '2px' : (w + 4) + 'px';
+          } else {
+            ind.style.width = '';
+            ind.style.left = isOpen ? '6px' : '';
+            setTimeout(applyToggleStyles, 50);
+          }
         }
-        // Text colors for visibility
         openingBtn.style.color = isOpen ? '#fff' : '#111827';
         closingBtn.style.color = isOpen ? '#111827' : '#fff';
       }
