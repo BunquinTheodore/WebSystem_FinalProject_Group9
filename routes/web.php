@@ -861,7 +861,7 @@ Route::post('/manager/payroll', function (Request $request) {
     }
 
     DB::table('payroll')->insert($payload);
-    return redirect()->route('manager.home')->with('status', 'Payroll entry submitted');
+    return redirect()->to(route('manager.home') . '#payroll')->with('status', 'Payroll entry submitted');
 })->name('manager.payroll.store');
 
 Route::post('/manager/employees', function (Request $request) {
@@ -898,7 +898,7 @@ Route::post('/manager/employees', function (Request $request) {
     if ($request->ajax()) {
         return response()->json(['ok'=>true]);
     }
-    return redirect()->route('manager.home')->with('status','Employee added');
+    return redirect()->to(route('manager.home') . '#employees')->with('status','Employee added');
 })->name('manager.employees.store');
 
 // Manager: update employee (limited fields)
@@ -1335,7 +1335,7 @@ Route::post('/manager/request', function (Request $request) {
         'created_at' => now(),
         'updated_at' => now(),
     ]);
-    return redirect()->route('manager.home')->with('status', 'Request submitted');
+    return redirect()->to(route('manager.home') . '#requests')->with('status', 'Request submitted');
 })->name('manager.request');
 
 Route::post('/manager/assign', function (Request $request) {
@@ -1376,7 +1376,7 @@ Route::post('/manager/assign', function (Request $request) {
         'due_at' => !empty($data['due_at']) ? \Carbon\Carbon::parse($data['due_at']) : now()->endOfDay(),
         'status' => 'pending',
     ]);
-    return redirect()->route('manager.home')->with('status', 'Task assigned');
+    return redirect()->to(route('manager.home') . '#tasks')->with('status', 'Task assigned');
 })->name('manager.assign');
 
 // Delete manager-owned records
