@@ -75,6 +75,53 @@
         </div>
       </div>
 
+      <!-- Fund & Expenses Summary -->
+      <div style="display:grid;gap:16px;grid-template-columns:repeat(3,1fr);margin:20px 0">
+        <div style="background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border:2px solid #93c5fd;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(59,130,246,0.15)">
+          <div style="font-weight:700;font-size:15px;color:#1d4ed8;margin-bottom:6px">Manager Fund Balance</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:28px;font-weight:800;color:#1e3a8a">₱{{ number_format(($fundBalance ?? 0), 0) }}</div>
+            <div style="width:40px;height:40px;border-radius:10px;background:#1d4ed8;color:#fff;display:flex;align-items:center;justify-content:center">🏦</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:2px solid #fdba74;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(251,146,60,0.15)">
+          <div style="font-weight:700;font-size:15px;color:#c2410c;margin-bottom:6px">Total Expenses</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:28px;font-weight:800;color:#7c2d12">₱{{ number_format(($expensesTotal ?? 0), 0) }}</div>
+            <div style="width:40px;height:40px;border-radius:10px;background:#c2410c;color:#fff;display:flex;align-items:center;justify-content:center">🧾</div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border:2px solid #86efac;border-radius:14px;padding:18px;box-shadow:0 2px 8px rgba(34,197,94,0.15)">
+          <div style="font-weight:700;font-size:15px;color:#047857;margin-bottom:6px">Available Balance</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:28px;font-weight:800;color:#065f46">₱{{ number_format(($availableBalance ?? 0), 0) }}</div>
+            <div style="width:40px;height:40px;border-radius:10px;background:#047857;color:#fff;display:flex;align-items:center;justify-content:center">✅</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Expenses -->
+      <div style="background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin:16px 0">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:9px;background:#fee2e2;color:#b91c1c;display:flex;align-items:center;justify-content:center">💸</div>
+          <div style="font-weight:800;color:#0f172a;font-size:16px">Recent Expenses</div>
+        </div>
+        <div style="display:grid;gap:10px">
+          @forelse(($expenses ?? []) as $ex)
+            <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:10px;border:1px solid #f3f4f6;border-radius:10px;background:#fafafa">
+              <div>
+                <div style="font-weight:700;color:#111827">{{ $ex->note }}</div>
+                <div style="font-size:12px;color:#6b7280">{{ \Carbon\Carbon::parse($ex->created_at)->format('M d, Y H:i') }}</div>
+              </div>
+              <div style="font-weight:800;color:#374151">₱{{ number_format(($ex->amount ?? 0), 0) }}</div>
+              <div style="font-size:12px;color:#6b7280">{{ $ex->manager_username ?? '—' }}</div>
+            </div>
+          @empty
+            <div style="color:#706f6c">No expenses yet.</div>
+          @endforelse
+        </div>
+      </div>
+
       <!-- APEPO Report -->
       @if(isset($latestApepo) && $latestApepo)
       <div style="background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.05);margin-top:24px">
