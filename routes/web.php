@@ -625,6 +625,7 @@ Route::get('/manager', function (Request $request) {
             ->get()
             ->map(function($t){
                 return [
+                    'id' => $t->id,
                     'title' => $t->title,
                     'done' => ($t->status === 'completed'),
                 ];
@@ -646,6 +647,27 @@ Route::get('/manager', function (Request $request) {
         'managerTasks' => $managerTasks,
     ]);
 })->name('manager.home');
+
+// Manager: toggle manager_tasks completion
+Route::post('/manager/tasks/{id}/toggle', function (Request $request, $id) {
+    if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
+    $managerUsername = (string) $request->session()->get('username');
+    $managerUserId = DB::table('users')->where('username', $managerUsername)->value('id');
+    if (!Schema::hasTable('manager_tasks')) return back();
+    $task = DB::table('manager_tasks')->where('id', $id)->first();
+    if (!$task) return back();
+    // Only allow toggling if global (null manager_id) or assigned to this manager
+    if (!is_null($task->manager_id) && (int)$task->manager_id !== (int)$managerUserId) return back();
+    $done = $request->boolean('done');
+    DB::table('manager_tasks')->where('id', $id)->update([
+        'status' => $done ? 'completed' : 'pending',
+        'updated_at' => now(),
+    ]);
+    if ($request->ajax() || $request->wantsJson() || $request->expectsJson()){
+        return response()->json(['ok'=>true]);
+    }
+    return back();
+})->name('manager.tasks.toggle');
 
 // Manager: Add inventory item
 Route::post('/manager/inventory/add', function (Request $request) {

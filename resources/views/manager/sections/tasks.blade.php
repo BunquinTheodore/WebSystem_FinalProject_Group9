@@ -4,19 +4,38 @@
   @php($mgrTasks = $managerTasks ?? [])
   <div style="display:grid;gap:8px">
     @forelse($mgrTasks as $mt)
-      <div style="display:flex;align-items:center;gap:10px;border:1px solid #e3e3e0;border-radius:8px;padding:10px;background:#fff">
-        <input type="checkbox" @if(!empty($mt['done'])) checked @endif disabled>
+      <form method="POST" action="{{ route('manager.tasks.toggle', ['id' => $mt['id'] ?? 0]) }}" class="mgr-task-form" style="display:flex;align-items:center;gap:10px;border:1px solid #e3e3e0;border-radius:8px;padding:10px;background:#fff;margin:0">
+        @csrf
+        <input type="hidden" name="done" value="0">
+        <input type="checkbox" name="done" value="1" class="mgr-task-checkbox" @if(!empty($mt['done'])) checked @endif>
         <div style="flex:1">
           <div style="color:#0f172a">{{ $mt['title'] ?? 'Untitled task' }}</div>
         </div>
         @if(!empty($mt['done']))
           <span style="color:#16a34a">✔</span>
         @endif
-      </div>
+      </form>
     @empty
       <div style="color:#706f6c">No tasks yet.</div>
     @endforelse
   </div>
+  <script>
+    (function(){
+      document.addEventListener('change', function(ev){
+        var cb = ev.target.closest('.mgr-task-checkbox');
+        if(!cb) return;
+        var form = cb.form;
+        if(!form) return;
+        ev.preventDefault();
+        try {
+          var fd = new FormData(form);
+          fetch(form.action, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } })
+            .then(function(res){ /* no-op */ })
+            .catch(function(){ form.submit(); });
+        } catch(_){ form.submit(); }
+      });
+    })();
+  </script>
 </div>
 
 <div class="card" style="border-radius:12px;border:1px solid #e3e3e0;padding:16px;margin-top:12px">
