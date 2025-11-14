@@ -289,6 +289,17 @@
         if(window.toast){ window.toast(@json(implode('\n', $errors->all())), 'error'); }
       @endif
     }catch(_){ }
+    try{
+      @if($errors && $errors->any())
+        (function(){
+          var ks = @json(array_keys($errors->toArray()));
+          for(var i=0;i<ks.length;i++){
+            var el = document.querySelector('[name="'+ks[i]+'"]');
+            if(el){ try{ el.focus(); }catch(_){} try{ el.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(_){} break; }
+          }
+        })();
+      @endif
+    }catch(_){ }
   })();
 </script>
 

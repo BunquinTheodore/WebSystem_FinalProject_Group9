@@ -199,6 +199,33 @@
         var h = (location.hash||'').replace('#','');
         if(h){ showSection(h); }
       }
+      // If there are server-side validation errors, auto-open the relevant section and scroll to the first missing field
+      @if(($errors ?? null) && $errors->any())
+        (function(){
+          try{
+            var keys = @json(array_keys($errors->toArray()));
+            var targetEl = null;
+            for(var i=0;i<keys.length;i++){
+              var el = document.querySelector('[name="'+keys[i]+'"]');
+              if(el){ targetEl = el; break; }
+            }
+            if(targetEl){
+              var sectionEl = targetEl.closest('.manager-section');
+              var sectionKey = sectionEl ? sectionEl.getAttribute('data-section') : null;
+              if(sectionKey){
+                if((location.hash||'').replace('#','') !== sectionKey){
+                  location.hash = sectionKey;
+                  showSection(sectionKey);
+                } else {
+                  showSection(sectionKey);
+                }
+              }
+              try{ targetEl.focus(); }catch(_){}
+              try{ targetEl.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(_){}
+            }
+          }catch(_){ }
+        })();
+      @endif
       // If arriving from /login or with ?fresh=1, force clean dashboard (no hash)
       try {
         var ref = document.referrer || '';

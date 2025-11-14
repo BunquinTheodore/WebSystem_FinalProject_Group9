@@ -791,13 +791,17 @@ Route::post('/manager/inventory/submit', function (Request $request) {
 // Manager: Submit payroll entry
 Route::post('/manager/payroll', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
         'employee' => 'required|string|max:255',
         'days_worked' => 'nullable|numeric|min:0',
         'pay_rate' => 'nullable|numeric|min:0',
         'period_from' => 'nullable|date',
         'period_to' => 'nullable|date',
     ]);
+    if ($validator->fails()) {
+        return redirect()->to(route('manager.home') . '#payroll')->withErrors($validator)->withInput();
+    }
+    $data = $validator->validated();
 
     $empRaw = (string) $data['employee'];
     $empId = null;
@@ -866,7 +870,7 @@ Route::post('/manager/payroll', function (Request $request) {
 
 Route::post('/manager/employees', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
         'name' => 'required|string|max:255',
         'role' => 'nullable|string|max:255', // position/title
         'birthday' => 'nullable|date',
@@ -875,6 +879,10 @@ Route::post('/manager/employees', function (Request $request) {
         'contact' => 'nullable|string|max:255',
         'join_date' => 'nullable|date',
     ]);
+    if ($validator->fails()) {
+        return redirect()->to(route('manager.home') . '#employees')->withErrors($validator)->withInput();
+    }
+    $data = $validator->validated();
     $employment = (string) ($data['status'] ?? 'full-time');
     $employment_type = (str_replace('-', '', strtolower($employment)) === 'parttime') ? 'parttime' : 'fulltime';
 
@@ -1321,11 +1329,15 @@ Route::get('/manager/totals', function (Request $request) {
 
 Route::post('/manager/request', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
         'item' => 'required|string',
         'quantity' => 'required|integer|min:1',
         'priority' => 'required|in:low,medium,high',
     ]);
+    if ($validator->fails()) {
+        return redirect()->to(route('manager.home') . '#requests')->withErrors($validator)->withInput();
+    }
+    $data = $validator->validated();
     DB::table('requests')->insert([
         'manager_username' => (string) $request->session()->get('username'),
         'item' => $data['item'],
@@ -1340,7 +1352,7 @@ Route::post('/manager/request', function (Request $request) {
 
 Route::post('/manager/assign', function (Request $request) {
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
-    $data = $request->validate([
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
         // Either provide an existing task_id OR provide title/category to create a new task
         'task_id' => 'nullable|integer|exists:tasks,id',
         'title' => 'nullable|string|max:255',
@@ -1350,6 +1362,10 @@ Route::post('/manager/assign', function (Request $request) {
         // No specific employee assignment; global for all employees
         'due_at' => 'nullable|date',
     ]);
+    if ($validator->fails()) {
+        return redirect()->to(route('manager.home') . '#tasks')->withErrors($validator)->withInput();
+    }
+    $data = $validator->validated();
 
     // Determine the target Task ID
     $taskId = (int) ($data['task_id'] ?? 0);
