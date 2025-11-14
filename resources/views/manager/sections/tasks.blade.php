@@ -30,7 +30,7 @@
         try {
           var fd = new FormData(form);
           fetch(form.action, { method:'POST', body: fd, headers: { 'X-Requested-With':'XMLHttpRequest' } })
-            .then(function(res){ /* no-op */ })
+            .then(function(res){ try { if(window.toast){ window.toast(cb.checked ? 'Task marked completed' : 'Task marked pending', 'success'); } } catch(_){} })
             .catch(function(){ form.submit(); });
         } catch(_){ form.submit(); }
       });
