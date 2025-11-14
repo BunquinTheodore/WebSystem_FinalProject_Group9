@@ -87,7 +87,7 @@
   </main>
   <div class="toast-wrap" id="toast-wrap" aria-live="polite" aria-atomic="true"
     @if(session('status')) data-status="{{ e(session('status')) }}" @endif
-    @if($errors->any()) data-error="{{ e($errors->first()) }}" @endif
+    @if($errors->any() && !session('req_missing')) data-error="{{ e($errors->first()) }}" @endif
   ></div>
   <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" aria-hidden="true">
     <div class="loading-box" aria-label="Loading">
@@ -183,14 +183,15 @@
             if(e.defaultPrevented) return;
             var form = e.target && e.target.closest ? e.target.closest('form') : e.target;
             if(!form) return;
+            // Only trigger confirm when the clicked submitter carries data-confirm
+            var submitter = e.submitter || null;
+            if(!submitter || !submitter.hasAttribute || !submitter.hasAttribute('data-confirm')) return;
             if(form.dataset && form.dataset.modalConfirmed === '1') return; // already confirmed
-            var confirmEl = form.querySelector('[data-confirm]');
-            if(!confirmEl) return; // nothing to confirm
             e.preventDefault();
-            var msg = confirmEl.getAttribute('data-confirm') || 'Are you sure?';
-            var title = confirmEl.getAttribute('data-confirm-title') || 'Please confirm';
-            var okText = confirmEl.getAttribute('data-confirm-ok') || 'Confirm';
-            var type = confirmEl.getAttribute('data-confirm-type') || 'danger';
+            var msg = submitter.getAttribute('data-confirm') || 'Are you sure?';
+            var title = submitter.getAttribute('data-confirm-title') || 'Please confirm';
+            var okText = submitter.getAttribute('data-confirm-ok') || 'Confirm';
+            var type = submitter.getAttribute('data-confirm-type') || 'danger';
             var ok = true;
             if(window.modalConfirm){
               try { ok = await window.modalConfirm(msg, { type:type, confirmText:okText, title:title }); } catch(_){ ok = false; }

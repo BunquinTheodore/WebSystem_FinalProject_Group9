@@ -1052,105 +1052,155 @@ Route::post('/manager/apepo/{id}/delete', function (Request $request, int $id) {
 })->name('manager.apepo.delete');
 
 // Manager: Unified submit for Reports page (Financial, APEPO, Fund, Expenses)
-Route::post('/manager/reports/unified', function (Request $request) {
+Route::match(['get','post'], '/manager/reports/unified', function (Request $request) {
+    if ($request->isMethod('get')) {
+        return redirect()->to(route('manager.home') . '#reports');
+    }
     if ($request->session()->get('role') !== 'manager') return redirect()->route('login');
     $manager = (string) $request->session()->get('username');
 
+    // Enforce that ALL reports sections are provided
+    $rules = [
+        // Opening
+        'opening_cash' => 'required|numeric',
+        'opening_wallet' => 'required|numeric',
+        'opening_bank' => 'required|numeric',
+        'opening_turnover_cash' => 'required|numeric',
+        'opening_turnover_wallet' => 'required|numeric',
+        'opening_turnover_bank' => 'required|numeric',
+        'opening_image' => 'required|file|image',
+        // Closing
+        'closing_cash' => 'required|numeric',
+        'closing_wallet' => 'required|numeric',
+        'closing_bank' => 'required|numeric',
+        'closing_turnover_cash' => 'required|numeric',
+        'closing_turnover_wallet' => 'required|numeric',
+        'closing_turnover_bank' => 'required|numeric',
+        'closing_image' => 'required|file|image',
+        // APEPO
+        'audit' => 'required|string',
+        'people' => 'required|string',
+        'equipment' => 'required|string',
+        'product' => 'required|string',
+        'others' => 'required|string',
+        'notes' => 'nullable|string',
+        // Fund
+        'fund_amount' => 'required|numeric',
+        'fund_image' => 'required|file|image',
+        // Expenses
+        'expense_amount' => 'required|numeric',
+        'expense_note' => 'required|string',
+    ];
+    $attributes = [
+        // Opening
+        'opening_cash' => 'Opening Cash',
+        'opening_wallet' => 'Opening Wallet',
+        'opening_bank' => 'Opening Bank',
+        'opening_turnover_cash' => 'Opening Turnover Cash',
+        'opening_turnover_wallet' => 'Opening Turnover Wallet',
+        'opening_turnover_bank' => 'Opening Turnover Bank',
+        'opening_image' => 'Opening Photo',
+        // Closing
+        'closing_cash' => 'Closing Cash',
+        'closing_wallet' => 'Closing Wallet',
+        'closing_bank' => 'Closing Bank',
+        'closing_turnover_cash' => 'Closing Turnover Cash',
+        'closing_turnover_wallet' => 'Closing Turnover Wallet',
+        'closing_turnover_bank' => 'Closing Turnover Bank',
+        'closing_image' => 'Closing Photo',
+        // APEPO
+        'audit' => 'APEPO - Audit',
+        'people' => 'APEPO - People',
+        'equipment' => 'APEPO - Equipment',
+        'product' => 'APEPO - Product',
+        'others' => 'APEPO - Others',
+        'notes' => 'APEPO - Notes',
+        // Fund
+        'fund_amount' => 'Manager Fund Amount',
+        'fund_image' => 'Manager Fund Photo',
+        // Expenses
+        'expense_amount' => 'Expense Amount',
+        'expense_note' => 'Expense Note',
+    ];
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules, [], $attributes);
+    if ($validator->fails()) {
+        $keys = $validator->errors()->keys();
+        $labels = [];
+        foreach($keys as $k){ if(isset($attributes[$k])) $labels[] = $attributes[$k]; }
+        $summary = $labels ? ('Please complete: '.implode(', ', $labels)) : 'Please complete all required fields.';
+        return redirect()->to(route('manager.home') . '#reports')->withErrors($validator)->with('req_missing', $summary)->withInput();
+    }
+    $validated = $validator->validated();
+
     $now = now();
-    $created = [];
 
-    // Financial Report: Opening
-    $oc = $request->input('opening_cash');
-    $ow = $request->input('opening_wallet');
-    $ob = $request->input('opening_bank');
-    if ($oc !== null || $ow !== null || $ob !== null) {
-        DB::table('manager_reports')->insert([
-            'manager_username' => $manager,
-            'shift' => 'opening',
-            'cash' => (float) ($oc ?: 0),
-            'wallet' => (float) ($ow ?: 0),
-            'bank' => (float) ($ob ?: 0),
-            'submitted_at' => $now,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $created[] = 'opening';
-    }
+    // Financial Report: Opening (now unconditional)
+    DB::table('manager_reports')->insert([
+        'manager_username' => $manager,
+        'shift' => 'opening',
+        'cash' => (float) $validated['opening_cash'],
+        'wallet' => (float) $validated['opening_wallet'],
+        'bank' => (float) $validated['opening_bank'],
+        'submitted_at' => $now,
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
 
-    // Financial Report: Closing
-    $cc = $request->input('closing_cash');
-    $cw = $request->input('closing_wallet');
-    $cb = $request->input('closing_bank');
-    if ($cc !== null || $cw !== null || $cb !== null) {
-        DB::table('manager_reports')->insert([
-            'manager_username' => $manager,
-            'shift' => 'closing',
-            'cash' => (float) ($cc ?: 0),
-            'wallet' => (float) ($cw ?: 0),
-            'bank' => (float) ($cb ?: 0),
-            'submitted_at' => $now,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $created[] = 'closing';
-    }
+    // Financial Report: Closing (now unconditional)
+    DB::table('manager_reports')->insert([
+        'manager_username' => $manager,
+        'shift' => 'closing',
+        'cash' => (float) $validated['closing_cash'],
+        'wallet' => (float) $validated['closing_wallet'],
+        'bank' => (float) $validated['closing_bank'],
+        'submitted_at' => $now,
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
 
-    // APEPO
-    if ($request->filled(['audit']) || $request->filled(['people']) || $request->filled(['equipment']) || $request->filled(['product']) || $request->filled(['others']) || $request->filled(['notes'])) {
-        DB::table('apepo_reports')->insert([
-            'manager_username' => $manager,
-            'audit' => (string) $request->input('audit', ''),
-            'people' => (string) $request->input('people', ''),
-            'equipment' => (string) $request->input('equipment', ''),
-            'product' => (string) $request->input('product', ''),
-            'others' => (string) $request->input('others', ''),
-            'notes' => (string) $request->input('notes', ''),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $created[] = 'apepo';
-    }
+    // APEPO (now unconditional)
+    DB::table('apepo_reports')->insert([
+        'manager_username' => $manager,
+        'audit' => (string) $validated['audit'],
+        'people' => (string) $validated['people'],
+        'equipment' => (string) $validated['equipment'],
+        'product' => (string) $validated['product'],
+        'others' => (string) $validated['others'],
+        'notes' => (string) ($validated['notes'] ?? ''),
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
 
-    // Manager Fund
-    if ($request->filled('fund_amount') || $request->hasFile('fund_image')) {
-        $path = null;
-        if ($request->hasFile('fund_image')) {
-            try {
-                $file = $request->file('fund_image');
-                if ($file && $file->isValid()) {
-                    $ext = $file->getClientOriginalExtension() ?: 'jpg';
-                    $name = (string) (\Illuminate\Support\Str::uuid()).'.'.$ext;
-                    $path = 'funds/'.date('Y/m/d').'/'.$name;
-                    \Illuminate\Support\Facades\Storage::disk('public')->putFileAs(dirname($path), $file, basename($path));
-                }
-            } catch (\Throwable $e) {
-                // ignore file errors for now
-            }
+    // Manager Fund (now unconditional, with file upload)
+    $fundPath = null;
+    try {
+        $file = $request->file('fund_image');
+        if ($file && $file->isValid()) {
+            $ext = $file->getClientOriginalExtension() ?: 'jpg';
+            $name = (string) (\Illuminate\Support\Str::uuid()).'.'.$ext;
+            $fundPath = 'funds/'.date('Y/m/d').'/'.$name;
+            \Illuminate\Support\Facades\Storage::disk('public')->putFileAs(dirname($fundPath), $file, basename($fundPath));
         }
-        DB::table('manager_funds')->insert([
-            'manager_username' => $manager,
-            'amount' => (float) $request->input('fund_amount', 0),
-            'fund_image_path' => $path,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $created[] = 'fund';
-    }
+    } catch (\Throwable $e) { /* ignore */ }
 
-    // Expenses
-    if ($request->filled('expense_amount') || $request->filled('expense_note')) {
-        DB::table('expenses')->insert([
-            'manager_username' => $manager,
-            'amount' => (float) $request->input('expense_amount', 0),
-            'note' => (string) $request->input('expense_note', ''),
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-        $created[] = 'expense';
-    }
+    DB::table('manager_funds')->insert([
+        'manager_username' => $manager,
+        'amount' => (float) $validated['fund_amount'],
+        'fund_image_path' => $fundPath,
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
 
-    $msg = empty($created) ? 'Nothing to submit' : ('Submitted: '.implode(', ', $created));
-    return redirect()->route('manager.home')->with('status', $msg);
+    // Expenses (now unconditional)
+    DB::table('expenses')->insert([
+        'manager_username' => $manager,
+        'amount' => (float) $validated['expense_amount'],
+        'note' => (string) $validated['expense_note'],
+        'created_at' => $now,
+        'updated_at' => $now,
+    ]);
+
+    return redirect()->to(route('manager.home') . '#reports')->with('status', 'Submitted: opening, closing, apepo, fund, expense');
 })->name('manager.reports.unified');
 
 // Owner: Employees CRUD

@@ -5,26 +5,26 @@
     @csrf
     <div style="display:grid;gap:10px">
       <div style="display:grid;gap:6px">
-        <label style="font-size:12px;color:#0f172a">Employee Name</label>
+        <label for="pay-employee" style="font-size:12px;color:#0f172a">Employee Name</label>
         @if(!empty($employees ?? null) && count($employees) > 0)
-          <select name="employee" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px">
+          <select id="pay-employee" name="employee" style="width:100%;padding:10px;border:1px solid #e3e3e0;border-radius:8px">
             <option value="">Select employee</option>
             @foreach($employees as $emp)
               <option value="{{ $emp->username ?? $emp->id ?? $emp->name }}">{{ $emp->name ?? $emp->username ?? ('Employee #'.($emp->id ?? '')) }}</option>
             @endforeach
           </select>
         @else
-          <input name="employee" placeholder="Type employee name or username" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <input id="pay-employee" name="employee" placeholder="Type employee name or username" autocomplete="name" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         @endif
       </div>
       <div style="display:grid;gap:10px;grid-template-columns:1fr 1fr">
         <div style="display:grid;gap:6px">
-          <label style="font-size:12px;color:#0f172a">Days Worked</label>
-          <input name="days_worked" type="number" min="0" step="1" placeholder="e.g., 5" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <label for="pay-days-worked" style="font-size:12px;color:#0f172a">Days Worked</label>
+          <input id="pay-days-worked" name="days_worked" type="number" min="0" step="1" placeholder="e.g., 5" autocomplete="off" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         </div>
         <div style="display:grid;gap:6px">
-          <label style="font-size:12px;color:#0f172a">Pay Rate (₱/day)</label>
-          <input name="pay_rate" type="number" min="0" step="0.01" placeholder="e.g., 600.00" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+          <label for="pay-pay-rate" style="font-size:12px;color:#0f172a">Pay Rate (₱/day)</label>
+          <input id="pay-pay-rate" name="pay_rate" type="number" min="0" step="0.01" placeholder="e.g., 600.00" autocomplete="off" style="width:96%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         </div>
       </div>
       <div style="text-align:right">

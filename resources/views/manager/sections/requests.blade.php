@@ -6,16 +6,16 @@
     <!-- Row: Item / Quantity / Priority side-by-side -->
     <div style="display:grid;gap:10px;grid-template-columns:2fr 1fr 1fr">
       <div style="display:flex;flex-direction:column;gap:4px">
-        <label style="font-size:12px;color:#0f172a">Item</label>
-        <input name="item" placeholder="Item name" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="req-item" style="font-size:12px;color:#0f172a">Item</label>
+        <input id="req-item" name="item" placeholder="Item name" autocomplete="off" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <label style="font-size:12px;color:#0f172a">Quantity</label>
-        <input name="quantity" type="number" min="1" value="1" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="req-quantity" style="font-size:12px;color:#0f172a">Quantity</label>
+        <input id="req-quantity" name="quantity" type="number" min="1" value="1" autocomplete="off" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
       <div style="display:flex;flex-direction:column;gap:4px">
-        <label style="font-size:12px;color:#0f172a">Priority</label>
-        <select name="priority" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
+        <label for="req-priority" style="font-size:12px;color:#0f172a">Priority</label>
+        <select id="req-priority" name="priority" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
           <option value="low">Low</option>
           <option value="medium" selected>Medium</option>
           <option value="high">High</option>
@@ -24,8 +24,8 @@
     </div>
     <!-- Remarks full width -->
     <div style="display:flex;flex-direction:column;gap:4px">
-      <label style="font-size:12px;color:#0f172a">Remarks</label>
-      <textarea name="remarks" rows="3" placeholder="Additional notes or specifications..." style="padding:10px;border:1px solid #e3e3e0;border-radius:8px;resize:vertical"></textarea>
+      <label for="req-remarks" style="font-size:12px;color:#0f172a">Remarks</label>
+      <textarea id="req-remarks" name="remarks" rows="3" placeholder="Additional notes or specifications..." autocomplete="off" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px;resize:vertical"></textarea>
     </div>
     <div style="display:flex;justify-content:flex-end">
       <button style="background:#f97316;color:#fff;border-radius:8px;padding:10px 16px">Submit Request to Owner</button>

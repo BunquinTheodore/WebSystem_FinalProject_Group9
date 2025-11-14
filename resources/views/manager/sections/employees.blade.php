@@ -88,21 +88,27 @@
      <form method="POST" action="{{ route('manager.employees.update', ['id'=>$emp->id]) }}" style="display:grid;gap:10px">
        @csrf
        <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr">
-         <input name="name" value="{{ $emp->name }}" placeholder="Full name" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-         <input name="role" value="{{ $emp->position ?? $emp->role ?? '' }}" placeholder="Role/Position" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         <label for="emp-name-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Full name</label>
+        <input id="emp-name-{{ $emp->id }}" name="name" value="{{ $emp->name }}" placeholder="Full name" autocomplete="name" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         <label for="emp-role-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Role/Position</label>
+        <input id="emp-role-{{ $emp->id }}" name="role" value="{{ $emp->position ?? $emp->role ?? '' }}" placeholder="Role/Position" autocomplete="organization-title" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
        </div>
        <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr">
-         <input name="birthday" type="date" value="{{ !empty($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('Y-m-d') : '' }}" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         <label for="emp-bday-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Birthday</label>
+        <input id="emp-bday-{{ $emp->id }}" name="birthday" type="date" value="{{ !empty($emp->birthday ?? null) ? \Carbon\Carbon::parse($emp->birthday)->format('Y-m-d') : '' }}" autocomplete="bday" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
          @php
            $editEt = strtolower($emp->employment_type ?? 'fulltime');
          @endphp
-         <select name="status" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px">
+         <label for="emp-status-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Employment Type</label>
+        <select id="emp-status-{{ $emp->id }}" name="status" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px">
            <option value="full-time" {{ $editEt==='fulltime' ? 'selected' : '' }}>Full-time</option>
            <option value="part-time" {{ $editEt==='parttime' ? 'selected' : '' }}>Part-time</option>
          </select>
-         <input name="contact" value="{{ $emp->contact ?? '' }}" placeholder="Contact" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+         <label for="emp-contact-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Contact</label>
+        <input id="emp-contact-{{ $emp->id }}" name="contact" value="{{ $emp->contact ?? '' }}" placeholder="Contact" autocomplete="tel" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
        </div>
-       <input name="email" type="email" value="{{ $emp->email ?? '' }}" placeholder="Email" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
+       <label for="emp-email-{{ $emp->id }}" style="font-size:12px;color:#0f172a">Email</label>
+      <input id="emp-email-{{ $emp->id }}" name="email" type="email" value="{{ $emp->email ?? '' }}" placeholder="Email" autocomplete="email" style="padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
        <div style="display:flex;gap:8px;justify-content:flex-end">
          <button type="button" onclick="document.getElementById('edit-emp-{{ $emp->id }}').style.display='none'" style="padding:8px 12px;border:1px solid #e3e3e0;border-radius:6px;background:#fff;color:#1b1b18">Cancel</button>
          <button style="padding:8px 12px;background:#16a34a;color:#fff;border-radius:6px">Save</button>
@@ -126,20 +132,27 @@
     <div style="display:grid;gap:10px">
       <!-- Row 1: Name, Employment Type, Position (match owner layout proportions) -->
       <div style="display:grid;gap:6px;grid-template-columns:1.2fr 1fr 1fr">
-        <input name="name" placeholder="Full name" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-name" style="font-size:12px;color:#0f172a">Full name</label>
+        <input id="addemp-name" name="name" placeholder="Full name" autocomplete="name" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
         <!-- Manager expects 'status' values 'full-time'|'part-time' → map to owner-style Employment Type label -->
-        <select name="status" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
+        <label for="addemp-status" style="font-size:12px;color:#0f172a">Employment Type</label>
+        <select id="addemp-status" name="status" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px">
           <option value="full-time">Full-time</option>
           <option value="part-time">Part-time</option>
         </select>
-        <input name="role" placeholder="Position" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-role" style="font-size:12px;color:#0f172a">Position</label>
+        <input id="addemp-role" name="role" placeholder="Position" autocomplete="organization-title" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
       <!-- Row 2: Birthday, Email, Contact, Join Date (owner-style grid) -->
       <div style="display:grid;gap:6px;grid-template-columns:1fr 1fr 1fr 1fr">
-        <input name="birthday" type="date" placeholder="Birthday" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-        <input name="email" type="email" placeholder="Email" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-        <input name="contact" placeholder="Contact" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-        <input name="join_date" type="date" placeholder="Join date" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-bday" style="font-size:12px;color:#0f172a">Birthday</label>
+        <input id="addemp-bday" name="birthday" type="date" placeholder="Birthday" autocomplete="bday" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-email" style="font-size:12px;color:#0f172a">Email</label>
+        <input id="addemp-email" name="email" type="email" placeholder="Email" autocomplete="email" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-contact" style="font-size:12px;color:#0f172a">Contact</label>
+        <input id="addemp-contact" name="contact" placeholder="Contact" autocomplete="tel" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+        <label for="addemp-join" style="font-size:12px;color:#0f172a">Join date</label>
+        <input id="addemp-join" name="join_date" type="date" placeholder="Join date" autocomplete="off" style="padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button type="button" onclick="document.getElementById('mgr-add-emp').style.display='none'" style="padding:10px 14px;border:1px solid #e3e3e0;border-radius:8px;background:#fff;color:#1b1b18">Cancel</button>

@@ -2,135 +2,60 @@
  <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Financial Report</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:12px">Opening and closing shift financial details</div>
-  <form id="mgr-reports-unified" method="POST" action="{{ route('manager.reports.unified') }}" enctype="multipart/form-data">
+  <form id="mgr-reports-unified" method="POST" action="{{ route('manager.reports.unified') }}" enctype="multipart/form-data" data-no-loader novalidate>
     @csrf
     <div style="display:grid;gap:12px;grid-template-columns:1fr 1fr">
       <div style="border:1px solid #e3e3e0;border-radius:8px;padding:12px;background:#f0f9ff">
         <div style="font-weight:600;color:#0f172a;margin-bottom:8px">Opening Shift</div>
         <div style="display:grid;gap:8px">
-          <input name="opening_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="opening_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
+          <input name="opening_cash" type="number" step="0.01" placeholder="Cash (₱)" value="{{ old('opening_cash') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" value="{{ old('opening_wallet') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" value="{{ old('opening_bank') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" value="{{ old('opening_turnover_cash') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" value="{{ old('opening_turnover_wallet') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" value="{{ old('opening_turnover_bank') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="opening_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" required />
         </div>
       </div>
       <div style="border:1px solid #e3e3e0;border-radius:8px;padding:12px;background:#fff7ed">
         <div style="font-weight:600;color:#0f172a;margin-bottom:8px">Closing Shift</div>
         <div style="display:grid;gap:8px">
-          <input name="closing_cash" type="number" step="0.01" placeholder="Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" />
-          <input name="closing_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" />
+          <input name="closing_cash" type="number" step="0.01" placeholder="Cash (₱)" value="{{ old('closing_cash') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_wallet" type="number" step="0.01" placeholder="Digital Wallet (₱)" value="{{ old('closing_wallet') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_bank" type="number" step="0.01" placeholder="Bank Amount (₱)" value="{{ old('closing_bank') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_turnover_cash" type="number" step="0.01" placeholder="Turnover Cash (₱)" value="{{ old('closing_turnover_cash') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_turnover_wallet" type="number" step="0.01" placeholder="Turnover Digital Wallet (₱)" value="{{ old('closing_turnover_wallet') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_turnover_bank" type="number" step="0.01" placeholder="Turnover Bank Amount (₱)" value="{{ old('closing_turnover_bank') }}" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px" required />
+          <input name="closing_image" type="file" accept="image/*" style="width:97%;padding:8px;border:1px solid #e3e3e0;border-radius:6px;background:#fff" required />
         </div>
       </div>
     </div>
     
     
 
-  <div id="mgr-report-list" style="margin-top:12px;display:grid;gap:10px">
-    @forelse($reports as $r)
-      <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Type</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amounts</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding:8px">{{ strtoupper($r->shift ?? 'N/A') }}</td>
-              <td style="padding:8px">₱{{ number_format(($r->cash ?? 0)+($r->wallet ?? 0)+($r->bank ?? 0),2) }}</td>
-              <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
-              <td style="padding:8px">
-                @if(session('username') === ($r->manager_username ?? null))
-                  <form class="mgr-del-form" method="POST" action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="margin:0">
-                    @csrf
-                    <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
-                  </form>
-                @else
-                  <span style="color:#706f6c">—</span>
-                @endif
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    @empty
-    @endforelse
-  </div>
 </div>
 
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">APEPO Report</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Audit, People, Equipment, Product, Others</div>
   <div style="display:grid;gap:10px">
-    <input name="audit" placeholder="A - Audit: findings and observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="people" placeholder="P - People: employee/role notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="equipment" placeholder="E - Equipment: status and maintenance..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="product" placeholder="P - Product: quality and inventory notes..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="others" placeholder="O - Others: additional observations..." style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" />
-    <input name="notes" placeholder="Notes (optional)" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    <input name="audit" placeholder="A - Audit: findings and observations..." value="{{ old('audit') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" required />
+    <input name="people" placeholder="P - People: employee/role notes..." value="{{ old('people') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" required />
+    <input name="equipment" placeholder="E - Equipment: status and maintenance..." value="{{ old('equipment') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" required />
+    <input name="product" placeholder="P - Product: quality and inventory notes..." value="{{ old('product') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" required />
+    <input name="others" placeholder="O - Others: additional observations..." value="{{ old('others') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px;background:#f3f4f6" required />
+    <input name="notes" placeholder="Notes (optional)" value="{{ old('notes') }}" style="width:97%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
   </div>
 
-  <div id="mgr-apepo-list" style="margin-top:12px;display:grid;gap:10px">
-    @forelse($apepo as $p)
-      <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
-        <table style="width:100%;border-collapse:collapse">
-          <thead>
-            <tr>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Section</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Details</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
-              <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="padding:8px">Audit</td>
-              <td style="padding:8px">{{ $p->audit }}</td>
-              <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
-              <td style="padding:8px" rowspan="5">
-                @if(session('username') === ($p->manager_username ?? null))
-                  <form class="mgr-del-form" method="POST" action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="margin:0">
-                    @csrf
-                    <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
-                  </form>
-                @else
-                  <span style="color:#706f6c">—</span>
-                @endif
-              </td>
-            </tr>
-            <tr><td style="padding:8px">People</td><td style="padding:8px">{{ $p->people }}</td><td style="padding:8px;color:#706f6c"></td></tr>
-            <tr><td style="padding:8px">Equipment</td><td style="padding:8px">{{ $p->equipment }}</td><td style="padding:8px;color:#706f6c"></td></tr>
-            <tr><td style="padding:8px">Product</td><td style="padding:8px">{{ $p->product }}</td><td style="padding:8px;color:#706f6c"></td></tr>
-            <tr><td style="padding:8px">Others</td><td style="padding:8px">{{ $p->others }}</td><td style="padding:8px;color:#706f6c"></td></tr>
-            @if(!empty($p->notes))
-              <tr><td style="padding:8px">Notes</td><td style="padding:8px" colspan="2">{{ $p->notes }}</td></tr>
-            @endif
-          </tbody>
-        </table>
-      </div>
-    @empty
-    @endforelse
-  </div>
 </div>
 
 <div style="background:#fff;border:1px solid #e3e3e0;padding:16px;border-radius:12px;margin-top:12px">
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Manager Fund</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Daily manager fund tracking</div>
   <div style="display:grid;gap:10px">
-    <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
+    <input name="fund_amount" type="number" step="0.01" placeholder="Amount (₱)" value="{{ old('fund_amount') }}" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" required />
     <div style="display:flex;gap:8px;align-items:center">
-      <input name="fund_image" type="file" accept="image/*" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:8px;background:#fff" />
+      <input name="fund_image" type="file" accept="image/*" style="flex:1;padding:8px;border:1px solid #e3e3e0;border-radius:8px;background:#fff" required />
     </div>
   </div>
 </div>
@@ -139,13 +64,13 @@
   <div style="font-weight:700;color:#0f172a;margin-bottom:4px">Expenses</div>
   <div style="font-size:12px;color:#6b7280;margin-bottom:10px">Record daily expenses</div>
   <div style="display:grid;gap:10px">
-    <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" />
-    <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px"></textarea>
+    <input name="expense_amount" type="number" step="0.01" min="0" placeholder="Amount (₱)" value="{{ old('expense_amount') }}" style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" required />
+    <textarea name="expense_note" rows="4" placeholder="Expense details (no character limit)..." style="width:98%;padding:10px;border:1px solid #e3e3e0;border-radius:8px" required>{{ old('expense_note') }}</textarea>
   </div>
 </div>
 
 <div style="margin-top:12px">
-  <button style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
+  <button id="mgr-reports-submit" type="submit" style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
 </div>
 
 </form>
@@ -154,6 +79,60 @@
   (function(){
     const form = document.getElementById('mgr-reports-unified');
     if(!form) return;
+    const ENABLE_IMG_OPT = false; // set true to re-enable client-side image compression
+
+    function validateAllFields(){
+      const required = [
+        { name:'opening_cash', label:'Opening Cash' },
+        { name:'opening_wallet', label:'Opening Wallet' },
+        { name:'opening_bank', label:'Opening Bank' },
+        { name:'opening_turnover_cash', label:'Opening Turnover Cash' },
+        { name:'opening_turnover_wallet', label:'Opening Turnover Wallet' },
+        { name:'opening_turnover_bank', label:'Opening Turnover Bank' },
+        { name:'opening_image', label:'Opening Photo', type:'file' },
+        { name:'closing_cash', label:'Closing Cash' },
+        { name:'closing_wallet', label:'Closing Wallet' },
+        { name:'closing_bank', label:'Closing Bank' },
+        { name:'closing_turnover_cash', label:'Closing Turnover Cash' },
+        { name:'closing_turnover_wallet', label:'Closing Turnover Wallet' },
+        { name:'closing_turnover_bank', label:'Closing Turnover Bank' },
+        { name:'closing_image', label:'Closing Photo', type:'file' },
+        { name:'audit', label:'APEPO - Audit' },
+        { name:'people', label:'APEPO - People' },
+        { name:'equipment', label:'APEPO - Equipment' },
+        { name:'product', label:'APEPO - Product' },
+        { name:'others', label:'APEPO - Others' },
+        { name:'fund_amount', label:'Manager Fund Amount' },
+        { name:'fund_image', label:'Manager Fund Photo', type:'file' },
+        { name:'expense_amount', label:'Expense Amount' },
+        { name:'expense_note', label:'Expense Note' },
+      ];
+      const missing = [];
+      let firstEl = null;
+      for(const r of required){
+        // Look up globally to avoid missing fields if DOM nesting changes
+        const el = document.querySelector('[name="'+r.name+'"]');
+        if(!el){
+          // If the field cannot be found at all, treat as missing so it shows in the toast
+          missing.push(r.label);
+          if(!firstEl) firstEl = form; // keep focus within form
+          continue;
+        }
+        if(r.type === 'file'){
+          if(!(el.files && el.files.length)){
+            missing.push(r.label);
+            if(!firstEl) firstEl = el;
+          }
+        } else {
+          const val = (el.value||'').toString().trim();
+          if(val === ''){
+            missing.push(r.label);
+            if(!firstEl) firstEl = el;
+          }
+        }
+      }
+      return { missing, firstEl };
+    }
 
     function readFileAsDataURL(file){
       return new Promise((resolve, reject)=>{
@@ -232,34 +211,162 @@
 
     form.addEventListener('submit', async function(e){
       try{
-        // only intercept if there are image files
-        const inputs = [
-          form.querySelector('input[name="opening_image"]'),
-          form.querySelector('input[name="closing_image"]'),
-          form.querySelector('input[name="fund_image"]'),
-        ].filter(Boolean);
-        const anyFile = inputs.some(i => i.files && i.files.length);
-        if(!anyFile) return; // proceed normally
-        e.preventDefault();
-        // Optional visual hint using global overlay if present
-        try{
-          const overlay = document.getElementById('loading-overlay');
-          const textEl = document.getElementById('loading-text');
-          if(overlay && textEl){ textEl.textContent = 'Optimizing photos…'; overlay.classList.add('show'); }
-        }catch(_){ }
-        for(const inp of inputs){ await maybeCompressInput(inp); }
-        // if still very large, warn and abort
-        const total = inputs.reduce((sum, i)=> sum + (i.files && i.files[0] ? i.files[0].size : 0), 0);
-        if(total > 5 * 1024 * 1024){
+        // Validate all fields (since Submit All requires all inputs completed)
+        const { missing, firstEl } = validateAllFields();
+        if(missing.length){
+          e.preventDefault();
           try{
-            if(window.toast) window.toast('Attached photos are too large even after optimization. Please choose smaller images.', 'error');
-          }catch(_){ alert('Attached photos are too large even after optimization. Please choose smaller images.'); }
-          const overlay = document.getElementById('loading-overlay'); if(overlay) overlay.classList.remove('show');
-          return; // do not submit
+            if(window.toast){
+              const msg = 'Please complete: ' + missing.join(', ');
+              window.toast(msg, 'error');
+            } else {
+              alert('Please complete required fields:\n- ' + missing.join('\n- '));
+            }
+          } catch(_){}
+          try{ if(firstEl && firstEl.focus){ firstEl.focus(); firstEl.scrollIntoView({ behavior:'smooth', block:'center' }); } }catch(_){ }
+          return; // stop submit
         }
-        // submit after compression
-        this.submit();
-      }catch(_){ /* ignore and let submit proceed */ }
+
+        if(ENABLE_IMG_OPT){
+          // only intercept if there are image files
+          const inputs = [
+            form.querySelector('input[name="opening_image"]'),
+            form.querySelector('input[name="closing_image"]'),
+            form.querySelector('input[name="fund_image"]'),
+          ].filter(Boolean);
+          const anyFile = inputs.some(i => i.files && i.files.length);
+          if(!anyFile) return; // proceed normally
+          e.preventDefault();
+          // Optional visual hint using global overlay if present
+          try{
+            const overlay = document.getElementById('loading-overlay');
+            const textEl = document.getElementById('loading-text');
+            if(overlay && textEl){ textEl.textContent = 'Optimizing photos…'; overlay.classList.add('show'); }
+          }catch(_){ }
+          for(const inp of inputs){ await maybeCompressInput(inp); }
+          // if still very large, warn and abort
+          const total = inputs.reduce((sum, i)=> sum + (i.files && i.files[0] ? i.files[0].size : 0), 0);
+          if(total > 5 * 1024 * 1024){
+            try{
+              if(window.toast) window.toast('Attached photos are too large even after optimization. Please choose smaller images.', 'error');
+            }catch(_){ alert('Attached photos are too large even after optimization. Please choose smaller images.'); }
+            const overlay = document.getElementById('loading-overlay'); if(overlay) overlay.classList.remove('show');
+            return; // do not submit
+          }
+          // submit after compression
+          this.submit();
+        }
+      }catch(_){ try{ this.submit(); }catch(e){} }
     });
+    // Also validate on click and force submit when valid
+    try{
+      var submitBtn = document.getElementById('mgr-reports-submit');
+      if(submitBtn){
+        submitBtn.addEventListener('click', function(ev){
+          const res = validateAllFields();
+          if(res.missing.length){
+            ev.preventDefault();
+            try{
+              if(window.toast){
+                const msg = 'Please complete: ' + res.missing.join(', ');
+                window.toast(msg, 'error');
+              } else {
+                alert('Please complete required fields:\n- ' + res.missing.join('\n- '));
+              }
+            }catch(_){ }
+            try{ if(res.firstEl && res.firstEl.focus){ res.firstEl.focus(); res.firstEl.scrollIntoView({ behavior:'smooth', block:'center' }); } }catch(_){ }
+          } else {
+            try { if(form.requestSubmit) { ev.preventDefault(); form.requestSubmit(); } else { form.submit(); } } catch(_){ form.submit(); }
+          }
+        });
+      }
+    }catch(_){ }
+    // Show server-side validation errors as a toast on load
+    try{
+      @if(session('req_missing'))
+        if(window.toast){ window.toast(@json(session('req_missing')), 'error'); }
+      @endif
+      @if($errors && $errors->any())
+        if(window.toast){ window.toast(@json(implode('\n', $errors->all())), 'error'); }
+      @endif
+    }catch(_){ }
   })();
 </script>
+
+<!-- Lists moved outside the unified POST form to avoid nested forms -->
+<div id="mgr-report-list" style="margin-top:12px;display:grid;gap:10px">
+  @forelse($reports as $r)
+    <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Type</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Amounts</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:8px">{{ strtoupper($r->shift ?? 'N/A') }}</td>
+            <td style="padding:8px">₱{{ number_format(($r->cash ?? 0)+($r->wallet ?? 0)+($r->bank ?? 0),2) }}</td>
+            <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($r->created_at)->format('M d, Y H:i') }}</td>
+            <td style="padding:8px">
+              @if(session('username') === ($r->manager_username ?? null))
+                <form class="mgr-del-form" method="POST" action="{{ route('manager.report.delete', ['id' => $r->id]) }}" style="margin:0">
+                  @csrf
+                  <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this report?">Delete</button>
+                </form>
+              @else
+                <span style="color:#706f6c">—</span>
+              @endif
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  @empty
+  @endforelse
+</div>
+
+<div id="mgr-apepo-list" style="margin-top:12px;display:grid;gap:10px">
+  @forelse($apepo as $p)
+    <div class="card" style="border-radius:8px;border:1px solid #e3e3e0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Section</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Details</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px">Submitted</th>
+            <th style="text-align:left;border-bottom:1px solid #f0f0ef;padding:8px;width:1%">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:8px">Audit</td>
+            <td style="padding:8px">{{ $p->audit }}</td>
+            <td style="padding:8px;color:#706f6c">{{ \Carbon\Carbon::parse($p->created_at)->format('M d, Y H:i') }}</td>
+            <td style="padding:8px" rowspan="5">
+              @if(session('username') === ($p->manager_username ?? null))
+                <form class="mgr-del-form" method="POST" action="{{ route('manager.apepo.delete', ['id' => $p->id]) }}" style="margin:0">
+                  @csrf
+                  <button style="padding:4px 8px;background:#b91c1c;color:#fff;border-radius:6px" data-confirm="Remove this APEPO report?">Delete</button>
+                </form>
+              @else
+                <span style="color:#706f6c">—</span>
+              @endif
+            </td>
+          </tr>
+          <tr><td style="padding:8px">People</td><td style="padding:8px">{{ $p->people }}</td><td style="padding:8px;color:#706f6c"></td></tr>
+          <tr><td style="padding:8px">Equipment</td><td style="padding:8px">{{ $p->equipment }}</td><td style="padding:8px;color:#706f6c"></td></tr>
+          <tr><td style="padding:8px">Product</td><td style="padding:8px">{{ $p->product }}</td><td style="padding:8px;color:#706f6c"></td></tr>
+          <tr><td style="padding:8px">Others</td><td style="padding:8px">{{ $p->others }}</td><td style="padding:8px;color:#706f6c"></td></tr>
+          @if(!empty($p->notes))
+            <tr><td style="padding:8px">Notes</td><td style="padding:8px" colspan="2">{{ $p->notes }}</td></tr>
+          @endif
+        </tbody>
+      </table>
+    </div>
+  @empty
+  @endforelse
+</div>
