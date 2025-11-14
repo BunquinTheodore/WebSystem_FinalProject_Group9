@@ -241,7 +241,15 @@
   const submitOwnerBtn = document.getElementById('submit-owner-btn');
   if(submitOwnerBtn){
     submitOwnerBtn.addEventListener('click', async function(){
-      if(!confirm('Submit current inventory to Owner?')) return;
+      let ok = true;
+      try{
+        if(window.modalConfirm){
+          ok = await window.modalConfirm('Submit current inventory to Owner?', { title: 'Confirm Submission', confirmText: 'Submit' });
+        } else {
+          ok = window.confirm('Submit current inventory to Owner?');
+        }
+      }catch(_){ ok = false; }
+      if(!ok) return;
       try{
         const res = await fetch(INV_SUBMIT_URL, {
           method:'POST',
@@ -260,10 +268,8 @@
           }
         });
         if(window.toast) window.toast('Inventory submitted to Owner','success');
-        else alert('Inventory submitted to Owner');
       }catch(_){
         if(window.toast) window.toast('Submit failed','error');
-        else alert('Submit failed');
       }
     });
   }
