@@ -70,7 +70,7 @@
 </div>
 
 <div style="margin-top:12px">
-  <button id="mgr-reports-submit" type="submit" style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
+  <button id="mgr-reports-submit" type="submit" data-confirm="Submit all reports now?" data-confirm-title="Confirm Submission" data-confirm-ok="Submit" style="width:100%;background:#16a34a;color:#fff;border-radius:8px;padding:10px 14px">Submit All</button>
 </div>
 
 </form>
@@ -276,7 +276,6 @@
             }catch(_){ }
             try{ if(res.firstEl && res.firstEl.focus){ res.firstEl.focus(); res.firstEl.scrollIntoView({ behavior:'smooth', block:'center' }); } }catch(_){ }
           } else {
-            try { if(form.requestSubmit) { ev.preventDefault(); form.requestSubmit(); } else { form.submit(); } } catch(_){ form.submit(); }
           }
         });
       }
