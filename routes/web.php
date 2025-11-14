@@ -608,6 +608,29 @@ Route::get('/manager', function (Request $request) {
             });
     }
 
+    // Manager tasks assigned by owner (include unassigned/global)
+    $managerUserId = DB::table('users')->where('username', $manager)->value('id');
+    $managerTasks = collect();
+    if (Schema::hasTable('manager_tasks')) {
+        $managerTasks = DB::table('manager_tasks')
+            ->when($managerUserId, function($q) use ($managerUserId) {
+                $q->where(function($sub) use ($managerUserId){
+                    $sub->whereNull('manager_id')->orWhere('manager_id', $managerUserId);
+                });
+            }, function($q){
+                $q->whereNull('manager_id');
+            })
+            ->orderByDesc('created_at')
+            ->limit(25)
+            ->get()
+            ->map(function($t){
+                return [
+                    'title' => $t->title,
+                    'done' => ($t->status === 'completed'),
+                ];
+            });
+    }
+
     return view('manager.index', [
         'reports' => $reports,
         'fundBalance' => $fundBalance,
@@ -620,6 +643,7 @@ Route::get('/manager', function (Request $request) {
         'inventory' => $inventory,
         'employees' => $employees,
         'managerInventory' => $managerInventory,
+        'managerTasks' => $managerTasks,
     ]);
 })->name('manager.home');
 
